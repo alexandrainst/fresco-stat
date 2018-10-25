@@ -5,8 +5,8 @@ import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.lib.real.SReal;
-import dk.alexandra.fresco.stat.DefaultStatistics;
-import dk.alexandra.fresco.stat.Statistics;
+import dk.alexandra.fresco.stat.descriptive.Mean;
+import dk.alexandra.fresco.stat.descriptive.Variance;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -24,12 +24,12 @@ public class TwoSampleTTest implements Computation<SReal, ProtocolBuilderNumeric
 
   @Override
   public DRes<SReal> buildComputation(ProtocolBuilderNumeric builder) {
-    return builder.par(par -> {
-      Statistics stat = new DefaultStatistics(par);
-      DRes<SReal> mean1 = stat.mean(data1);
-      DRes<SReal> mean2 = stat.mean(data2);
-      DRes<SReal> var1 = stat.variance(data1);
-      DRes<SReal> var2 = stat.variance(data2);
+    return builder.seq(seq -> {
+      // TODO: Calculations on the two datasets can be done in parallel.
+      DRes<SReal> mean1 = seq.seq(new Mean(data1));
+      DRes<SReal> mean2 = seq.seq(new Mean(data2));
+      DRes<SReal> var1 = seq.seq(new Variance(data1, mean1));
+      DRes<SReal> var2 = seq.seq(new Variance(data2, mean2));
       return () -> new Pair<>(new Pair<>(mean1, var1), new Pair<>(mean2, var2));
     }).seq((seq, stats) -> {
       DRes<SReal> n =

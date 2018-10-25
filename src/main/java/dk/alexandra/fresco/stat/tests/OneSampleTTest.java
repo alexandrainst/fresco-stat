@@ -3,7 +3,6 @@ package dk.alexandra.fresco.stat.tests;
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
-import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.lib.real.SReal;
 import dk.alexandra.fresco.stat.descriptive.Mean;
 import dk.alexandra.fresco.stat.descriptive.SampleStandardDeviation;
@@ -22,13 +21,11 @@ public class OneSampleTTest implements Computation<SReal, ProtocolBuilderNumeric
 
   @Override
   public DRes<SReal> buildComputation(ProtocolBuilderNumeric builder) {
-    return builder.par(par -> {
-      DRes<SReal> mean = par.seq(new Mean(observed));
-      DRes<SReal> s = par.seq(new SampleStandardDeviation(observed));
-      return () -> new Pair<>(mean, s);
-    }).seq((seq, stats) -> {
+    return builder.seq(seq -> {
+      DRes<SReal> mean = seq.seq(new Mean(observed));
+      DRes<SReal> s = seq.seq(new SampleStandardDeviation(observed, mean));
       DRes<SReal> t = seq.realNumeric().mult(BigDecimal.valueOf(Math.sqrt(observed.size())),
-          seq.realNumeric().div(seq.realNumeric().sub(stats.getFirst(), mu), stats.getSecond()));
+          seq.realNumeric().div(seq.realNumeric().sub(mean, mu), s));
       return t;
     });
   }
