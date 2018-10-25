@@ -75,9 +75,9 @@ public class StatTests {
 
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
             Statistics stat = new DefaultStatistics(builder);
-            List<DRes<SReal>> input1 = data1.stream().map(x -> builder.realNumeric().known(x))
+            List<DRes<SReal>> input1 = data1.stream().map(x -> builder.realNumeric().input(x, 1))
                 .collect(Collectors.toList());
-            List<DRes<SReal>> input2 = data2.stream().map(x -> builder.realNumeric().known(x))
+            List<DRes<SReal>> input2 = data2.stream().map(x -> builder.realNumeric().input(x, 2))
                 .collect(Collectors.toList());
             DRes<SReal> t = stat.ttest(input1, input2);
             return builder.realNumeric().open(t);
