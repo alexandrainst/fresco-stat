@@ -8,11 +8,15 @@ import dk.alexandra.fresco.framework.TestThreadRunner.TestThread;
 import dk.alexandra.fresco.framework.TestThreadRunner.TestThreadFactory;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.sce.resources.ResourcePool;
+import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.stat.tests.ChiSquareTest;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.commons.math3.distribution.ChiSquaredDistribution;
 import org.apache.commons.math3.distribution.TDistribution;
 
 public class StatTests {
@@ -35,7 +39,8 @@ public class StatTests {
             Statistics stat = new DefaultStatistics(builder);
             List<DRes<SReal>> input =
                 data.stream().map(x -> builder.realNumeric().known(x)).collect(Collectors.toList());
-            DRes<SReal> t = stat.ttest(input, builder.realNumeric().known(BigDecimal.valueOf(expectedMean)));
+            DRes<SReal> t =
+                stat.ttest(input, builder.realNumeric().known(BigDecimal.valueOf(expectedMean)));
             return builder.realNumeric().open(t);
           };
 
@@ -70,10 +75,10 @@ public class StatTests {
 
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
             Statistics stat = new DefaultStatistics(builder);
-            List<DRes<SReal>> input1 =
-                data1.stream().map(x -> builder.realNumeric().known(x)).collect(Collectors.toList());
-            List<DRes<SReal>> input2 =
-                data2.stream().map(x -> builder.realNumeric().known(x)).collect(Collectors.toList());
+            List<DRes<SReal>> input1 = data1.stream().map(x -> builder.realNumeric().known(x))
+                .collect(Collectors.toList());
+            List<DRes<SReal>> input2 = data2.stream().map(x -> builder.realNumeric().known(x))
+                .collect(Collectors.toList());
             DRes<SReal> t = stat.ttest(input1, input2);
             return builder.realNumeric().open(t);
           };
@@ -84,6 +89,43 @@ public class StatTests {
           TDistribution dist = new TDistribution(df);
           double p = dist.cumulativeProbability(output.doubleValue());
 
+          // Null-hypothesis should be rejected in this case.
+          assertTrue(p < 0.05);
+        }
+      };
+    }
+  }
+
+  public static class TestChiSquareTest<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        List<BigDecimal> expected = Arrays.asList(58.0, 34.5, 7.0, 0.5).stream()
+            .map(BigDecimal::valueOf).collect(Collectors.toList());
+        List<BigInteger> observed = Arrays.asList(48, 35, 15, 3).stream().map(BigInteger::valueOf)
+            .collect(Collectors.toList());
+
+        @Override
+        public void test() throws Exception {
+
+          Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
+            List<DRes<SReal>> e = expected.stream().map(x -> builder.realNumeric().input(x, 1))
+                .collect(Collectors.toList());
+            List<DRes<SInt>> o = observed.stream().map(x -> builder.numeric().input(x, 2))
+                .collect(Collectors.toList());
+            DRes<SReal> x = builder.seq(new ChiSquareTest(o, e));
+            return builder.realNumeric().open(x);
+          };
+
+          BigDecimal output = runApplication(testApplication);
+          
+          double df = observed.size() - 1;
+          ChiSquaredDistribution dist = new ChiSquaredDistribution(df);
+          double p = 1.0 - dist.cumulativeProbability(output.doubleValue());
+          
           // Null-hypothesis should be rejected in this case.
           assertTrue(p < 0.05);
         }
