@@ -14,12 +14,10 @@ public class TwoSampleTTest implements Computation<SReal, ProtocolBuilderNumeric
 
   private List<DRes<SReal>> data1;
   private List<DRes<SReal>> data2;
-  private boolean sameSize;
 
   public TwoSampleTTest(List<DRes<SReal>> data1, List<DRes<SReal>> data2) {
     this.data1 = data1;
     this.data2 = data2;
-    this.sameSize = data1.size() == data2.size();
   }
 
   @Override
@@ -35,7 +33,7 @@ public class TwoSampleTTest implements Computation<SReal, ProtocolBuilderNumeric
       DRes<SReal> n =
           seq.realNumeric().sub(stats.getFirst().getFirst(), stats.getSecond().getFirst());
       DRes<SReal> d = null;
-      if (sameSize) {
+      if (data1.size() == data2.size()) {
         d = seq.realNumeric().add(stats.getFirst().getSecond(), stats.getSecond().getSecond());
         d = seq.realAdvanced().sqrt(d);
         d = seq.realNumeric().mult(BigDecimal.valueOf(1.0 / Math.sqrt(data1.size())), d);
