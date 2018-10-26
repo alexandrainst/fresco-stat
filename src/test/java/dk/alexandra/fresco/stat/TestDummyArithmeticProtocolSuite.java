@@ -20,4 +20,9 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   public void test_chi_square_test() throws Exception {
     runTest(new StatTests.TestChiSquareTest<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
+  
+  @Test
+  public void test_linear_regression() throws Exception {
+    runTest(new StatTests.TestLinearRegression<>(), EvaluationStrategy.SEQUENTIAL, 2);
+  }
 }

@@ -2,7 +2,9 @@ package dk.alexandra.fresco.stat;
 
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.ComputationDirectory;
+import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.stat.tests.LinearRegression.LinearFunction;
 import java.util.List;
 
 public interface Statistics extends ComputationDirectory {
@@ -16,4 +18,11 @@ public interface Statistics extends ComputationDirectory {
   DRes<SReal> ttest(List<DRes<SReal>> data, DRes<SReal> mu);
 
   DRes<SReal> ttest(List<DRes<SReal>> data1, List<DRes<SReal>> data2);
+
+  DRes<SReal> ttest(DRes<SReal> mean1, DRes<SReal> var1, int n1, DRes<SReal> mean2, DRes<SReal> var2, int n2);
+  
+  DRes<SReal> chiSquare(List<DRes<SInt>> observed, List<DRes<SReal>> expected);
+
+  DRes<LinearFunction> linearRegression(List<DRes<SReal>> x, List<DRes<SReal>> y);
+
 }
