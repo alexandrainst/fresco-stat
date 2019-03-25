@@ -8,6 +8,12 @@ import dk.alexandra.fresco.lib.real.SReal;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Compute the &Chi;<sup>2</sup>-test for goodness of fit for the given observatinos.
+ * 
+ * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
+ *
+ */
 public class ChiSquareTest implements Computation<SReal, ProtocolBuilderNumeric> {
 
   private List<DRes<SInt>> observed;
@@ -17,7 +23,7 @@ public class ChiSquareTest implements Computation<SReal, ProtocolBuilderNumeric>
     this.observed = observed;
     this.expected = expected;
   }
-  
+
   @Override
   public DRes<SReal> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.par(par -> {
@@ -30,7 +36,7 @@ public class ChiSquareTest implements Computation<SReal, ProtocolBuilderNumeric>
       return seq.realAdvanced().sum(terms);
     });
   }
-  
+
   private Computation<SReal, ProtocolBuilderNumeric> calculateTerm(DRes<SInt> o, DRes<SReal> e) {
     return builder -> {
       DRes<SReal> t = builder.realNumeric().sub(builder.realNumeric().fromSInt(o), e);

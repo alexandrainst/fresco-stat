@@ -19,8 +19,6 @@ public interface Statistics extends ComputationDirectory {
 
   DRes<SReal> ttest(List<DRes<SReal>> data1, List<DRes<SReal>> data2);
 
-  DRes<SReal> ttest(DRes<SReal> mean1, DRes<SReal> var1, int n1, DRes<SReal> mean2, DRes<SReal> var2, int n2);
-  
   DRes<SReal> chiSquare(List<DRes<SInt>> observed, List<DRes<SReal>> expected);
 
   DRes<LinearFunction> linearRegression(List<DRes<SReal>> x, List<DRes<SReal>> y);

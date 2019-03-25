@@ -8,27 +8,44 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Compute the sample variance for a list of observations.
+ * 
+ * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
+ *
+ */
 public class Variance implements Computation<SReal, ProtocolBuilderNumeric> {
 
   private List<DRes<SReal>> observed;
   private DRes<SReal> mean;
 
+  /**
+   * Create a new computation of the given samples.
+   * 
+   * @param observed
+   */
   public Variance(List<DRes<SReal>> observed) {
     this.observed = observed;
   }
 
+  /**
+   * Create a new computation with a given computed sample mean.
+   * 
+   * @param observed
+   * @param mean
+   */
   public Variance(List<DRes<SReal>> observed, DRes<SReal> mean) {
     this.observed = observed;
     this.mean = mean;
   }
-  
+
   @Override
   public DRes<SReal> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.seq(seq -> {
       if (this.mean != null) {
         return mean;
       } else {
-        return seq.seq(new Mean(observed));
+        return new Mean(observed).buildComputation(seq);
       }
     }).par((par, mean) -> {
       List<DRes<SReal>> terms = observed.stream().map(x -> par.realNumeric().sub(x, () -> mean))

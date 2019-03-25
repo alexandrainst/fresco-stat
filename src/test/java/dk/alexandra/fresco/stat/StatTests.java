@@ -17,8 +17,8 @@ import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.apache.commons.math3.distribution.ChiSquaredDistribution;
-import org.apache.commons.math3.distribution.TDistribution;
+import org.apache.commons.math3.stat.inference.ChiSquareTest;
+import org.apache.commons.math3.stat.inference.TTest;
 
 public class StatTests {
 
@@ -46,12 +46,10 @@ public class StatTests {
           };
 
           BigDecimal t = runApplication(testApplication);
+          double clearT = new TTest().t(expectedMean,
+              data.stream().mapToDouble(BigDecimal::doubleValue).toArray());
 
-          double df = data.size() - 1;
-          TDistribution dist = new TDistribution(df);
-
-          double p = 2 * dist.cumulativeProbability(t.doubleValue());
-          assertTrue(p > 0.05);
+          assertTrue(Math.abs(t.doubleValue() - clearT) < 0.01);
         }
       };
     }
@@ -84,12 +82,12 @@ public class StatTests {
 
           BigDecimal output = runApplication(testApplication);
 
-          double df = data1.size() + data2.size() - 2;
-          TDistribution dist = new TDistribution(df);
-          double p = dist.cumulativeProbability(output.doubleValue());
+          double clearT =
+              new TTest().t(data1.stream().mapToDouble(BigDecimal::doubleValue).toArray(),
+                  data2.stream().mapToDouble(BigDecimal::doubleValue).toArray());
 
-          // Null-hypothesis should be rejected in this case.
-          assertTrue(p < 0.05);
+          assertTrue(Math.abs(clearT - output.doubleValue()) < 0.01);
+
         }
       };
     }
@@ -102,10 +100,10 @@ public class StatTests {
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
       return new TestThread<>() {
 
-        List<BigDecimal> expected = List.of(58.0, 34.5, 7.0, 0.5).stream()
-            .map(BigDecimal::valueOf).collect(Collectors.toList());
-        List<BigInteger> observed = List.of(48, 35, 15, 3).stream().map(BigInteger::valueOf)
+        List<BigDecimal> expected = List.of(58.0, 34.5, 7.0, 0.5).stream().map(BigDecimal::valueOf)
             .collect(Collectors.toList());
+        List<BigInteger> observed =
+            List.of(56, 36, 8, 0).stream().map(BigInteger::valueOf).collect(Collectors.toList());
 
         @Override
         public void test() throws Exception {
@@ -123,12 +121,12 @@ public class StatTests {
 
           BigDecimal output = runApplication(testApplication);
 
-          double df = observed.size() - 1;
-          ChiSquaredDistribution dist = new ChiSquaredDistribution(df);
-          double p = 1.0 - dist.cumulativeProbability(output.doubleValue());
+          double clearQ = new ChiSquareTest().chiSquare(
+              expected.stream().mapToDouble(BigDecimal::doubleValue).toArray(),
+              observed.stream().mapToLong(BigInteger::longValue).toArray());
 
-          // Null-hypothesis should be rejected in this case.
-          assertTrue(p < 0.05);
+          assertTrue(Math.abs(output.doubleValue() - clearQ) < 0.01);
+
         }
       };
     }
@@ -141,8 +139,8 @@ public class StatTests {
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
       return new TestThread<>() {
 
-        List<BigDecimal> x = Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0).stream().map(BigDecimal::valueOf)
-            .collect(Collectors.toList());
+        List<BigDecimal> x = Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0).stream()
+            .map(BigDecimal::valueOf).collect(Collectors.toList());
         List<BigDecimal> y = List.of(1.0, 2.0, 1.3, 3.75, 2.25).stream().map(BigDecimal::valueOf)
             .collect(Collectors.toList());
 

@@ -22,10 +22,12 @@ public class OneSampleTTest implements Computation<SReal, ProtocolBuilderNumeric
   @Override
   public DRes<SReal> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.seq(seq -> {
-      DRes<SReal> mean = seq.seq(new Mean(observed));
-      DRes<SReal> s = seq.seq(new SampleStandardDeviation(observed, mean));
+
+      DRes<SReal> mean = new Mean(observed).buildComputation(seq);
+      DRes<SReal> s = new SampleStandardDeviation(observed, mean).buildComputation(seq);
       DRes<SReal> t = seq.realNumeric().mult(BigDecimal.valueOf(Math.sqrt(observed.size())),
           seq.realNumeric().div(seq.realNumeric().sub(mean, mu), s));
+
       return t;
     });
   }

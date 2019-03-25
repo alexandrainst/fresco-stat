@@ -7,6 +7,12 @@ import dk.alexandra.fresco.lib.real.SReal;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * Compute the mean of a list of observations.
+ * 
+ * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
+ *
+ */
 public class Mean implements Computation<SReal, ProtocolBuilderNumeric> {
 
   private List<DRes<SReal>> observed;
@@ -14,7 +20,7 @@ public class Mean implements Computation<SReal, ProtocolBuilderNumeric> {
   public Mean(List<DRes<SReal>> observed) {
     this.observed = observed;
   }
-  
+
   @Override
   public DRes<SReal> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.seq(seq -> {

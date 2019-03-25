@@ -21,7 +21,7 @@ import java.util.stream.Collectors;
 public class LinearRegression implements Computation<LinearFunction, ProtocolBuilderNumeric> {
 
   public class LinearFunction {
-    
+
     private DRes<SReal> b;
     private DRes<SReal> a;
 
@@ -29,61 +29,76 @@ public class LinearRegression implements Computation<LinearFunction, ProtocolBui
       this.a = a;
       this.b = b;
     }
-    
+
     public DRes<SReal> getA() {
       return a;
     }
-    
+
     public DRes<SReal> getB() {
       return b;
     }
   }
-  
+
   private List<DRes<SReal>> x;
   private List<DRes<SReal>> y;
-  private DRes<SReal> xMean;
-  private DRes<SReal> yMean;
 
   public LinearRegression(List<DRes<SReal>> x, List<DRes<SReal>> y) {
     this.x = x;
     this.y = y;
   }
-  
+
   @Override
   public DRes<LinearFunction> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.par(par -> {
+
+      // Compute the means of the x and y observations
       DRes<SReal> xMean = par.seq(new Mean(x));
       DRes<SReal> yMean = par.seq(new Mean(y));
+
       return () -> new Pair<>(xMean, yMean);
-    }).par((par, pair) -> {
-      
-      // TODO: We propably shouldn't keep these, btu we need them in the very end of the
-      // calculation, and passing them through the rounds will make the code hard to read.
-      this.xMean = pair.getFirst();
-      this.yMean = pair.getSecond();
-      
-      List<DRes<SReal>> xTerms = x.stream().map(x -> par.realNumeric().sub(x, xMean))
+
+    }).par((par, means) -> {
+
+      // Compute
+      List<DRes<SReal>> xTerms = x.stream().map(x -> par.realNumeric().sub(x, means.getFirst()))
           .collect(Collectors.toList());
-      List<DRes<SReal>> yTerms = y.stream().map(y -> par.realNumeric().sub(y, yMean))
+      List<DRes<SReal>> yTerms = y.stream().map(y -> par.realNumeric().sub(y, means.getSecond()))
           .collect(Collectors.toList());
-      return () -> new Pair<>(xTerms, yTerms);
-    }).par((par, terms) -> {
+
+      return () -> new Pair<>(new Pair<>(xTerms, yTerms), means);
+
+    }).par((par, termsAndMeans) -> {
+
       List<DRes<SReal>> numeratorTerms = new ArrayList<>();
+
       for (int i = 0; i < x.size(); i++) {
-        numeratorTerms.add(par.realNumeric().mult(terms.getFirst().get(i), terms.getSecond().get(i)));
+        numeratorTerms.add(par.realNumeric().mult(termsAndMeans.getFirst().getFirst().get(i),
+            termsAndMeans.getFirst().getSecond().get(i)));
       }
-      List<DRes<SReal>> denominatorTerms =
-          terms.getFirst().stream().map(x -> par.realNumeric().mult(x, x)).collect(Collectors.toList());
-      return () -> new Pair<>(numeratorTerms, denominatorTerms);
-    }).par((par, terms) -> {
-      DRes<SReal> numeratorSum = par.realAdvanced().sum(terms.getFirst());
-      DRes<SReal> denominatorSum = par.realAdvanced().sum(terms.getSecond());
-      return () -> new Pair<>(numeratorSum, denominatorSum);
-    }).seq((seq, fraction) -> {
-      DRes<SReal> b = seq.realNumeric().div(fraction.getFirst(), fraction.getSecond());
-      DRes<SReal> a = seq.realNumeric().sub(yMean, seq.realNumeric().mult(b, xMean));
+
+      List<DRes<SReal>> denominatorTerms = termsAndMeans.getFirst().getFirst().stream()
+          .map(x -> par.realNumeric().mult(x, x)).collect(Collectors.toList());
+
+      return () -> new Pair<>(new Pair<>(numeratorTerms, denominatorTerms),
+          termsAndMeans.getSecond());
+
+    }).par((par, termsAndMeans) -> {
+
+      DRes<SReal> numeratorSum = par.realAdvanced().sum(termsAndMeans.getFirst().getFirst());
+      DRes<SReal> denominatorSum = par.realAdvanced().sum(termsAndMeans.getFirst().getSecond());
+
+      return () -> new Pair<>(new Pair<>(numeratorSum, denominatorSum), termsAndMeans.getSecond());
+
+    }).seq((seq, sumsAndMeans) -> {
+
+      DRes<SReal> b = seq.realNumeric().div(sumsAndMeans.getFirst().getFirst(),
+          sumsAndMeans.getFirst().getSecond());
+      DRes<SReal> a = seq.realNumeric().sub(sumsAndMeans.getSecond().getSecond(),
+          seq.realNumeric().mult(b, sumsAndMeans.getSecond().getFirst()));
+
       return () -> new LinearFunction(a, b);
+
     });
   }
-  
+
 }

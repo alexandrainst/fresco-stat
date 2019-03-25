@@ -21,15 +21,15 @@ public class DefaultStatistics implements Statistics {
   public DefaultStatistics(ProtocolBuilderNumeric builder) {
     this.builder = builder;
   }
-  
+
   @Override
   public DRes<SReal> mean(List<DRes<SReal>> data) {
-    return builder.seq(new Mean(data));
+    return new Mean(data).buildComputation(builder);
   }
 
   @Override
   public DRes<SReal> variance(List<DRes<SReal>> data) {
-    return builder.seq(new Variance(data));
+    return new Variance(data).buildComputation(builder);
   }
 
   @Override
@@ -48,12 +48,6 @@ public class DefaultStatistics implements Statistics {
   }
 
   @Override
-  public DRes<SReal> ttest(DRes<SReal> mean1, DRes<SReal> var1, int n1, DRes<SReal> mean2,
-      DRes<SReal> var2, int n2) {
-    return builder.seq(new TwoSampleTTest(mean1, var1, n1, mean2, var2, n2));
-  }
-
-  @Override
   public DRes<SReal> chiSquare(List<DRes<SInt>> observed, List<DRes<SReal>> expected) {
     return builder.seq(new ChiSquareTest(observed, expected));
   }
@@ -62,5 +56,5 @@ public class DefaultStatistics implements Statistics {
   public DRes<LinearFunction> linearRegression(List<DRes<SReal>> x, List<DRes<SReal>> y) {
     return builder.seq(new LinearRegression(x, y));
   }
-  
+
 }
