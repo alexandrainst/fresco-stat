@@ -15,7 +15,7 @@ public class SampleUniformDistribution implements Computation<SReal, ProtocolBui
 
   @Override
   public DRes<SReal> buildComputation(ProtocolBuilderNumeric builder) {
-    return builder.realAdvanced().random(builder.getRealNumericContext().getPrecision());
+    return builder.realAdvanced().random();
   }
 
 }
