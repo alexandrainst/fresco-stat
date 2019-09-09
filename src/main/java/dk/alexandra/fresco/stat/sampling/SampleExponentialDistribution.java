@@ -30,16 +30,15 @@ public class SampleExponentialDistribution implements Computation<SReal, Protoco
   }
 
   @Override
-  public DRes<SReal> buildComputation(ProtocolBuilderNumeric builder) {
-
-    return builder.seq(seq -> {
-      DRes<SReal> uniform = new SampleUniformDistribution().buildComputation(seq);
-      DRes<SReal> logUniform = seq.realAdvanced().log(uniform);
+  public DRes<SReal> buildComputation(ProtocolBuilderNumeric root) {
+    return root.seq(builder -> {
+      DRes<SReal> uniform = new SampleUniformDistribution().buildComputation(builder);
+      DRes<SReal> logUniform = builder.realAdvanced().log(uniform);
 
       if (lambdaKnown != null) {
-        return seq.realNumeric().mult(lambdaKnown, logUniform);
+        return builder.realNumeric().mult(lambdaKnown, logUniform);
       } else {
-        return seq.realNumeric().mult(lambda, logUniform);
+        return builder.realNumeric().mult(lambda, logUniform);
       }
     });
 

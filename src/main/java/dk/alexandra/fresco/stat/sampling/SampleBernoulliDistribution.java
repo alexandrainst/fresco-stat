@@ -28,13 +28,15 @@ public class SampleBernoulliDistribution implements Computation<SInt, ProtocolBu
   }
 
   @Override
-  public DRes<SInt> buildComputation(ProtocolBuilderNumeric builder) {
-    if (knownP != null) {
-      p = builder.realNumeric().known(BigDecimal.valueOf(knownP));
-    }
+  public DRes<SInt> buildComputation(ProtocolBuilderNumeric root) {
+    return root.seq(builder -> {
+      if (knownP != null) {
+        p = builder.realNumeric().known(BigDecimal.valueOf(knownP));
+      }
 
-    DRes<SReal> draw = new SampleUniformDistribution().buildComputation(builder);
-    return builder.realNumeric().leq(p, draw);
+      DRes<SReal> draw = new SampleUniformDistribution().buildComputation(builder);
+      return builder.realNumeric().leq(p, draw);
+    });
   }
 
 }

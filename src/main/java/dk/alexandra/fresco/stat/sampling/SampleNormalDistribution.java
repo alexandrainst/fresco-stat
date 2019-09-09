@@ -16,9 +16,11 @@ import java.math.BigDecimal;
 public class SampleNormalDistribution implements Computation<SReal, ProtocolBuilderNumeric> {
 
   @Override
-  public DRes<SReal> buildComputation(ProtocolBuilderNumeric builder) {
-    return builder.realNumeric().sub(new SampleIrwinHallDistribution(12).buildComputation(builder),
-        BigDecimal.valueOf(6.0));
+  public DRes<SReal> buildComputation(ProtocolBuilderNumeric root) {
+    return root.seq(builder -> {
+      return builder.realNumeric().sub(
+          new SampleIrwinHallDistribution(12).buildComputation(builder), BigDecimal.valueOf(6.0));
+    });
   }
 
 }

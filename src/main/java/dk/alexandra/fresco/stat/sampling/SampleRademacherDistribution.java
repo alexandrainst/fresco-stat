@@ -16,11 +16,13 @@ import java.math.BigInteger;
 public class SampleRademacherDistribution implements Computation<SInt, ProtocolBuilderNumeric> {
 
   @Override
-  public DRes<SInt> buildComputation(ProtocolBuilderNumeric builder) {
-    DRes<SInt> bernoulli = builder.numeric().randomBit();
+  public DRes<SInt> buildComputation(ProtocolBuilderNumeric root) {
+    return root.seq(builder -> {
+      DRes<SInt> bernoulli = builder.numeric().randomBit();
 
-    return builder.numeric().sub(builder.numeric().mult(BigInteger.valueOf(2), bernoulli),
-        BigInteger.ONE);
+      return builder.numeric().sub(builder.numeric().mult(BigInteger.valueOf(2), bernoulli),
+          BigInteger.ONE);
+    });
   }
 
 }

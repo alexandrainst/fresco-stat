@@ -27,9 +27,11 @@ public class SampleStandardDeviation implements Computation<SReal, ProtocolBuild
   }
 
   @Override
-  public DRes<SReal> buildComputation(ProtocolBuilderNumeric builder) {
-    DRes<SReal> ssd = new Variance(observed, mean).buildComputation(builder);
-    return builder.realAdvanced().sqrt(ssd);
+  public DRes<SReal> buildComputation(ProtocolBuilderNumeric root) {
+    return root.seq(builder -> {
+      DRes<SReal> ssd = new Variance(observed, mean).buildComputation(builder);
+      return builder.realAdvanced().sqrt(ssd);
+    });
   }
 
 }
