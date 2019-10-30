@@ -6,7 +6,10 @@ import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.real.fixed.SFixed;
+
 import java.math.BigDecimal;
+import java.util.Objects;
 
 /**
  * This computation samples from a Laplace distribution with scale <i>b</i> and location 0.
@@ -33,17 +36,22 @@ public class SampleLaplaceDistribution implements Computation<SReal, ProtocolBui
     return builder.par(par -> {
 
       DRes<SReal> exponential;
-      if (bKnown != null) {
-        exponential = new SampleExponentialDistribution(bKnown).buildComputation(par);
+      if (Objects.nonNull(bKnown)) {
+        exponential = new SampleExponentialDistribution(BigDecimal.ONE.divide(bKnown)).buildComputation(par);
       } else {
-        exponential = new SampleExponentialDistribution(b).buildComputation(par);
+        exponential = par.seq(seq -> {
+          DRes<SReal> bInverse = seq.realAdvanced().reciprocal(b);
+          return new SampleExponentialDistribution(bInverse).buildComputation(par);          
+        });
       }
 
       DRes<SInt> rademacher = new SampleRademacherDistribution().buildComputation(par);
 
       return () -> new Pair<>(exponential, rademacher);
     }).seq((seq, p) -> {
-      return seq.realNumeric().mult(p.getFirst(), seq.realNumeric().fromSInt(p.getSecond()));
+      SFixed exp = (SFixed) p.getFirst().out();
+      DRes<SInt> product = seq.numeric().mult(exp.getSInt(), p.getSecond());
+      return new SFixed(product);
     });
   }
 

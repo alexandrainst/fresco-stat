@@ -1,22 +1,19 @@
 package dk.alexandra.fresco.stat.tests;
 
+import java.util.List;
+
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.lib.real.SReal;
-import dk.alexandra.fresco.stat.descriptive.Mean;
+import dk.alexandra.fresco.stat.descriptive.helpers.SPD;
+import dk.alexandra.fresco.stat.descriptive.helpers.SSD;
 import dk.alexandra.fresco.stat.tests.LinearRegression.LinearFunction;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
- * This computation returns coeffieints a and b based on a simple linear regression of the observed
+ * This computation returns coefficients a and b based on a simple linear regression of the observed
  * x and y values.
- * 
- * TODO: We do not calculate the sample correlation coefficient r here, since this would make the
- * computation harder. Maybe we should do this in another computation?
  */
 public class LinearRegression implements Computation<LinearFunction, ProtocolBuilderNumeric> {
 
@@ -41,60 +38,30 @@ public class LinearRegression implements Computation<LinearFunction, ProtocolBui
 
   private List<DRes<SReal>> x;
   private List<DRes<SReal>> y;
+  private DRes<SReal> meanY;
+  private DRes<SReal> meanX;
 
-  public LinearRegression(List<DRes<SReal>> x, List<DRes<SReal>> y) {
+  public LinearRegression(List<DRes<SReal>> x, DRes<SReal> meanX, List<DRes<SReal>> y,
+      DRes<SReal> meanY) {
     this.x = x;
+    this.meanX = meanX;
     this.y = y;
+    this.meanY = meanY;
   }
 
   @Override
-  public DRes<LinearFunction> buildComputation(ProtocolBuilderNumeric builder) {
-    return builder.par(par -> {
+  public DRes<LinearFunction> buildComputation(ProtocolBuilderNumeric root) {
+    return root.par(builder -> {
 
-      // Compute the means of the x and y observations
-      DRes<SReal> xMean = par.seq(new Mean(x));
-      DRes<SReal> yMean = par.seq(new Mean(y));
+      DRes<SReal> spd = new SPD(x, meanX, y, meanY).buildComputation(builder);
+      DRes<SReal> ssd = new SSD(x, meanX).buildComputation(builder);
 
-      return () -> new Pair<>(xMean, yMean);
+      return () -> new Pair<>(spd, ssd);
 
-    }).par((par, means) -> {
+    }).seq((builder, spdAndSsd) -> {
 
-      // Compute
-      List<DRes<SReal>> xTerms = x.stream().map(x -> par.realNumeric().sub(x, means.getFirst()))
-          .collect(Collectors.toList());
-      List<DRes<SReal>> yTerms = y.stream().map(y -> par.realNumeric().sub(y, means.getSecond()))
-          .collect(Collectors.toList());
-
-      return () -> new Pair<>(new Pair<>(xTerms, yTerms), means);
-
-    }).par((par, termsAndMeans) -> {
-
-      List<DRes<SReal>> numeratorTerms = new ArrayList<>();
-
-      for (int i = 0; i < x.size(); i++) {
-        numeratorTerms.add(par.realNumeric().mult(termsAndMeans.getFirst().getFirst().get(i),
-            termsAndMeans.getFirst().getSecond().get(i)));
-      }
-
-      List<DRes<SReal>> denominatorTerms = termsAndMeans.getFirst().getFirst().stream()
-          .map(x -> par.realNumeric().mult(x, x)).collect(Collectors.toList());
-
-      return () -> new Pair<>(new Pair<>(numeratorTerms, denominatorTerms),
-          termsAndMeans.getSecond());
-
-    }).par((par, termsAndMeans) -> {
-
-      DRes<SReal> numeratorSum = par.realAdvanced().sum(termsAndMeans.getFirst().getFirst());
-      DRes<SReal> denominatorSum = par.realAdvanced().sum(termsAndMeans.getFirst().getSecond());
-
-      return () -> new Pair<>(new Pair<>(numeratorSum, denominatorSum), termsAndMeans.getSecond());
-
-    }).seq((seq, sumsAndMeans) -> {
-
-      DRes<SReal> b = seq.realNumeric().div(sumsAndMeans.getFirst().getFirst(),
-          sumsAndMeans.getFirst().getSecond());
-      DRes<SReal> a = seq.realNumeric().sub(sumsAndMeans.getSecond().getSecond(),
-          seq.realNumeric().mult(b, sumsAndMeans.getSecond().getFirst()));
+      DRes<SReal> b = builder.realNumeric().div(spdAndSsd.getFirst(), spdAndSsd.getSecond());
+      DRes<SReal> a = builder.realNumeric().sub(meanY, builder.realNumeric().mult(b, meanX));
 
       return () -> new LinearFunction(a, b);
 

@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Compute the &Chi;<sup>2</sup>-test for goodness of fit for the given observatinos.
+ * Compute the &Chi;<sup>2</sup>-test for goodness of fit of the given observatinos.
  * 
  * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  *

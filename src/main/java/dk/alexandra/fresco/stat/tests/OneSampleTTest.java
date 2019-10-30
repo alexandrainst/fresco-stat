@@ -1,13 +1,14 @@
 package dk.alexandra.fresco.stat.tests;
 
+import java.math.BigDecimal;
+import java.util.List;
+
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.lib.real.SReal;
-import dk.alexandra.fresco.stat.descriptive.Mean;
-import dk.alexandra.fresco.stat.descriptive.SampleStandardDeviation;
-import java.math.BigDecimal;
-import java.util.List;
+import dk.alexandra.fresco.stat.DefaultStatistics;
+import dk.alexandra.fresco.stat.Statistics;
 
 public class OneSampleTTest implements Computation<SReal, ProtocolBuilderNumeric> {
 
@@ -22,9 +23,10 @@ public class OneSampleTTest implements Computation<SReal, ProtocolBuilderNumeric
   @Override
   public DRes<SReal> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.seq(seq -> {
-
-      DRes<SReal> mean = new Mean(observed).buildComputation(seq);
-      DRes<SReal> s = new SampleStandardDeviation(observed, mean).buildComputation(seq);
+      Statistics stat = new DefaultStatistics(seq);
+      
+      DRes<SReal> mean = stat.sampleMean(observed);
+      DRes<SReal> s = stat.sampleStandardDeviation(observed, mean);
       DRes<SReal> t = seq.realNumeric().mult(BigDecimal.valueOf(Math.sqrt(observed.size())),
           seq.realNumeric().div(seq.realNumeric().sub(mean, mu), s));
 

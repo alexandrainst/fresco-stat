@@ -5,9 +5,9 @@ import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.lib.real.SReal;
-import dk.alexandra.fresco.stat.descriptive.Mean;
+import dk.alexandra.fresco.stat.descriptive.SampleMean;
 // import dk.alexandra.fresco.stat.descriptive.Mean;
-import dk.alexandra.fresco.stat.descriptive.Variance;
+import dk.alexandra.fresco.stat.descriptive.SampleVariance;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -33,12 +33,12 @@ public class TwoSampleTTest implements Computation<SReal, ProtocolBuilderNumeric
   @Override
   public DRes<SReal> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.par(par1 -> {
-      DRes<SReal> mean1 = new Mean(data1).buildComputation(par1);
-      DRes<SReal> mean2 = new Mean(data2).buildComputation(par1);
+      DRes<SReal> mean1 = new SampleMean(data1).buildComputation(par1);
+      DRes<SReal> mean2 = new SampleMean(data2).buildComputation(par1);
       return () -> new Pair<>(mean1, mean2);
     }).par((par2, means) -> {
-      DRes<SReal> var1 = new Variance(data1, means.getFirst()).buildComputation(par2);
-      DRes<SReal> var2 = new Variance(data2, means.getSecond()).buildComputation(par2);
+      DRes<SReal> var1 = new SampleVariance(data1, means.getFirst()).buildComputation(par2);
+      DRes<SReal> var2 = new SampleVariance(data2, means.getSecond()).buildComputation(par2);
       return () -> new Pair<>(means, new Pair<>(var1, var2));
     }).seq((seq, des) -> {
       DRes<SReal> mean1 = des.getFirst().getFirst();

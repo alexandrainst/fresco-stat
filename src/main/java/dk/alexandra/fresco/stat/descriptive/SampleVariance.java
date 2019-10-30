@@ -4,20 +4,29 @@ import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.stat.descriptive.helpers.SSD;
+
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * Compute the stanard deviation of a list of observations.
+ * Compute the sample variance for a list of observations.
  * 
  * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  *
  */
-public class SampleStandardDeviation implements Computation<SReal, ProtocolBuilderNumeric> {
+public class SampleVariance implements Computation<SReal, ProtocolBuilderNumeric> {
 
   private List<DRes<SReal>> observed;
   private DRes<SReal> mean;
 
-  public SampleStandardDeviation(List<DRes<SReal>> observed, DRes<SReal> mean) {
+  /**
+   * Create a new computation with a given computed sample mean.
+   * 
+   * @param observed
+   * @param mean
+   */
+  public SampleVariance(List<DRes<SReal>> observed, DRes<SReal> mean) {
     this.observed = observed;
     this.mean = mean;
   }
@@ -25,8 +34,8 @@ public class SampleStandardDeviation implements Computation<SReal, ProtocolBuild
   @Override
   public DRes<SReal> buildComputation(ProtocolBuilderNumeric root) {
     return root.seq(builder -> {
-      DRes<SReal> ssd = new SampleVariance(observed, mean).buildComputation(builder);
-      return builder.realAdvanced().sqrt(ssd);
+      DRes<SReal> sum = new SSD(observed, mean).buildComputation(builder);
+      return builder.realNumeric().div(sum, BigDecimal.valueOf(observed.size() - 1));
     });
   }
 

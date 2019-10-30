@@ -1,6 +1,18 @@
 package dk.alexandra.fresco.stat;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
+import org.apache.commons.math3.stat.inference.ChiSquareTest;
+import org.apache.commons.math3.stat.inference.TTest;
+import org.apache.commons.math3.stat.regression.RegressionResults;
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import dk.alexandra.fresco.framework.Application;
 import dk.alexandra.fresco.framework.DRes;
@@ -12,13 +24,6 @@ import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.real.SReal;
 import dk.alexandra.fresco.stat.tests.LinearRegression.LinearFunction;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.apache.commons.math3.stat.inference.ChiSquareTest;
-import org.apache.commons.math3.stat.inference.TTest;
 
 public class StatTests {
 
@@ -49,7 +54,7 @@ public class StatTests {
           double clearT = new TTest().t(expectedMean,
               data.stream().mapToDouble(BigDecimal::doubleValue).toArray());
 
-          assertTrue(Math.abs(t.doubleValue() - clearT) < 0.01);
+          assertEquals(t.doubleValue(), clearT, 0.01);
         }
       };
     }
@@ -100,10 +105,8 @@ public class StatTests {
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
       return new TestThread<>() {
 
-        List<BigDecimal> expected = List.of(58.0, 34.5, 7.0, 0.5).stream().map(BigDecimal::valueOf)
-            .collect(Collectors.toList());
-        List<BigInteger> observed =
-            List.of(56, 36, 8, 0).stream().map(BigInteger::valueOf).collect(Collectors.toList());
+        List<Double> expected = List.of(58.0, 34.5, 7.0, 0.5);
+        List<Integer> observed = List.of(56, 36, 8, 0);
 
         @Override
         public void test() throws Exception {
@@ -121,11 +124,11 @@ public class StatTests {
 
           BigDecimal output = runApplication(testApplication);
 
-          double clearQ = new ChiSquareTest().chiSquare(
-              expected.stream().mapToDouble(BigDecimal::doubleValue).toArray(),
-              observed.stream().mapToLong(BigInteger::longValue).toArray());
+          double[] e = expected.stream().mapToDouble(i -> i).toArray();
+          long[] o = observed.stream().mapToLong(i -> i).toArray();
+          double clearQ = new ChiSquareTest().chiSquare(e, o);
 
-          assertTrue(Math.abs(output.doubleValue() - clearQ) < 0.01);
+          assertEquals(output.doubleValue(), clearQ, 0.01);
 
         }
       };
@@ -139,13 +142,8 @@ public class StatTests {
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
       return new TestThread<>() {
 
-        List<BigDecimal> x = Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0).stream()
-            .map(BigDecimal::valueOf).collect(Collectors.toList());
-        List<BigDecimal> y = List.of(1.0, 2.0, 1.3, 3.75, 2.25).stream().map(BigDecimal::valueOf)
-            .collect(Collectors.toList());
-
-        double expectedA = 0.785;
-        double expectedB = 0.425;
+        List<Double> x = Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0);
+        List<Double> y = Arrays.asList(1.0, 2.0, 1.3, 3.75, 2.25);
 
         @Override
         public void test() throws Exception {
@@ -166,11 +164,54 @@ public class StatTests {
                 });
               };
 
+          SimpleRegression simpleRegression = new SimpleRegression();
+          for (int i = 0; i < x.size(); i++) {
+            simpleRegression.addData(x.get(i), y.get(i));
+          }
+          RegressionResults result = simpleRegression.regress();
+
           Pair<BigDecimal, BigDecimal> output = runApplication(testApplication);
-          assertTrue(output.getFirst().subtract(BigDecimal.valueOf(expectedA)).abs()
-              .compareTo(BigDecimal.valueOf(0.001)) < 0);
-          assertTrue(output.getSecond().subtract(BigDecimal.valueOf(expectedB)).abs()
-              .compareTo(BigDecimal.valueOf(0.001)) < 0);
+          assertTrue(output.getFirst().subtract(BigDecimal.valueOf(result.getParameterEstimate(0)))
+              .abs().compareTo(BigDecimal.valueOf(0.001)) < 0);
+          assertTrue(output.getSecond().subtract(BigDecimal.valueOf(result.getParameterEstimate(1)))
+              .abs().compareTo(BigDecimal.valueOf(0.001)) < 0);
+        }
+      };
+    }
+  }
+
+  public static class TestCorrelation<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        List<Double> x = Arrays.asList(1.0, 2.0, 3.0, 4.0, 5.0);
+        List<Double> y = Arrays.asList(1.0, 2.0, 1.3, 3.75, 2.25);
+
+        @Override
+        public void test() throws Exception {
+
+          Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
+            Statistics stat = new DefaultStatistics(builder);
+            List<DRes<SReal>> xSecret =
+                x.stream().map(x -> builder.realNumeric().input(x, 1)).collect(Collectors.toList());
+            List<DRes<SReal>> ySecret =
+                y.stream().map(y -> builder.realNumeric().input(y, 2)).collect(Collectors.toList());
+            DRes<SReal> r = stat.correlation(xSecret, ySecret);
+            return builder.realNumeric().open(r);
+          };
+
+          double[] xArray = x.stream().mapToDouble(i -> i).toArray();
+          double[] yArray = y.stream().mapToDouble(i -> i).toArray();
+
+          PearsonsCorrelation correlation = new PearsonsCorrelation();
+          double expected = correlation.correlation(xArray, yArray);
+          
+          BigDecimal output = runApplication(testApplication);
+          System.out.println(output + " ~ " + expected);
+          assertTrue(Math.abs(expected - output.doubleValue()) < 0.01);
         }
       };
     }
