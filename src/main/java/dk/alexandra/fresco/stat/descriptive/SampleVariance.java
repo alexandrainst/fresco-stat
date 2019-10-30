@@ -6,7 +6,6 @@ import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.lib.real.SReal;
 import dk.alexandra.fresco.stat.descriptive.helpers.SSD;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -35,7 +34,7 @@ public class SampleVariance implements Computation<SReal, ProtocolBuilderNumeric
   public DRes<SReal> buildComputation(ProtocolBuilderNumeric root) {
     return root.seq(builder -> {
       DRes<SReal> sum = new SSD(observed, mean).buildComputation(builder);
-      return builder.realNumeric().div(sum, BigDecimal.valueOf(observed.size() - 1));
+      return builder.realNumeric().div(sum, observed.size() - 1);
     });
   }
 
