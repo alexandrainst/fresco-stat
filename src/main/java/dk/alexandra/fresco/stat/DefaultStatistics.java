@@ -4,23 +4,29 @@ import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
+import dk.alexandra.fresco.lib.collections.Matrix;
 import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.real.fixed.SFixed;
+import dk.alexandra.fresco.stat.descriptive.Histogram;
 import dk.alexandra.fresco.stat.descriptive.PearsonsCorrelation;
 import dk.alexandra.fresco.stat.descriptive.SampleMean;
 import dk.alexandra.fresco.stat.descriptive.SampleStandardDeviation;
 import dk.alexandra.fresco.stat.descriptive.SampleVariance;
+import dk.alexandra.fresco.stat.descriptive.TwoDimensionalHistogram;
 import dk.alexandra.fresco.stat.tests.ChiSquareTest;
 import dk.alexandra.fresco.stat.tests.LinearRegression;
 import dk.alexandra.fresco.stat.tests.LinearRegression.LinearFunction;
 import dk.alexandra.fresco.stat.tests.OneSampleTTest;
 import dk.alexandra.fresco.stat.tests.TwoSampleTTest;
+
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DefaultStatistics implements Statistics {
 
   private ProtocolBuilderNumeric builder;
 
-  public DefaultStatistics(ProtocolBuilderNumeric builder) {
+  DefaultStatistics(ProtocolBuilderNumeric builder) {
     this.builder = builder;
   }
 
@@ -105,6 +111,45 @@ public class DefaultStatistics implements Statistics {
     }).seq((seq, means) -> {
       return new PearsonsCorrelation(data1, means.getFirst(), data2, means.getSecond())
           .buildComputation(seq);
+    });
+  }
+
+  @Override
+  public DRes<List<DRes<SInt>>> histogramInt(List<DRes<SInt>> buckets, List<DRes<SInt>> data) {
+    return new Histogram(buckets, data).buildComputation(builder);
+  }
+
+  @Override
+  public DRes<List<DRes<SInt>>> histogramReal(List<DRes<SReal>> buckets, List<DRes<SReal>> data) {
+    return builder.seq(seq -> {
+      List<DRes<SInt>> intBuckets =
+          buckets.stream().map(bi -> ((SFixed) bi.out()).getSInt()).collect(Collectors.toList());
+      List<DRes<SInt>> intData =
+          data.stream().map(xi -> ((SFixed) xi.out()).getSInt()).collect(Collectors.toList());
+      return new DefaultStatistics(seq).histogramInt(intBuckets, intData);
+    });
+  }
+
+  @Override
+  public DRes<Matrix<DRes<SInt>>> twoDimensionalHistogramInt(
+      Pair<List<DRes<SInt>>, List<DRes<SInt>>> buckets, List<Pair<DRes<SInt>, DRes<SInt>>> data) {
+    return new TwoDimensionalHistogram(buckets, data).buildComputation(builder);
+  }
+
+  @Override
+  public DRes<Matrix<DRes<SInt>>> twoDimensionalHistogramReal(
+      Pair<List<DRes<SReal>>, List<DRes<SReal>>> buckets,
+      List<Pair<DRes<SReal>, DRes<SReal>>> data) {
+    return builder.seq(seq -> {
+      Pair<List<DRes<SInt>>, List<DRes<SInt>>> intBuckets = new Pair<>(
+          buckets.getFirst().stream().map(bi -> ((SFixed) bi.out()).getSInt())
+              .collect(Collectors.toList()),
+          buckets.getSecond().stream().map(bi -> ((SFixed) bi.out()).getSInt())
+              .collect(Collectors.toList()));
+      List<Pair<DRes<SInt>, DRes<SInt>>> intData =
+          data.stream().map(p -> new Pair<>(((SFixed) p.getFirst().out()).getSInt(),
+              ((SFixed) p.getSecond().out()).getSInt())).collect(Collectors.toList());
+      return new DefaultStatistics(seq).twoDimensionalHistogramInt(intBuckets, intData);
     });
   }
 

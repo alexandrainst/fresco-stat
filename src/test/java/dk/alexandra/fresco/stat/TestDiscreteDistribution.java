@@ -38,7 +38,7 @@ public class TestDiscreteDistribution<ResourcePoolT extends ResourcePool>
 
   /**
    * Create a new test which samples n times and compares the result to an expected distribution
-   * using a Kolmogorov Smirnov Test for goodness of fit with significance alpha.
+   * using a Chi-squared Test for goodness of fit with significance alpha.
    * 
    * @param n
    * @param sampler
@@ -62,7 +62,6 @@ public class TestDiscreteDistribution<ResourcePoolT extends ResourcePool>
       @Override
       public void test() throws Exception {
 
-
         Application<List<BigInteger>, ProtocolBuilderNumeric> testApplication = producer -> {
 
           List<DRes<SInt>> samples = Stream.generate(() -> sampler.get().buildComputation(producer))
@@ -79,16 +78,13 @@ public class TestDiscreteDistribution<ResourcePoolT extends ResourcePool>
         Map<Integer, Long> counts = output.stream().mapToInt(BigInteger::intValue).boxed()
             .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 
-
         long[] observed = IntStream.range(0, distribution.length)
             .mapToLong(i -> counts.containsKey(i) ? counts.get(i) : 0).toArray();
 
         double[] expected = Arrays.stream(distribution).map(p -> p * n).toArray();
 
         double p = new ChiSquareTest().chiSquare(expected, observed);
-
         assertTrue(p > alpha);
-
       }
     };
 

@@ -7,7 +7,6 @@ import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.lib.real.SReal;
-import dk.alexandra.fresco.stat.DefaultStatistics;
 import dk.alexandra.fresco.stat.Statistics;
 
 public class OneSampleTTest implements Computation<SReal, ProtocolBuilderNumeric> {
@@ -23,7 +22,7 @@ public class OneSampleTTest implements Computation<SReal, ProtocolBuilderNumeric
   @Override
   public DRes<SReal> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.seq(seq -> {
-      Statistics stat = new DefaultStatistics(seq);
+      Statistics stat = Statistics.using(seq);
       
       DRes<SReal> mean = stat.sampleMean(observed);
       DRes<SReal> s = stat.sampleStandardDeviation(observed, mean);

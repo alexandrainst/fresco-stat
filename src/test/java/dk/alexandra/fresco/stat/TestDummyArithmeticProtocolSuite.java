@@ -57,7 +57,7 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
 
   @Test
   public void test_bernoulli_distribution_sampling() throws Exception {
-    double[] p = new double[] {0.7, 0.3};
+    double[] p = new double[] {0.6, 0.4};
 
     runTest(
         new TestDiscreteDistribution<>(100, () -> new SampleBernoulliDistribution(0.7), p, 0.05),
@@ -82,5 +82,19 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
         new NormalDistribution(0.0, 1.0), 0.05), TEST_PARAMETERS);
   }
 
+  @Test
+  public void test_histogram_int() throws Exception {
+    runTest(new StatTests.TestHistogramInt<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_histogram_fixed() throws Exception {
+    runTest(new StatTests.TestHistogramFixed<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_two_dim_histogram() throws Exception {
+    runTest(new StatTests.TestTwoDimHistogram<>(), TEST_PARAMETERS);
+  }
 
 }

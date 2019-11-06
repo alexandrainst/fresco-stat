@@ -4,9 +4,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.inference.ChiSquareTest;
@@ -22,8 +24,10 @@ import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.sce.resources.ResourcePool;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
+import dk.alexandra.fresco.lib.collections.Matrix;
 import dk.alexandra.fresco.lib.real.SReal;
 import dk.alexandra.fresco.stat.tests.LinearRegression.LinearFunction;
+import dk.alexandra.fresco.stat.utils.MatrixUtils;
 
 public class StatTests {
 
@@ -42,11 +46,9 @@ public class StatTests {
         public void test() throws Exception {
 
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
-            Statistics stat = new DefaultStatistics(builder);
             List<DRes<SReal>> input =
                 data.stream().map(x -> builder.realNumeric().known(x)).collect(Collectors.toList());
-            DRes<SReal> t =
-                stat.ttest(input, builder.realNumeric().known(BigDecimal.valueOf(expectedMean)));
+            DRes<SReal> t = Statistics.using(builder).ttest(input, builder.realNumeric().known(BigDecimal.valueOf(expectedMean)));
             return builder.realNumeric().open(t);
           };
 
@@ -76,12 +78,11 @@ public class StatTests {
         public void test() throws Exception {
 
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
-            Statistics stat = new DefaultStatistics(builder);
             List<DRes<SReal>> input1 = data1.stream().map(x -> builder.realNumeric().input(x, 1))
                 .collect(Collectors.toList());
             List<DRes<SReal>> input2 = data2.stream().map(x -> builder.realNumeric().input(x, 2))
                 .collect(Collectors.toList());
-            DRes<SReal> t = stat.ttest(input1, input2);
+            DRes<SReal> t = Statistics.using(builder).ttest(input1, input2);
             return builder.realNumeric().open(t);
           };
 
@@ -112,13 +113,11 @@ public class StatTests {
         public void test() throws Exception {
 
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
-            Statistics stat = new DefaultStatistics(builder);
-
             List<DRes<SReal>> e = expected.stream().map(x -> builder.realNumeric().input(x, 1))
                 .collect(Collectors.toList());
             List<DRes<SInt>> o = observed.stream().map(x -> builder.numeric().input(x, 2))
                 .collect(Collectors.toList());
-            DRes<SReal> x = stat.chiSquare(o, e);
+            DRes<SReal> x = Statistics.using(builder).chiSquare(o, e);
             return builder.realNumeric().open(x);
           };
 
@@ -150,12 +149,11 @@ public class StatTests {
 
           Application<Pair<BigDecimal, BigDecimal>, ProtocolBuilderNumeric> testApplication =
               builder -> {
-                Statistics stat = new DefaultStatistics(builder);
                 List<DRes<SReal>> xSecret = x.stream().map(x -> builder.realNumeric().input(x, 1))
                     .collect(Collectors.toList());
                 List<DRes<SReal>> ySecret = y.stream().map(y -> builder.realNumeric().input(y, 2))
                     .collect(Collectors.toList());
-                DRes<LinearFunction> f = stat.linearRegression(xSecret, ySecret);
+                DRes<LinearFunction> f = Statistics.using(builder).linearRegression(xSecret, ySecret);
                 return builder.par(par -> {
                   Pair<DRes<BigDecimal>, DRes<BigDecimal>> result =
                       new Pair<>(par.realNumeric().open(f.out().getA()),
@@ -194,12 +192,11 @@ public class StatTests {
         public void test() throws Exception {
 
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
-            Statistics stat = new DefaultStatistics(builder);
             List<DRes<SReal>> xSecret =
                 x.stream().map(x -> builder.realNumeric().input(x, 1)).collect(Collectors.toList());
             List<DRes<SReal>> ySecret =
                 y.stream().map(y -> builder.realNumeric().input(y, 2)).collect(Collectors.toList());
-            DRes<SReal> r = stat.correlation(xSecret, ySecret);
+            DRes<SReal> r = Statistics.using(builder).correlation(xSecret, ySecret);
             return builder.realNumeric().open(r);
           };
 
@@ -208,7 +205,7 @@ public class StatTests {
 
           PearsonsCorrelation correlation = new PearsonsCorrelation();
           double expected = correlation.correlation(xArray, yArray);
-          
+
           BigDecimal output = runApplication(testApplication);
           System.out.println(output + " ~ " + expected);
           assertTrue(Math.abs(expected - output.doubleValue()) < 0.01);
@@ -217,4 +214,121 @@ public class StatTests {
     }
   }
 
+
+  public static class TestHistogramInt<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        List<Integer> x = Arrays.asList(1, 5, 7, 3, 9, 5, 34, 5, -1, -3);
+        List<Integer> buckets = Arrays.asList(0, 5, 10);
+        List<Integer> expected = Arrays.asList(2, 5, 2, 1);
+
+        @Override
+        public void test() throws Exception {
+
+          Application<List<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> {
+            return builder.seq(seq -> {
+              List<DRes<SInt>> xSecret =
+                  x.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList());
+              List<DRes<SInt>> bSecret =
+                  buckets.stream().map(b -> seq.numeric().input(b, 2)).collect(Collectors.toList());
+              DRes<List<DRes<SInt>>> h = Statistics.using(seq).histogramInt(bSecret, xSecret);
+              return h;
+            }).seq((seq, h) -> {
+              List<DRes<BigInteger>> out =
+                  h.stream().map(seq.numeric()::open).collect(Collectors.toList());
+              return () -> out.stream().map(DRes::out).collect(Collectors.toList());
+            });
+          };
+
+          List<BigInteger> output = runApplication(testApplication);
+          for (int i = 0; i < output.size(); i++) {
+            assertEquals(expected.get(i).intValue(), output.get(i).intValue());
+          }
+        }
+      };
+    }
+  }
+
+  public static class TestHistogramFixed<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        List<Double> x = Arrays.asList(.1, .5, .7, .3, .9, .5, 3.4, .5, -.1, -.3);
+        List<Double> buckets = Arrays.asList(.0, .5, 1.0);
+        List<Integer> expected = Arrays.asList(2, 5, 2, 1);
+
+        @Override
+        public void test() throws Exception {
+
+          Application<List<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> {
+            return builder.seq(seq -> {
+              List<DRes<SReal>> xSecret =
+                  x.stream().map(x -> seq.realNumeric().input(x, 1)).collect(Collectors.toList());
+              List<DRes<SReal>> bSecret = buckets.stream().map(b -> seq.realNumeric().input(b, 2))
+                  .collect(Collectors.toList());
+              DRes<List<DRes<SInt>>> h = Statistics.using(seq).histogramReal(bSecret, xSecret);
+              return h;
+            }).seq((seq, h) -> {
+              List<DRes<BigInteger>> out =
+                  h.stream().map(seq.numeric()::open).collect(Collectors.toList());
+              return () -> out.stream().map(DRes::out).collect(Collectors.toList());
+            });
+          };
+
+          List<BigInteger> output = runApplication(testApplication);
+          for (int i = 0; i < output.size(); i++) {
+            assertEquals(expected.get(i).intValue(), output.get(i).intValue());
+          }
+        }
+      };
+    }
+  }
+
+  public static class TestTwoDimHistogram<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        List<Integer> x = Arrays.asList(1, 3, 5, 6, 7, 8);
+        List<Integer> y = Arrays.asList(2, 4, 5, 8, 9, 10);
+        List<Integer> bucketsX = Arrays.asList(1, 4, 9);
+        List<Integer> bucketsY = Arrays.asList(1,4,9);
+
+        @Override
+        public void test() throws Exception {
+
+          Application<Matrix<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> {
+            return builder.seq(seq -> {
+              Pair<List<DRes<SInt>>, List<DRes<SInt>>> buckets = new Pair<>(
+                  bucketsX.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList()),
+                  bucketsY.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList())
+                  );              
+              List<Pair<DRes<SInt>, DRes<SInt>>> data = IntStream.range(0, x.size()).mapToObj(i -> new Pair<>(seq.numeric().input(x.get(i), 1), seq.numeric().input(y.get(i), 1))).collect(Collectors.toList());
+                  x.stream().map(x -> seq.realNumeric().input(x, 1)).collect(Collectors.toList());
+                 
+                  DRes<Matrix<DRes<SInt>>> histogram = Statistics.using(seq).twoDimensionalHistogramInt(buckets, data);                  
+              return histogram;
+            }).seq((seq, histogram) -> {
+              Matrix<DRes<BigInteger>> opened = MatrixUtils.map(histogram, seq.numeric()::open);
+              return () -> MatrixUtils.map(opened, DRes::out);
+            });
+          };
+
+          Matrix<BigInteger> output = runApplication(testApplication);
+          assertEquals(BigInteger.valueOf(0), output.getRow(0).get(0));
+          assertEquals(BigInteger.valueOf(1), output.getRow(1).get(1));
+          assertEquals(BigInteger.valueOf(3), output.getRow(2).get(2));
+        }
+      };
+    }
+  }
 }
