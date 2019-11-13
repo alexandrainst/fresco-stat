@@ -66,8 +66,8 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
 
   @Test
   public void test_laplace_distribution_sampling() throws Exception {
-    runTest(new TestContinuousDistribution<>(100, () -> new SampleLaplaceDistribution(1.0),
-        new LaplaceDistribution(0.0, 1.0), 0.05), TEST_PARAMETERS);
+    runTest(new TestContinuousDistribution<>(100, () -> new SampleLaplaceDistribution(10.0),
+        new LaplaceDistribution(0.0, 10.0), 0.05), TEST_PARAMETERS);
   }
 
   @Test

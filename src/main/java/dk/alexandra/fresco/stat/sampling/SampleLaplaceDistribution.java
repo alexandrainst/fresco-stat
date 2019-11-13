@@ -37,12 +37,12 @@ public class SampleLaplaceDistribution implements Computation<SReal, ProtocolBui
 
       DRes<SReal> exponential;
       if (Objects.nonNull(bKnown)) {
-        exponential = new SampleExponentialDistribution(BigDecimal.ONE.divide(bKnown)).buildComputation(par);
+        exponential = new SampleExponentialDistribution(bKnown).buildComputation(par);
       } else {
-        exponential = par.seq(seq -> {
-          DRes<SReal> bInverse = seq.realAdvanced().reciprocal(b);
-          return new SampleExponentialDistribution(bInverse).buildComputation(par);          
-        });
+        exponential = new SampleExponentialDistribution(b).buildComputation(par);
+          //DRes<SReal> bInverse = seq.realAdvanced().reciprocal(b);
+//          return new SampleExponentialDistribution(bInverse).buildComputation(par);
+//        });
       }
 
       DRes<SInt> rademacher = new SampleRademacherDistribution().buildComputation(par);
