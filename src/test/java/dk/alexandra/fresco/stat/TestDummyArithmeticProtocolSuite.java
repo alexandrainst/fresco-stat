@@ -5,10 +5,14 @@ import dk.alexandra.fresco.framework.sce.evaluator.EvaluationStrategy;
 import dk.alexandra.fresco.framework.util.ModulusFinder;
 import dk.alexandra.fresco.stat.sampling.SampleBernoulliDistribution;
 import dk.alexandra.fresco.stat.sampling.SampleCatagoricalDistribution;
+import dk.alexandra.fresco.stat.sampling.SampleExponentialDistribution;
+import dk.alexandra.fresco.stat.sampling.SampleGammaDistribution;
 import dk.alexandra.fresco.stat.sampling.SampleLaplaceDistribution;
 import dk.alexandra.fresco.stat.sampling.SampleNormalDistribution;
 import dk.alexandra.fresco.stat.sampling.SampleUniformDistribution;
 import dk.alexandra.fresco.suite.dummy.arithmetic.AbstractDummyArithmeticTest;
+import org.apache.commons.math3.distribution.ExponentialDistribution;
+import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.LaplaceDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
@@ -66,8 +70,8 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
 
   @Test
   public void test_laplace_distribution_sampling() throws Exception {
-    runTest(new TestContinuousDistribution<>(100, () -> new SampleLaplaceDistribution(10.0),
-        new LaplaceDistribution(0.0, 10.0), 0.05), TEST_PARAMETERS);
+    runTest(new TestContinuousDistribution<>(100, () -> new SampleLaplaceDistribution(10),
+        new LaplaceDistribution(0.0, 10), 0.05), TEST_PARAMETERS);
   }
 
   @Test
@@ -80,6 +84,18 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   public void test_normal_distribution_sampling() throws Exception {
     runTest(new TestContinuousDistribution<>(100, () -> new SampleNormalDistribution(),
         new NormalDistribution(0.0, 1.0), 0.05), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_gamma_distribution_sampling() throws Exception {
+    runTest(new TestContinuousDistribution<>(100, () -> new SampleGammaDistribution(9, 0.5),
+        new GammaDistribution(9.0, 0.5), 0.05), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_exponential_distribution_sampling() throws Exception {
+    runTest(new TestContinuousDistribution<>(100, () -> new SampleExponentialDistribution(0.5),
+        new ExponentialDistribution(2.0), 0.05), TEST_PARAMETERS);
   }
 
   @Test
