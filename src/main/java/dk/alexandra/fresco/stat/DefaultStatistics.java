@@ -19,6 +19,7 @@ import dk.alexandra.fresco.stat.tests.LinearRegression.LinearFunction;
 import dk.alexandra.fresco.stat.tests.OneSampleTTest;
 import dk.alexandra.fresco.stat.tests.TwoSampleTTest;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -78,6 +79,50 @@ public class DefaultStatistics implements Statistics {
     return new ChiSquareTest(observed, expected).buildComputation(builder);
   }
 
+  @Override
+  public DRes<SReal> chiSquare(List<DRes<SInt>> observed, double[] expected) {
+    return new ChiSquareTest(observed, expected).buildComputation(builder);
+  }
+
+  @Override
+  public DRes<SReal> chiSquare(List<DRes<SReal>> data, List<DRes<SReal>> buckets,
+      List<DRes<SReal>> expected) {
+    if (buckets.size() + 1 != expected.size()) {
+      throw new IllegalArgumentException("There should be an expected value for each bucket and an extra for all values exceeding the largest bucket.");
+    }
+    return builder.seq(seq -> {
+      Statistics stat = Statistics.using(seq);
+      DRes<List<DRes<SInt>>> histogram = stat.histogramReal(buckets, data);
+      return histogram;
+    }).seq((seq, histogram) -> {
+      Statistics stat = Statistics.using(seq);
+      return stat.chiSquare(histogram, expected);
+    });
+  }
+
+  @Override
+  public DRes<SReal> chiSquare(List<DRes<SReal>> data, List<DRes<SReal>> buckets,
+      double[] expected) {
+    if (buckets.size() + 1 != expected.length) {
+      throw new IllegalArgumentException("There should be an expected value for each bucket and an extra for all values exceeding the largest bucket.");
+    }
+    return builder.seq(seq -> {
+      Statistics stat = Statistics.using(seq);
+      DRes<List<DRes<SInt>>> histogram = stat.histogramReal(buckets, data);
+      return histogram;
+    }).seq((seq, histogram) -> {
+      Statistics stat = Statistics.using(seq);
+      return stat.chiSquare(histogram, expected);
+    });
+  }
+
+  @Override
+  public DRes<SReal> chiSquare(List<DRes<SReal>> data, double[] buckets, double[] expected) {
+    // Using known buckets doesn't give any performance benefit, so we just use them as knowns and use the corresponding method with secret buckets.
+    return chiSquare(data, Arrays.stream(buckets).mapToObj(builder.realNumeric()::known).collect(
+        Collectors.toList()), expected);
+  }
+
   public DRes<LinearFunction> linearRegression(List<DRes<SReal>> x, DRes<SReal> meanX,
       List<DRes<SReal>> y, DRes<SReal> meanY) {
     return new LinearRegression(x, meanX, y, meanY).buildComputation(builder);
@@ -128,6 +173,11 @@ public class DefaultStatistics implements Statistics {
           data.stream().map(xi -> ((SFixed) xi.out()).getSInt()).collect(Collectors.toList());
       return new DefaultStatistics(seq).histogramInt(intBuckets, intData);
     });
+  }
+
+  @Override
+  public DRes<List<DRes<SInt>>> histogramReal(double[] buckets, List<DRes<SReal>> data) {
+    return histogramReal(Arrays.stream(buckets).mapToObj(builder.realNumeric()::known).collect(Collectors.toList()), data);
   }
 
   @Override

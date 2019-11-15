@@ -41,6 +41,16 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   }
 
   @Test
+  public void test_chi_square_test_known() throws Exception {
+    runTest(new StatTests.TestChiSquareTestKnown<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_chi_square_test_known_buckets() throws Exception {
+    runTest(new StatTests.TestChiSquareTestWithKnownBuckets<>(), TEST_PARAMETERS);
+  }
+
+  @Test
   public void test_linear_regression() throws Exception {
     runTest(new StatTests.TestLinearRegression<>(), TEST_PARAMETERS);
   }

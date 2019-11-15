@@ -7,6 +7,7 @@ import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.real.SReal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Compute the &Chi;<sup>2</sup>-test for goodness of fit of the given observatinos.
@@ -16,12 +17,20 @@ import java.util.List;
  */
 public class ChiSquareTest implements Computation<SReal, ProtocolBuilderNumeric> {
 
-  private List<DRes<SInt>> observed;
-  private List<DRes<SReal>> expected;
+  private final double[] expectedKnown;
+  private final List<DRes<SInt>> observed;
+  private final List<DRes<SReal>> expected;
 
   public ChiSquareTest(List<DRes<SInt>> observed, List<DRes<SReal>> expected) {
     this.observed = observed;
     this.expected = expected;
+    this.expectedKnown = null;
+  }
+
+  public ChiSquareTest(List<DRes<SInt>> observed, double[] expected) {
+    this.observed = observed;
+    this.expectedKnown = expected;
+    this.expected = null;
   }
 
   @Override
@@ -29,12 +38,14 @@ public class ChiSquareTest implements Computation<SReal, ProtocolBuilderNumeric>
     return builder.par(par -> {
       List<DRes<SReal>> terms = new ArrayList<>();
       for (int i = 0; i < observed.size(); i++) {
-        terms.add(par.seq(calculateTerm(observed.get(i), expected.get(i))));
+        if (Objects.nonNull(expectedKnown)) {
+          terms.add(par.seq(calculateTerm(observed.get(i), expectedKnown[i])));
+        } else {
+          terms.add(par.seq(calculateTerm(observed.get(i), expected.get(i))));
+        }
       }
       return () -> terms;
-    }).seq((seq, terms) -> {
-      return seq.realAdvanced().sum(terms);
-    });
+    }).seq((seq, terms) -> seq.realAdvanced().sum(terms));
   }
 
   private Computation<SReal, ProtocolBuilderNumeric> calculateTerm(DRes<SInt> o, DRes<SReal> e) {
@@ -45,4 +56,11 @@ public class ChiSquareTest implements Computation<SReal, ProtocolBuilderNumeric>
     };
   }
 
+  private Computation<SReal, ProtocolBuilderNumeric> calculateTerm(DRes<SInt> o, double e) {
+    return builder -> {
+      DRes<SReal> t = builder.realNumeric().sub(builder.realNumeric().fromSInt(o), e);
+      t = builder.realNumeric().mult(t, t);
+      return builder.realNumeric().div(t, e);
+    };
+  }
 }

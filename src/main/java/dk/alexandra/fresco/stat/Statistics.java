@@ -40,6 +40,14 @@ public interface Statistics extends ComputationDirectory {
    */
   DRes<SReal> chiSquare(List<DRes<SInt>> observed, List<DRes<SReal>> expected);
 
+  DRes<SReal> chiSquare(List<DRes<SInt>> observed, double[] expected);
+
+  DRes<SReal> chiSquare(List<DRes<SReal>> data, List<DRes<SReal>> buckets, List<DRes<SReal>> expected);
+
+  DRes<SReal> chiSquare(List<DRes<SReal>> data, List<DRes<SReal>> buckets, double[] expected);
+
+  DRes<SReal> chiSquare(List<DRes<SReal>> data, double[] buckets, double[] expected);
+
   DRes<LinearFunction> linearRegression(List<DRes<SReal>> x, List<DRes<SReal>> y);
 
   DRes<LinearFunction> linearRegression(List<DRes<SReal>> x, DRes<SReal> meanX, List<DRes<SReal>> y,
@@ -52,6 +60,8 @@ public interface Statistics extends ComputationDirectory {
   DRes<List<DRes<SInt>>> histogramInt(List<DRes<SInt>> buckets, List<DRes<SInt>> data);
 
   DRes<List<DRes<SInt>>> histogramReal(List<DRes<SReal>> buckets, List<DRes<SReal>> data);
+
+  DRes<List<DRes<SInt>>> histogramReal(double[] buckets, List<DRes<SReal>> data);
 
   DRes<Matrix<DRes<SInt>>> twoDimensionalHistogramInt(Pair<List<DRes<SInt>>, List<DRes<SInt>>> buckets,
       List<Pair<DRes<SInt>, DRes<SInt>>> data);

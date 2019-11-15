@@ -75,7 +75,6 @@ public class TestContinuousDistribution<ResourcePoolT extends ResourcePool>
 
         List<BigDecimal> output = runApplication(testApplication);
 
-
         double[] outputAsDoubles = output.stream().mapToDouble(BigDecimal::doubleValue).toArray();
 
         double p =

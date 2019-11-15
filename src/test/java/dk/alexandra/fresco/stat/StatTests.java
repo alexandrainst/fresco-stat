@@ -134,6 +134,70 @@ public class StatTests {
     }
   }
 
+  public static class TestChiSquareTestWithKnownBuckets<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        double[] data = new double[] {.1, .5, .7, .3, .9, .5, 3.4, .5, -.1, -.3};
+        double[] buckets = new double[] {.0, .5, 1.0};
+        double[] expected = new double[] {2.1, 4.9, 2.1, 0.9};
+
+        @Override
+        public void test() {
+
+          Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
+            List<DRes<SReal>> secretData = Arrays.stream(data).mapToObj(builder.realNumeric()::known)
+                .collect(Collectors.toList());
+            DRes<SReal> x = Statistics.using(builder).chiSquare(secretData, buckets, expected);
+            return builder.realNumeric().open(x);
+          };
+
+          BigDecimal output = runApplication(testApplication);
+
+          long[] o = new long[] {2, 5, 2, 1};
+          double clearQ = new ChiSquareTest().chiSquare(expected, o);
+
+          assertEquals(output.doubleValue(), clearQ, 0.01);
+        }
+      };
+    }
+  }
+
+  public static class TestChiSquareTestKnown<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        double[] expected = new double[] {58.0, 34.5, 7.0, 0.5};
+        List<Integer> observed = List.of(56, 36, 8, 0);
+
+        @Override
+        public void test() throws Exception {
+
+          Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
+            List<DRes<SInt>> o = observed.stream().map(x -> builder.numeric().input(x, 2))
+                .collect(Collectors.toList());
+            DRes<SReal> x = Statistics.using(builder).chiSquare(o, expected);
+            return builder.realNumeric().open(x);
+          };
+
+          BigDecimal output = runApplication(testApplication);
+
+          long[] o = observed.stream().mapToLong(i -> i).toArray();
+          double clearQ = new ChiSquareTest().chiSquare(expected, o);
+
+          assertEquals(output.doubleValue(), clearQ, 0.01);
+
+        }
+      };
+    }
+  }
+
   public static class TestLinearRegression<ResourcePoolT extends ResourcePool>
       extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
 
