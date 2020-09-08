@@ -128,4 +128,8 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
     runTest(new StatTests.TestLeakyFrequencyTable<>(), TEST_PARAMETERS);
   }
 
+  @Test
+  public void test_f_test() {
+    runTest(new StatTests.TestFTest<>(), TEST_PARAMETERS);
+  }
 }

@@ -14,6 +14,7 @@ import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.collections.Matrix;
 import dk.alexandra.fresco.lib.real.SReal;
 import dk.alexandra.fresco.stat.descriptive.LeakyFrequencyTable;
+import dk.alexandra.fresco.stat.tests.FTest;
 import dk.alexandra.fresco.stat.tests.LinearRegression.LinearFunction;
 import dk.alexandra.fresco.stat.utils.MatrixUtils;
 import java.math.BigDecimal;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.inference.ChiSquareTest;
+import org.apache.commons.math3.stat.inference.OneWayAnova;
 import org.apache.commons.math3.stat.inference.TTest;
 import org.apache.commons.math3.stat.regression.RegressionResults;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
@@ -429,6 +431,51 @@ public class StatTests {
           for (int i = 0; i < output.size(); i++) {
             assertEquals(expected.get(output.get(i).getFirst().intValue()).intValue(), output.get(i).getSecond().intValue());
           }
+        }
+      };
+    }
+  }
+
+
+  public static class TestFTest<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        List<Integer> data1 = List.of(200,215,225,229,230,232,241,253,256,264,268,288,288);
+        List<Integer> data2 = List.of(163,182,188,195,202,205,212,214,215,230,235,255,272);
+        List<Integer> data3 = List.of(268,271,273,282,285,299,309,310,314,320,337,340,345);
+        List<Integer> data4 = List.of(201,216,241,257,259,267,269,282,283,291,291,312,326);
+
+        @Override
+        public void test() throws Exception {
+
+          Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
+            List<DRes<SReal>> input1 = data1.stream().map(x -> builder.realNumeric().input(x, 1))
+                .collect(Collectors.toList());
+            List<DRes<SReal>> input2 = data2.stream().map(x -> builder.realNumeric().input(x, 2))
+                .collect(Collectors.toList());
+            List<DRes<SReal>> input3 = data3.stream().map(x -> builder.realNumeric().input(x, 1))
+                .collect(Collectors.toList());
+            List<DRes<SReal>> input4 = data4.stream().map(x -> builder.realNumeric().input(x, 2))
+                .collect(Collectors.toList());
+
+            DRes<SReal> f = new FTest(List.of(input1, input2, input3, input4)).buildComputation(builder);
+            return builder.realNumeric().open(f);
+          };
+
+          BigDecimal output = runApplication(testApplication);
+
+          OneWayAnova oneWayAnova = new OneWayAnova();
+          double f = oneWayAnova.anovaFValue(List.of(
+              data1.stream().mapToDouble(Double::valueOf).toArray(),
+              data2.stream().mapToDouble(Double::valueOf).toArray(),
+              data3.stream().mapToDouble(Double::valueOf).toArray(),
+              data4.stream().mapToDouble(Double::valueOf).toArray()));
+
+          assertEquals(output.doubleValue(), f, 0.01);
         }
       };
     }
