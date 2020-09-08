@@ -15,8 +15,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Compute the frequencies of entries in the given data. The set of frequencies will be leaked to all parties but the corresponding values will be kept secret.
- * If the data has not been oblivously shuffled before this computation, the indices of equal values will be leaked.
+ * Compute the frequencies of entries in the given data. The set of frequencies will be leaked to
+ * all parties but the corresponding values will be kept secret. If the data has not been oblivously
+ * shuffled before this computation, the indices of equal values will be leaked.
  */
 public class LeakyFrequencyTable implements
     Computation<List<Pair<DRes<SInt>, BigInteger>>, ProtocolBuilderNumeric> {
@@ -64,7 +65,9 @@ public class LeakyFrequencyTable implements
       return () -> asList;
     }).par((par, ciphers) -> {
       List<Pair<DRes<SInt>, BigInteger>> frequencies = ciphers.stream()
-          .map(c -> new Pair<>(new MiMCDecryption(par.numeric().known(c.getFirst()), mimcKey).buildComputation(par), c.getSecond()))
+          .map(c -> new Pair<>(
+              new MiMCDecryption(par.numeric().known(c.getFirst()), mimcKey).buildComputation(par),
+              c.getSecond()))
           .collect(Collectors.toList());
       return () -> frequencies;
     });
