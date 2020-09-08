@@ -27,6 +27,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>dk.alexandra.fresco</groupId>
+			<artifactId>mimc</artifactId>
+			<version>1.2.2-SNAPSHOT</version>
+		</dependency>
+
+		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.12</version>

@@ -5,51 +5,68 @@ import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
+import dk.alexandra.fresco.lib.mimc.MiMCDecryption;
+import dk.alexandra.fresco.lib.mimc.MiMCEncryption;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-public class FrequencyTable implements Computation<List<Pair<DRes<SInt>, DRes<BigInteger>>>, ProtocolBuilderNumeric> {
+/**
+ * Compute the frequencies of entries in the given data. The set of frequencies will be leaked to all parties but the corresponding values will be kept secret.
+ * If the data has not been oblivously shuffled before this computation, the indices of equal values will be leaked.
+ */
+public class LeakyFrequencyTable implements
+    Computation<List<Pair<DRes<SInt>, BigInteger>>, ProtocolBuilderNumeric> {
 
   private final List<DRes<SInt>> data;
 
-  public FrequencyTable(List<DRes<SInt>> data) {
+  public LeakyFrequencyTable(List<DRes<SInt>> data) {
     this.data = data;
   }
 
   @Override
-  public DRes<List<Pair<DRes<SInt>, DRes<BigInteger>>>> buildComputation(
+  public DRes<List<Pair<DRes<SInt>, BigInteger>>> buildComputation(
       ProtocolBuilderNumeric builder) {
-return builder.par(par -> {
-  List<DRes<BigInteger>> ciphers = new ArrayList<>(data.size());
-  for (final DRes<SInt> entry : data) {
-    DRes<BigInteger> openedCipher =
-        par.seq(
-            (seq -> {
-              // TODO: encryption should be on a directory
-              DRes<SInt> cipherText = seq.seq(new MiMCEncryption(groupBy, mimcKey));
-              return seq.numeric().open(cipherText);
-            }));
-    ciphers.add(openedCipher);
-  }
-  return () -> ciphers;
-}).seq((seq, ciphers) -> {
-      // use cipher texts to perform aggregation "in-the-clear"
-      Map<BigInteger, BigInteger> groupedByCipher = new HashMap<>();
+    // We assume the data is obliviously shuffled before running this computation
+    //DRes<List<DRes<SInt>>> shuffled = builder.collections().shuffle().shuffle(data);
 
-      for (BigInteger cipher : ciphers) {
+    // generate encryption key
+    DRes<SInt> mimcKey = builder.numeric().randomElement();
 
-        if (!groupedByCipher.containsKey(cipher)) {
-          groupedByCipher.put(cipher, BigInteger.ONE);
-        } else {
-          groupedByCipher.put(cipher, subTotal);
-        }
+    return builder.par(par -> {
+      List<DRes<BigInteger>> ciphers = new ArrayList<>(data.size());
+      for (final DRes<SInt> entry : data) {
+        DRes<BigInteger> openedCipher =
+            par.seq(
+                (seq -> {
+                  // TODO: encryption should be on a directory
+                  DRes<SInt> cipherText = seq.seq(new MiMCEncryption(entry, mimcKey));
+                  return seq.numeric().open(cipherText);
+                }));
+        ciphers.add(openedCipher);
       }
-      return () -> toMatrix(groupedByCipher, cipherToShare);
-    });
+      return () -> ciphers;
+    }).seq((seq, ciphers) -> {
+      // use cipher texts to perform aggregation "in-the-clear"
+      Map<BigInteger, Integer> groupedByCipher = new HashMap<>();
 
-    return null;
+      for (DRes<BigInteger> cipher : ciphers) {
+        BigInteger cipherOut = cipher.out();
+        groupedByCipher.putIfAbsent(cipherOut, 0);
+        groupedByCipher.computeIfPresent(cipherOut, (k, v) -> v + 1);
+      }
+      List<Pair<BigInteger, BigInteger>> asList = groupedByCipher.keySet().stream()
+          .map(v -> new Pair<>(v, BigInteger.valueOf(groupedByCipher.get(v)))).collect(
+              Collectors.toList());
+      return () -> asList;
+    }).par((par, ciphers) -> {
+      List<Pair<DRes<SInt>, BigInteger>> frequencies = ciphers.stream()
+          .map(c -> new Pair<>(new MiMCDecryption(par.numeric().known(c.getFirst()), mimcKey).buildComputation(par), c.getSecond()))
+          .collect(Collectors.toList());
+      return () -> frequencies;
+    });
   }
 }

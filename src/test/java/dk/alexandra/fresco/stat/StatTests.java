@@ -3,19 +3,6 @@ package dk.alexandra.fresco.stat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-
-import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
-import org.apache.commons.math3.stat.inference.ChiSquareTest;
-import org.apache.commons.math3.stat.inference.TTest;
-import org.apache.commons.math3.stat.regression.RegressionResults;
-import org.apache.commons.math3.stat.regression.SimpleRegression;
-
 import dk.alexandra.fresco.framework.Application;
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.TestThreadRunner.TestThread;
@@ -26,8 +13,22 @@ import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.collections.Matrix;
 import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.stat.descriptive.LeakyFrequencyTable;
 import dk.alexandra.fresco.stat.tests.LinearRegression.LinearFunction;
 import dk.alexandra.fresco.stat.utils.MatrixUtils;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
+import org.apache.commons.math3.stat.inference.ChiSquareTest;
+import org.apache.commons.math3.stat.inference.TTest;
+import org.apache.commons.math3.stat.regression.RegressionResults;
+import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 public class StatTests {
 
@@ -391,6 +392,43 @@ public class StatTests {
           assertEquals(BigInteger.valueOf(0), output.getRow(0).get(0));
           assertEquals(BigInteger.valueOf(1), output.getRow(1).get(1));
           assertEquals(BigInteger.valueOf(3), output.getRow(2).get(2));
+        }
+      };
+    }
+  }
+
+  public static class TestLeakyFrequencyTable<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+        List<Integer> x = Arrays.asList(1, 3, 2, 1, 3, 1);
+
+        @Override
+        public void test() throws Exception {
+          Application<List<Pair<BigInteger, BigInteger>>, ProtocolBuilderNumeric> testApplication = builder ->
+              builder.seq(seq -> {
+            List<DRes<SInt>> xSecret =
+                x.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList());
+            DRes<List<Pair<DRes<SInt>, BigInteger>>> frequencyTable = new LeakyFrequencyTable(xSecret).buildComputation(seq);
+            return frequencyTable;
+          }).seq((seq, ft) -> {
+            List<Pair<DRes<BigInteger>, BigInteger>> out =
+                ft.stream().map(p -> new Pair<>(seq.numeric().open(p.getFirst()), p.getSecond())).collect(Collectors.toList());
+            return () -> out.stream().map(p -> new Pair<>(p.getFirst().out(), p.getSecond())).collect(Collectors.toList());
+          });
+
+          Map<Integer, Integer> expected = new HashMap<>();
+          for (int xi : x) {
+            expected.putIfAbsent(xi, 0);
+            expected.computeIfPresent(xi, (k, v) -> v+1);
+          }
+
+          List<Pair<BigInteger, BigInteger>> output = runApplication(testApplication);
+          for (int i = 0; i < output.size(); i++) {
+            assertEquals(expected.get(output.get(i).getFirst().intValue()).intValue(), output.get(i).getSecond().intValue());
+          }
         }
       };
     }

@@ -123,4 +123,9 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
     runTest(new StatTests.TestTwoDimHistogram<>(), TEST_PARAMETERS);
   }
 
+  @Test
+  public void test_leaky_frequencies() {
+    runTest(new StatTests.TestLeakyFrequencyTable<>(), TEST_PARAMETERS);
+  }
+
 }
