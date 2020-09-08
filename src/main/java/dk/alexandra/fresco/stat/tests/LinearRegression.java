@@ -60,7 +60,8 @@ public class LinearRegression implements Computation<LinearFunction, ProtocolBui
 
     }).seq((builder, spdAndSsd) -> {
 
-      DRes<SReal> b = builder.realNumeric().div(spdAndSsd.getFirst(), spdAndSsd.getSecond());
+      DRes<SReal> b = builder.realNumeric().mult(spdAndSsd.getFirst(), builder.realAdvanced().reciprocal(spdAndSsd.getSecond()));
+      //DRes<SReal> b = builder.realNumeric().div(spdAndSsd.getFirst(), spdAndSsd.getSecond());
       DRes<SReal> a = builder.realNumeric().sub(meanY, builder.realNumeric().mult(b, meanX));
 
       return () -> new LinearFunction(a, b);
