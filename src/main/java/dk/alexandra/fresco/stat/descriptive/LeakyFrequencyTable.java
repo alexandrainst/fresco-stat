@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
  * shuffled before this computation, the indices of equal values will be leaked.
  */
 public class LeakyFrequencyTable implements
-    Computation<List<Pair<DRes<SInt>, BigInteger>>, ProtocolBuilderNumeric> {
+    Computation<List<Pair<DRes<SInt>, Integer>>, ProtocolBuilderNumeric> {
 
   private final List<DRes<SInt>> data;
 
@@ -29,7 +29,7 @@ public class LeakyFrequencyTable implements
   }
 
   @Override
-  public DRes<List<Pair<DRes<SInt>, BigInteger>>> buildComputation(
+  public DRes<List<Pair<DRes<SInt>, Integer>>> buildComputation(
       ProtocolBuilderNumeric builder) {
     // We assume the data is obliviously shuffled before running this computation
     //DRes<List<DRes<SInt>>> shuffled = builder.collections().shuffle().shuffle(data);
@@ -50,7 +50,7 @@ public class LeakyFrequencyTable implements
         ciphers.add(openedCipher);
       }
       return () -> ciphers;
-    }).seq((seq, ciphers) -> {
+    }).par((par, ciphers) -> {
       // use cipher texts to perform aggregation "in-the-clear"
       Map<BigInteger, Integer> groupedByCipher = new HashMap<>();
 
@@ -59,15 +59,9 @@ public class LeakyFrequencyTable implements
         groupedByCipher.putIfAbsent(cipherOut, 0);
         groupedByCipher.computeIfPresent(cipherOut, (k, v) -> v + 1);
       }
-      List<Pair<BigInteger, BigInteger>> asList = groupedByCipher.keySet().stream()
-          .map(v -> new Pair<>(v, BigInteger.valueOf(groupedByCipher.get(v)))).collect(
-              Collectors.toList());
-      return () -> asList;
-    }).par((par, ciphers) -> {
-      List<Pair<DRes<SInt>, BigInteger>> frequencies = ciphers.stream()
-          .map(c -> new Pair<>(
-              new MiMCDecryption(par.numeric().known(c.getFirst()), mimcKey).buildComputation(par),
-              c.getSecond()))
+      List<Pair<DRes<SInt>, Integer>> frequencies = groupedByCipher.keySet().stream()
+          .map(v -> new Pair<>(new MiMCDecryption(par.numeric().known(v), mimcKey).buildComputation(par),
+              groupedByCipher.get(v)))
           .collect(Collectors.toList());
       return () -> frequencies;
     });

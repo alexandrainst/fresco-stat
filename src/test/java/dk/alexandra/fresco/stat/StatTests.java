@@ -409,14 +409,14 @@ public class StatTests {
 
         @Override
         public void test() throws Exception {
-          Application<List<Pair<BigInteger, BigInteger>>, ProtocolBuilderNumeric> testApplication = builder ->
+          Application<List<Pair<BigInteger, Integer>>, ProtocolBuilderNumeric> testApplication = builder ->
               builder.seq(seq -> {
             List<DRes<SInt>> xSecret =
                 x.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList());
-            DRes<List<Pair<DRes<SInt>, BigInteger>>> frequencyTable = new LeakyFrequencyTable(xSecret).buildComputation(seq);
+            DRes<List<Pair<DRes<SInt>, Integer>>> frequencyTable = new LeakyFrequencyTable(xSecret).buildComputation(seq);
             return frequencyTable;
           }).seq((seq, ft) -> {
-            List<Pair<DRes<BigInteger>, BigInteger>> out =
+            List<Pair<DRes<BigInteger>, Integer>> out =
                 ft.stream().map(p -> new Pair<>(seq.numeric().open(p.getFirst()), p.getSecond())).collect(Collectors.toList());
             return () -> out.stream().map(p -> new Pair<>(p.getFirst().out(), p.getSecond())).collect(Collectors.toList());
           });
@@ -427,9 +427,9 @@ public class StatTests {
             expected.computeIfPresent(xi, (k, v) -> v+1);
           }
 
-          List<Pair<BigInteger, BigInteger>> output = runApplication(testApplication);
+          List<Pair<BigInteger, Integer>> output = runApplication(testApplication);
           for (int i = 0; i < output.size(); i++) {
-            assertEquals(expected.get(output.get(i).getFirst().intValue()).intValue(), output.get(i).getSecond().intValue());
+            assertEquals(expected.get(output.get(i).getFirst()), output.get(i).getSecond());
           }
         }
       };
