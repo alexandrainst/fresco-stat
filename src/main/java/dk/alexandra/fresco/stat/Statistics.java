@@ -68,4 +68,10 @@ public interface Statistics extends ComputationDirectory {
   
   DRes<Matrix<DRes<SInt>>> twoDimensionalHistogramReal(Pair<List<DRes<SReal>>, List<DRes<SReal>>> buckets,
       List<Pair<DRes<SReal>, DRes<SReal>>> data);
+
+  DRes<SReal> ffest(List<List<DRes<SReal>>> observed);
+
+  DRes<SReal> kruskallWallisTest(List<List<DRes<SReal>>> observed);
+
+  DRes<List<Pair<DRes<SInt>, Integer>>> leakyFrequencies(List<DRes<SInt>> data);
 }

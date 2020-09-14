@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 /**
  * Compute the frequencies of entries in the given data. The set of frequencies will be leaked to
- * all parties but the corresponding values will be kept secret. If the data has not been oblivously
+ * all parties but the corresponding values will be kept secret. If the data has not been obliviously
  * shuffled before this computation, the indices of equal values will be leaked.
  */
 public class LeakyFrequencyTable implements

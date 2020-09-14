@@ -132,4 +132,20 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   public void test_f_test() {
     runTest(new StatTests.TestFTest<>(), TEST_PARAMETERS);
   }
+
+  @Test
+  public void test_leaky_ranking() {
+    runTest(new StatTests.TestLeakyRanks<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_ranks() {
+    runTest(new StatTests.TestRanks<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_kruskall_wallis() {
+    runTest(new StatTests.TestKruskallWallis<>(), TEST_PARAMETERS);
+  }
+
 }

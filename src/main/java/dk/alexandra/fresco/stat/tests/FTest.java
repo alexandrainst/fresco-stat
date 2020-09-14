@@ -3,20 +3,17 @@ package dk.alexandra.fresco.stat.tests;
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
-import dk.alexandra.fresco.framework.util.Pair;
-import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.real.SReal;
 import dk.alexandra.fresco.stat.descriptive.helpers.USS;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Compute the F-test for equal mean (one-way-anova) for the given data sets.
  */
 public class FTest implements Computation<SReal, ProtocolBuilderNumeric> {
 
-  private List<List<DRes<SReal>>> observed;
+  private final List<List<DRes<SReal>>> observed;
 
   public FTest(List<List<DRes<SReal>>> observed) {
     this.observed = observed;
@@ -28,54 +25,75 @@ public class FTest implements Computation<SReal, ProtocolBuilderNumeric> {
     int f1 = n - observed.size(); // degrees of freedom
 
     return builder.par(par -> {
-      List<DRes<SReal>> sums = new ArrayList<>();
-      List<DRes<SReal>> uss = new ArrayList<>();
+
+      // Keep helper values throughout the computation
+      State state = new State();
+
       for (List<DRes<SReal>> sample : observed) {
-        sums.add(par.realAdvanced().sum(sample));
-        uss.add(new USS(sample).buildComputation(par));
+        state.sums.add(par.realAdvanced().sum(sample));
+        state.uss.add(new USS(sample).buildComputation(par));
       }
 
-      return Pair.lazy(sums, uss);
-    }).par((par, values) -> {
-      List<DRes<Pair<DRes<SReal>, DRes<SReal>>>> ratiosAndSsds = new ArrayList<>();
+      return () -> state;
+    }).par((par, state) -> {
 
       for (int i = 0; i < observed.size(); i++) {
         int finalI = i;
-        DRes<Pair<DRes<SReal>, DRes<SReal>>> ratioAndSsd = par.seq(subSeq -> {
-          DRes<SReal> ratio = subSeq.realNumeric().mult(values.getFirst().get(finalI), values.getFirst().get(finalI));
-          ratio = subSeq.realNumeric().div(ratio, observed.get(finalI).size());
+        par.seq(seq -> {
 
-          DRes<SReal> ssd = subSeq.realNumeric().sub(values.getSecond().get(finalI), ratio);
-          return Pair.lazy(ratio, ssd);
+          DRes<SReal> ratio = seq.realNumeric()
+              .mult(state.sums.get(finalI), state.sums.get(finalI));
+          ratio = seq.realNumeric().div(ratio, observed.get(finalI).size());
+          DRes<SReal> ssd = seq.realNumeric().sub(state.uss.get(finalI), ratio);
+
+          state.ssds.add(ssd);
+          state.ratios.add(ratio);
+
+          return null;
         });
-        ratiosAndSsds.add(ratioAndSsd);
       }
-      return Pair.lazy(values.getFirst(), ratiosAndSsds);
 
-    }).par((par, values) -> {
-      List<DRes<SReal>> ratios = values.getSecond().stream().map(DRes::out).map(Pair::getFirst)
-          .collect(
-              Collectors.toList());
-      List<DRes<SReal>> ssds = values.getSecond().stream().map(DRes::out).map(Pair::getSecond)
-          .collect(
-              Collectors.toList());
-      DRes<SReal> ssd1 = par.realAdvanced().sum(ssds);
-      DRes<SReal> sumOfRatios = par.realAdvanced().sum(ratios);
-      DRes<SReal> sum = par.realAdvanced().sum(values.getFirst());
-      return () -> List.of(ssd1, sumOfRatios, sum);
-    }).par((par, values) -> {
+      return () -> state;
+    }).par((par, state) -> {
+      // Some values are no longer needed
+      state.uss = null;
 
-      DRes<SReal> s2 = par.seq(subSeq -> {
-        DRes<SReal> ssd2 = subSeq.realNumeric().mult(values.get(2), values.get(2));
-        ssd2 = subSeq.realNumeric().div(ssd2, n);
-        ssd2 = subSeq.realNumeric().sub(values.get(1), ssd2);
-        return subSeq.realNumeric().div(ssd2, observed.size() - 1);
+      state.ssd1 = par.realAdvanced().sum(state.ssds);
+      state.sumOfRatios = par.realAdvanced().sum(state.ratios);
+      state.sum = par.realAdvanced().sum(state.sums);
+
+      return () -> state;
+    }).par((par, state) -> {
+      // Some values are no longer needed
+      state.ssds = null;
+      state.sums = null;
+      state.ratios = null;
+
+      state.s2 = par.seq(seq -> {
+        DRes<SReal> ssd2 = seq.realNumeric().mult(state.sum, state.sum);
+        ssd2 = seq.realNumeric().div(ssd2, n);
+        ssd2 = seq.realNumeric().sub(state.sumOfRatios, ssd2);
+        return seq.realNumeric().div(ssd2, observed.size() - 1);
       });
+      state.s1 = par.seq(subSeq -> subSeq.realNumeric().div(state.ssd1, f1));
 
-      DRes<SReal> s1 = par.seq(subSeq -> subSeq.realNumeric().div(values.get(0), f1));
-
-      return Pair.lazy(s1,s2);
-    }).seq((seq, values) -> seq.realNumeric().div(values.getSecond(), values.getFirst()));
+      return () -> state;
+    }).seq((seq, state) -> seq.realNumeric().div(state.s2, state.s1));
   }
 
+  /**
+   * Data class to keep values used through out the computations
+   */
+  private class State {
+
+    private List<DRes<SReal>> sums, uss, ssds, ratios;
+    private DRes<SReal> ssd1, sumOfRatios, sum, s1, s2;
+
+    public State() {
+      sums = new ArrayList<>();
+      uss = new ArrayList<>();
+      ssds = new ArrayList<>();
+      ratios = new ArrayList<>();
+    }
+  }
 }

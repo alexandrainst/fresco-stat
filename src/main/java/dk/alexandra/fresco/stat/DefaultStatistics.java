@@ -8,12 +8,15 @@ import dk.alexandra.fresco.lib.collections.Matrix;
 import dk.alexandra.fresco.lib.real.SReal;
 import dk.alexandra.fresco.lib.real.fixed.SFixed;
 import dk.alexandra.fresco.stat.descriptive.Histogram;
+import dk.alexandra.fresco.stat.descriptive.LeakyFrequencyTable;
 import dk.alexandra.fresco.stat.descriptive.PearsonsCorrelation;
 import dk.alexandra.fresco.stat.descriptive.SampleMean;
 import dk.alexandra.fresco.stat.descriptive.SampleStandardDeviation;
 import dk.alexandra.fresco.stat.descriptive.SampleVariance;
 import dk.alexandra.fresco.stat.descriptive.TwoDimensionalHistogram;
 import dk.alexandra.fresco.stat.tests.ChiSquareTest;
+import dk.alexandra.fresco.stat.tests.FTest;
+import dk.alexandra.fresco.stat.tests.KruskallWallisTest;
 import dk.alexandra.fresco.stat.tests.LinearRegression;
 import dk.alexandra.fresco.stat.tests.LinearRegression.LinearFunction;
 import dk.alexandra.fresco.stat.tests.OneSampleTTest;
@@ -201,6 +204,22 @@ public class DefaultStatistics implements Statistics {
               ((SFixed) p.getSecond().out()).getSInt())).collect(Collectors.toList());
       return new DefaultStatistics(seq).twoDimensionalHistogramInt(intBuckets, intData);
     });
+  }
+
+  @Override
+  public DRes<SReal> ffest(List<List<DRes<SReal>>> observed) {
+    return builder.seq(seq -> new FTest(observed).buildComputation(seq));
+  }
+
+  @Override
+  public DRes<SReal> kruskallWallisTest(List<List<DRes<SReal>>> observed) {
+    return builder.seq(seq -> new KruskallWallisTest(KruskallWallisTest.fromSReal(observed),
+        true).buildComputation(seq));
+  }
+
+  @Override
+  public DRes<List<Pair<DRes<SInt>, Integer>>> leakyFrequencies(List<DRes<SInt>> data) {
+    return builder.seq(seq -> new LeakyFrequencyTable(data).buildComputation(seq));
   }
 
 }
