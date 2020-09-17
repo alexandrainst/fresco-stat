@@ -45,7 +45,7 @@ public class CoxRegression implements Computation<List<DRes<SReal>>, ProtocolBui
       return () -> new State(sorted, 0, initialBeta);
     }).whileLoop((state) -> state.iteration < iterations, (seq, state) -> {
       return seq.seq(sub -> {
-        DRes<List<DRes<SReal>>> gradient = new CoxGradient(data, state.beta).buildComputation(sub);
+        DRes<List<DRes<SReal>>> gradient = new CoxGradient(state.data, state.beta).buildComputation(sub);
         return gradient;
       }).seq((sub, gradient) -> {
         List<DRes<SReal>> delta = VectorUtils.scale(gradient, alpha, sub);

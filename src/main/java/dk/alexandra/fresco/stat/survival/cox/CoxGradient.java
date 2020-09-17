@@ -3,12 +3,15 @@ package dk.alexandra.fresco.stat.survival.cox;
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
+import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.real.SReal;
 import dk.alexandra.fresco.lib.real.math.Exponential;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoDiscrete;
 import dk.alexandra.fresco.stat.utils.RealUtils;
 import dk.alexandra.fresco.stat.utils.VectorUtils;
+import dk.alexandra.fresco.stat.utils.sort.FindTiedGroups;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,7 +48,7 @@ public class CoxGradient implements Computation<List<DRes<SReal>>, ProtocolBuild
         state.expPipe.add(new ArrayList<>());
         state.expPipe.get(i).add(par.realNumeric().known(1));
         for (int j = 1; j < data.get(0).getCovariates().get(i).getFirst().size(); j++) {
-          state.expPipe.get(i).add(par.realNumeric().mult(state.expPipe.get(i).get(j-1),
+          state.expPipe.get(i).add(par.realNumeric().mult(state.expPipe.get(i).get(j - 1),
               state.expBeta.get(i)));
         }
       }
@@ -55,8 +58,9 @@ public class CoxGradient implements Computation<List<DRes<SReal>>, ProtocolBuild
       for (int j = 0; j < data.size(); j++) {
         state.partialThetas.add(new ArrayList<>());
         for (int i = 0; i < beta.size(); i++) {
-          state.partialThetas.get(j).add(VectorUtils.innerProductWithBitvector(data.get(j).getCovariates().get(i).getFirst(),
-              state.expPipe.get(i), par));
+          state.partialThetas.get(j).add(
+              VectorUtils.innerProductWithBitvector(data.get(j).getCovariates().get(i).getFirst(),
+                  state.expPipe.get(i), par));
         }
       }
       return () -> state;
@@ -81,9 +85,18 @@ public class CoxGradient implements Computation<List<DRes<SReal>>, ProtocolBuild
       }
       return () -> state;
     }).seq((seq, state) -> {
+
+      // Find ties
+      DRes<List<BigInteger>> tiedGroups = new FindTiedGroups(
+          VectorUtils.listBuilder(data.size(), i -> data.get(i).getTime())).buildComputation(seq);
+      return Pair.lazy(tiedGroups, state);
+
+    }).seq((seq, p) -> {
+
       // Compute accumulated sums of theta_j * x_j's and theta_j's
-      // TODO: Should we handle ties? This could be done as in Kruskall-Wallis by opening encrypted
-      // values
+      State state = p.getSecond();
+      state.tiedGroups = p.getFirst().out();
+
       state.sum1.add(state.sum1terms.get(0));
       for (int j = 1; j < state.sum1terms.size(); j++) {
         state.sum1.add(VectorUtils.add(state.sum1.get(j - 1), state.sum1terms.get(j), seq));
@@ -92,6 +105,14 @@ public class CoxGradient implements Computation<List<DRes<SReal>>, ProtocolBuild
       state.sum2.add(state.thetas.get(0));
       for (int j = 1; j < state.thetas.size(); j++) {
         state.sum2.add(seq.realNumeric().add(state.sum2.get(j - 1), state.thetas.get(j)));
+      }
+
+      // Correct for ties
+      for (int j = data.size() - 2; j >= 0; j--) {
+        if (state.tiedGroups.get(j).equals(state.tiedGroups.get(j+1))) {
+          state.sum1.set(j, state.sum1.get(j+1));
+          state.sum2.set(j, state.sum2.get(j+1));
+        }
       }
 
       return () -> state;
@@ -111,12 +132,14 @@ public class CoxGradient implements Computation<List<DRes<SReal>>, ProtocolBuild
       return () -> state;
     }).par((par, state) -> {
       // Only include terms with status = 1
-      List<DRes<SInt>> censored = VectorUtils.listBuilder(data.size(), j -> data.get(j).getCensored());
-      List<DRes<SReal>> result = VectorUtils.listBuilder(beta.size(), i -> VectorUtils.innerProductWithBitvector(
-          censored,
-          // The i'th entries in the terms
-          VectorUtils.listBuilder(data.size(), j -> state.terms.get(j).get(i)),
-          par));
+      List<DRes<SInt>> censored = VectorUtils
+          .listBuilder(data.size(), j -> data.get(j).getCensored());
+      List<DRes<SReal>> result = VectorUtils
+          .listBuilder(beta.size(), i -> VectorUtils.innerProductWithBitvector(
+              censored,
+              // The i'th entries in the terms
+              VectorUtils.listBuilder(data.size(), j -> state.terms.get(j).get(i)),
+              par));
       return () -> result;
     });
   }
@@ -133,6 +156,7 @@ public class CoxGradient implements Computation<List<DRes<SReal>>, ProtocolBuild
     List<DRes<SReal>> sum2 = new ArrayList<>();
     List<List<DRes<SReal>>> ratios = new ArrayList<>();
     List<List<DRes<SReal>>> terms = new ArrayList<>();
+    List<BigInteger> tiedGroups = new ArrayList<>();
 
   }
 }
