@@ -17,14 +17,18 @@ import dk.alexandra.fresco.lib.real.SReal;
 import dk.alexandra.fresco.stat.descriptive.LeakyBreakTies;
 import dk.alexandra.fresco.stat.descriptive.LeakyFrequencyTable;
 import dk.alexandra.fresco.stat.descriptive.Ranks;
+import dk.alexandra.fresco.stat.survival.SurvivalInfoDiscrete;
+import dk.alexandra.fresco.stat.survival.cox.CoxGradient;
+import dk.alexandra.fresco.stat.survival.cox.CoxRegression;
 import dk.alexandra.fresco.stat.tests.FTest;
 import dk.alexandra.fresco.stat.tests.KruskallWallisTest;
-import dk.alexandra.fresco.stat.tests.LinearRegression.LinearFunction;
+import dk.alexandra.fresco.stat.regression.LinearRegression.LinearFunction;
 import dk.alexandra.fresco.stat.utils.MatrixUtils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -638,6 +642,145 @@ public class StatTests {
           // applications in biology and geology".
           BigDecimal output = runApplication(testApplication);
           assertEquals(29.4203, output.doubleValue(), 0.01);
+        }
+      };
+    }
+  }
+
+  public static class TestCoxGradient<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        int[] group1 = new int[]{6, 19, 32, 42, 42, 43, 94, 126, 169, 207, 211, 227, 253, 255, 270, 310,
+            316, 335, 346};
+        int[] group1censor = new int[]{1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0};
+
+        int[] group2 = new int[]{4, 6, 10, 11, 11, 11, 13, 17, 20, 20, 21, 22, 24, 24, 29, 30, 30,
+            31, 33, 34, 35, 39, 40, 41, 43, 45, 46, 50, 56, 61, 61, 63, 68, 82, 85, 88, 89, 90,
+            93, 104, 110, 134, 137, 160, 169, 171, 173, 175, 184, 201, 222, 235, 247, 260, 284,
+            290, 291, 302, 304, 341, 345};
+        int[] group2censor = new int[]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0};
+
+        @Override
+        public void test() {
+          List<List<Integer>> combined = new ArrayList<>();
+          for (int i = 0; i < group1.length; i++) {
+            combined.add(List.of(0, group1[i], group1censor[i]));
+          }
+          for (int i = 0; i < group2.length; i++) {
+            combined.add(List.of(1, group2[i], group2censor[i]));
+          }
+          // Expects descending order
+          combined.sort(Comparator.comparingInt(a -> -a.get(1)));
+          System.out.println(combined);
+          List<List<Integer>> finalCombined = combined;
+
+          Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication = builder -> builder
+              .seq(seq -> {
+
+            List<SurvivalInfoDiscrete> input = new ArrayList<>();
+            for (List<Integer> p : finalCombined) {
+              if (p.get(0) == 0) {
+                input.add(new SurvivalInfoDiscrete(List.of(new Pair<>(
+                    List.of(seq.numeric().known(1), seq.numeric().known(0)),
+                    seq.numeric().known(0))), seq.numeric().known(p.get(1)),
+                    seq.numeric().known(p.get(2))));
+              } else {
+                input.add(new SurvivalInfoDiscrete(List.of(new Pair<>(
+                    List.of(seq.numeric().known(0), seq.numeric().known(1)),
+                    seq.numeric().known(1))), seq.numeric().known(p.get(1)),
+                    seq.numeric().known(p.get(2))));
+              }
+            }
+
+            DRes<List<DRes<SReal>>> beta = new CoxGradient(input, List.of(seq.realNumeric().known(1))).buildComputation(seq);
+            return beta;
+          }).seq((seq, beta) -> {
+            List<DRes<BigDecimal>> openBeta =
+                beta.stream().map(seq.realNumeric()::open)
+                    .collect(Collectors.toList());
+            return () ->
+                openBeta.stream().map(DRes::out).collect(Collectors.toList());
+          });
+
+          List<BigDecimal> output = runApplication(testApplication);
+          System.out.println(output);
+        }
+      };
+    }
+  }
+
+  public static class TestCoxRegression<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        int[] group1 = new int[]{6, 19, 32, 42, 42, 43, 94, 126, 169, 207, 211, 227, 253, 255, 270,
+            310, 316, 335, 346};
+        int[] group1censor = new int[]{1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0};
+
+        int[] group2 = new int[]{4, 6, 10, 11, 11, 11, 13, 17, 20, 20, 21, 22, 24, 24, 29, 30, 30,
+            31, 33, 34, 35, 39, 40, 41, 43, 45, 46, 50, 56, 61, 61, 63, 68, 82, 85, 88, 89, 90,
+            93, 104, 110, 134, 137, 160, 169, 171, 173, 175, 184, 201, 222, 235, 247, 260, 284,
+            290, 291, 302, 304, 341, 345};
+        int[] group2censor = new int[]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0};
+
+        @Override
+        public void test() {
+          List<List<Integer>> combined = new ArrayList<>();
+          for (int i = 0; i < group1.length; i++) {
+            combined.add(List.of(0, group1[i], group1censor[i]));
+          }
+          for (int i = 0; i < group2.length; i++) {
+            combined.add(List.of(1, group2[i], group2censor[i]));
+          }
+          // Expects descending order
+          combined.sort(Comparator.comparingInt(a -> -a.get(1)));
+          System.out.println(combined);
+          List<List<Integer>> finalCombined = combined;
+
+          Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication = builder -> builder
+              .seq(seq -> {
+
+                List<SurvivalInfoDiscrete> input = new ArrayList<>();
+                for (List<Integer> p : finalCombined) {
+                  if (p.get(0) == 0) {
+                    input.add(new SurvivalInfoDiscrete(List.of(new Pair<>(
+                        List.of(seq.numeric().known(1), seq.numeric().known(0)),
+                        seq.numeric().known(0))), seq.numeric().known(p.get(1)),
+                        seq.numeric().known(p.get(2))));
+                  } else {
+                    input.add(new SurvivalInfoDiscrete(List.of(new Pair<>(
+                        List.of(seq.numeric().known(0), seq.numeric().known(1)),
+                        seq.numeric().known(1))), seq.numeric().known(p.get(1)),
+                        seq.numeric().known(p.get(2))));
+                  }
+                }
+
+                DRes<List<DRes<SReal>>> beta = new CoxRegression(input, 10,0.01,
+                    new double[] {1}).buildComputation(seq);
+                return beta;
+              }).seq((seq, beta) -> {
+                List<DRes<BigDecimal>> openBeta =
+                    beta.stream().map(seq.realNumeric()::open)
+                        .collect(Collectors.toList());
+                return () ->
+                    openBeta.stream().map(DRes::out).collect(Collectors.toList());
+              });
+
+          List<BigDecimal> output = runApplication(testApplication);
+          System.out.println(output);
         }
       };
     }

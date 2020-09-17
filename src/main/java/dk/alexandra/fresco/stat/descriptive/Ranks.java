@@ -6,11 +6,9 @@ import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.real.SReal;
-import dk.alexandra.fresco.lib.real.fixed.SFixed;
+import dk.alexandra.fresco.stat.utils.VectorUtils;
 import dk.alexandra.fresco.stat.utils.sort.OddEvenIntegerMerge;
-import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -142,35 +140,9 @@ public class Ranks implements Computation<Pair<List<DRes<SReal>>, Double>, Proto
         for (Pair<DRes<SInt>, List<DRes<SInt>>> row : dataAndRanks.getFirst()) {
           column.add(row.getSecond().get(i));
         }
-        totals.add(innerProductWithBitvector(column, ranks, par));
+        totals.add(VectorUtils.innerProductWithBitvectorPublic(column, ranks, par));
       }
       return Pair.lazy(totals, g);
-    });
-  }
-
-  private DRes<SReal> innerProductWithBitvector(List<DRes<SInt>> a, List<Double> b,
-      ProtocolBuilderNumeric builder) {
-    return builder.seq(seq -> {
-
-      /*
-       * Exploit that we are working with fixed point numbers to avoid truncation for each
-       * multiplication.
-       */
-
-      if (a.size() != b.size()) {
-        throw new IllegalArgumentException("Vectors must have same size");
-      }
-
-      // See dk.alexandra.fresco.lib.real.fixed.FixedNumeric.unscaled
-      List<BigInteger> bFixed =
-          b.stream().map(x -> BigDecimal.valueOf(x).multiply(new BigDecimal(
-              BigInteger.valueOf(2).pow(builder.getRealNumericContext().getPrecision())))
-              .setScale(0, RoundingMode.HALF_UP)
-              .toBigIntegerExact()).collect(Collectors.toList());
-      DRes<SInt> innerProduct = seq.advancedNumeric().innerProductWithPublicPart(bFixed, a);
-
-      // No truncation needed
-      return new SFixed(innerProduct);
     });
   }
 

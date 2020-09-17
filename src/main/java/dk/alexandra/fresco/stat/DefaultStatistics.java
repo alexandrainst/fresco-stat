@@ -17,8 +17,8 @@ import dk.alexandra.fresco.stat.descriptive.TwoDimensionalHistogram;
 import dk.alexandra.fresco.stat.tests.ChiSquareTest;
 import dk.alexandra.fresco.stat.tests.FTest;
 import dk.alexandra.fresco.stat.tests.KruskallWallisTest;
-import dk.alexandra.fresco.stat.tests.LinearRegression;
-import dk.alexandra.fresco.stat.tests.LinearRegression.LinearFunction;
+import dk.alexandra.fresco.stat.regression.LinearRegression;
+import dk.alexandra.fresco.stat.regression.LinearRegression.LinearFunction;
 import dk.alexandra.fresco.stat.tests.OneSampleTTest;
 import dk.alexandra.fresco.stat.tests.TwoSampleTTest;
 

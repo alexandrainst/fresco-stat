@@ -148,4 +148,13 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
     runTest(new StatTests.TestKruskallWallis<>(), TEST_PARAMETERS);
   }
 
+  @Test
+  public void test_cox_gradient() {
+    runTest(new StatTests.TestCoxGradient<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_cox_regression() {
+    runTest(new StatTests.TestCoxRegression<>(), TEST_PARAMETERS);
+  }
 }

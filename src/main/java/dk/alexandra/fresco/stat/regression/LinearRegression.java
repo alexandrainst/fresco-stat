@@ -1,4 +1,4 @@
-package dk.alexandra.fresco.stat.tests;
+package dk.alexandra.fresco.stat.regression;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.lib.real.SReal;
 import dk.alexandra.fresco.stat.descriptive.helpers.SPD;
 import dk.alexandra.fresco.stat.descriptive.helpers.SSD;
-import dk.alexandra.fresco.stat.tests.LinearRegression.LinearFunction;
+import dk.alexandra.fresco.stat.regression.LinearRegression.LinearFunction;
 
 /**
  * This computation returns coefficients a and b based on a simple linear regression of the observed

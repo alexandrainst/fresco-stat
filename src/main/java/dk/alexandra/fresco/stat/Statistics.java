@@ -7,7 +7,7 @@ import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.collections.Matrix;
 import dk.alexandra.fresco.lib.real.SReal;
-import dk.alexandra.fresco.stat.tests.LinearRegression.LinearFunction;
+import dk.alexandra.fresco.stat.regression.LinearRegression.LinearFunction;
 
 import java.util.List;
 
