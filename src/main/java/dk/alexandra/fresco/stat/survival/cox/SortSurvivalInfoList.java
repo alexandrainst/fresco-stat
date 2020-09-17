@@ -12,7 +12,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SortSurvivalInfoList implements Computation<List<SurvivalInfoDiscrete>, ProtocolBuilderNumeric> {
+public class SortSurvivalInfoList implements
+    Computation<List<SurvivalInfoDiscrete>, ProtocolBuilderNumeric> {
 
   private final List<SurvivalInfoDiscrete> data;
 
@@ -61,7 +62,8 @@ public class SortSurvivalInfoList implements Computation<List<SurvivalInfoDiscre
         values.add(new Pair<>(min, indicators));
       }
 
-      DRes<List<Pair<DRes<SInt>, List<DRes<SInt>>>>> sorted = new OddEvenIntegerMerge(values).buildComputation(seq);
+      DRes<List<Pair<DRes<SInt>, List<DRes<SInt>>>>> sorted = new OddEvenIntegerMerge(values)
+          .buildComputation(seq);
 
       return sorted;
 
@@ -80,7 +82,8 @@ public class SortSurvivalInfoList implements Computation<List<SurvivalInfoDiscre
         int i = 1;
         for (Pair<List<DRes<SInt>>, DRes<SInt>> c : data.get(0).getCovariates()) {
           int s = c.getFirst().size(); // Get expected size from original data
-          covariates.add(new Pair<>(value.getSecond().subList(i, i+s), value.getSecond().get(i+s)));
+          covariates
+              .add(new Pair<>(value.getSecond().subList(i, i + s), value.getSecond().get(i + s)));
           i += s + 1;
         }
         sortedData.add(new SurvivalInfoDiscrete(covariates, time, censored));

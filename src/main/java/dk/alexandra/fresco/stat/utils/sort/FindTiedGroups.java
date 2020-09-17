@@ -7,9 +7,7 @@ import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.mimc.MiMCEncryption;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class FindTiedGroups implements Computation<List<BigInteger>, ProtocolBuilderNumeric> {
@@ -19,6 +17,7 @@ public class FindTiedGroups implements Computation<List<BigInteger>, ProtocolBui
   /**
    * Returns a list of integers. If the i'th and j'th elements are the same in the result, it
    * indicates that the i'th and j'th elements are equal in the given data.
+   *
    * @param data
    */
   public FindTiedGroups(List<DRes<SInt>> data) {

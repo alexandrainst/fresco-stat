@@ -18,8 +18,9 @@ public class VectorUtils {
 
   /**
    * Compute the inner product of a public vector with a secret bit vector.
-   * @param a A secret bit vector
-   * @param b A public vector
+   *
+   * @param a       A secret bit vector
+   * @param b       A public vector
    * @param builder The builder to use.
    * @return The inner product of a and b.
    */
@@ -52,8 +53,8 @@ public class VectorUtils {
   /**
    * Compute the inner product of a secret vector with a secret bit vector.
    *
-   * @param a A secret bit vector
-   * @param b A secret vector
+   * @param a       A secret bit vector
+   * @param b       A secret vector
    * @param builder The builder to use.
    * @return The inner product of a and b.
    */
@@ -84,7 +85,7 @@ public class VectorUtils {
    * Build a list of the given size using a generator. Note that this is <i>not</i> lazy -- the
    * generator is called for all indices when this is called.
    *
-   * @param size The size of the list.
+   * @param size      The size of the list.
    * @param generator The generator used to create the entries.
    * @param <T>
    * @return A list containg the created elements.
@@ -113,12 +114,13 @@ public class VectorUtils {
   /**
    * Scale all values in the given vector by the scalar.
    *
-   * @param vector A secret vector.
-   * @param scalar A secret scalar.
+   * @param vector  A secret vector.
+   * @param scalar  A secret scalar.
    * @param builder The builder to use.
    * @return A scaled vector.
    */
-  public static List<DRes<SReal>> scale(List<DRes<SReal>> vector, DRes<SReal> scalar, ProtocolBuilderNumeric builder) {
+  public static List<DRes<SReal>> scale(List<DRes<SReal>> vector, DRes<SReal> scalar,
+      ProtocolBuilderNumeric builder) {
     List<DRes<SReal>> result = new ArrayList<>();
     builder.par(par -> {
       for (int i = 0; i < vector.size(); i++) {
@@ -132,12 +134,13 @@ public class VectorUtils {
   /**
    * Scale all values in the given vector by the scalar.
    *
-   * @param vector A secret vector.
-   * @param scalar A public scalar.
+   * @param vector  A secret vector.
+   * @param scalar  A public scalar.
    * @param builder The builder to use.
    * @return A scaled vector.
    */
-  public static List<DRes<SReal>> scale(List<DRes<SReal>> vector, double scalar, ProtocolBuilderNumeric builder) {
+  public static List<DRes<SReal>> scale(List<DRes<SReal>> vector, double scalar,
+      ProtocolBuilderNumeric builder) {
     List<DRes<SReal>> result = new ArrayList<>();
     builder.par(par -> {
       for (int i = 0; i < vector.size(); i++) {
@@ -151,12 +154,13 @@ public class VectorUtils {
   /**
    * Divide all values in the given vector by the scalar.
    *
-   * @param vector A secret vector.
-   * @param scalar A secret scalar.
+   * @param vector  A secret vector.
+   * @param scalar  A secret scalar.
    * @param builder The builder to use.
    * @return
    */
-  public static List<DRes<SReal>> div(List<DRes<SReal>> vector, DRes<SReal> scalar, ProtocolBuilderNumeric builder) {
+  public static List<DRes<SReal>> div(List<DRes<SReal>> vector, DRes<SReal> scalar,
+      ProtocolBuilderNumeric builder) {
     List<DRes<SReal>> result = new ArrayList<>();
     builder.par(par -> {
       for (int i = 0; i < vector.size(); i++) {
@@ -170,12 +174,13 @@ public class VectorUtils {
   /**
    * Add two secret vectors.
    *
-   * @param a A secret vector.
-   * @param b A secret scalar.
+   * @param a       A secret vector.
+   * @param b       A secret scalar.
    * @param builder The builder to use.
    * @return a+b
    */
-  public static List<DRes<SReal>> add(List<DRes<SReal>> a, List<DRes<SReal>> b, ProtocolBuilderNumeric builder) {
+  public static List<DRes<SReal>> add(List<DRes<SReal>> a, List<DRes<SReal>> b,
+      ProtocolBuilderNumeric builder) {
     List<DRes<SReal>> result = new ArrayList<>();
     builder.par(par -> {
       if (a.size() != b.size()) {
@@ -192,12 +197,13 @@ public class VectorUtils {
   /**
    * Subtract two secret vectors.
    *
-   * @param a A secret vector.
-   * @param b A secret scalar.
+   * @param a       A secret vector.
+   * @param b       A secret scalar.
    * @param builder The builder to use.
    * @return a-b
    */
-  public static List<DRes<SReal>> sub(List<DRes<SReal>> a, List<DRes<SReal>> b, ProtocolBuilderNumeric builder) {
+  public static List<DRes<SReal>> sub(List<DRes<SReal>> a, List<DRes<SReal>> b,
+      ProtocolBuilderNumeric builder) {
     List<DRes<SReal>> result = new ArrayList<>();
     builder.par(par -> {
       if (a.size() != b.size()) {

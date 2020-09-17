@@ -10,9 +10,8 @@ import java.util.List;
 /**
  * Sample a number from an Irwin-Hall distribution which is the sum of <i>n</i> iid U(0,1)
  * distributions.
- * 
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  *
+ * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
 public class SampleIrwinHallDistribution implements Computation<SReal, ProtocolBuilderNumeric> {
 

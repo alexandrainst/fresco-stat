@@ -1,50 +1,50 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<groupId>dk.alexandra.fresco</groupId>
-	<artifactId>fresco-stat</artifactId>
-	<version>0.0.2-SNAPSHOT</version>
-	<properties>
-		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>9</maven.compiler.source>
-		<maven.compiler.target>9</maven.compiler.target>
-	</properties>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <artifactId>fresco-stat</artifactId>
+  <dependencies>
+    <dependency>
+      <artifactId>core</artifactId>
+      <groupId>dk.alexandra.fresco</groupId>
+      <scope>test</scope>
+      <type>test-jar</type>
+      <version>1.2.2-SNAPSHOT</version>
+    </dependency>
 
-	<dependencies>
-		<dependency>
-			<groupId>dk.alexandra.fresco</groupId>
-			<artifactId>core</artifactId>
-			<version>1.2.2-SNAPSHOT</version>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
+    <dependency>
+      <artifactId>core</artifactId>
+      <groupId>dk.alexandra.fresco</groupId>
+      <version>1.2.2-SNAPSHOT</version>
+    </dependency>
 
-		<dependency>
-			<groupId>dk.alexandra.fresco</groupId>
-			<artifactId>core</artifactId>
-			<version>1.2.2-SNAPSHOT</version>
-		</dependency>
+    <dependency>
+      <artifactId>mimc</artifactId>
+      <groupId>dk.alexandra.fresco</groupId>
+      <version>1.2.2-SNAPSHOT</version>
+    </dependency>
 
-		<dependency>
-			<groupId>dk.alexandra.fresco</groupId>
-			<artifactId>mimc</artifactId>
-			<version>1.2.2-SNAPSHOT</version>
-		</dependency>
+    <dependency>
+      <artifactId>junit</artifactId>
+      <groupId>junit</groupId>
+      <scope>test</scope>
+      <version>4.12</version>
+    </dependency>
 
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.12</version>
-			<scope>test</scope>
-		</dependency>
+    <dependency>
+      <artifactId>commons-math3</artifactId>
+      <groupId>org.apache.commons</groupId>
+      <scope>test</scope>
+      <version>3.6.1</version>
+    </dependency>
+  </dependencies>
+  <groupId>dk.alexandra.fresco</groupId>
+  <modelVersion>4.0.0</modelVersion>
+  <properties>
+    <maven.compiler.source>9</maven.compiler.source>
+    <maven.compiler.target>9</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
 
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-math3</artifactId>
-			<version>3.6.1</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+  <version>0.0.2-SNAPSHOT</version>
 
 </project>

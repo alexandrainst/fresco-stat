@@ -10,7 +10,6 @@ import java.util.List;
 /**
  * An implementation of the OddEvenMergeProtocol. We use batchers algorithm. For now, this
  * implementation only supports lists where the size is a power of 2. (i.e. 4, 8, 16 etc.)
- *
  */
 public class OddEvenIntegerMerge implements
     Computation<List<Pair<DRes<SInt>, List<DRes<SInt>>>>, ProtocolBuilderNumeric> {
@@ -22,12 +21,14 @@ public class OddEvenIntegerMerge implements
     super();
     // Verify that the input is a two power
     if (Integer.bitCount(unsortedNumbers.size()) != 1) {
-      throw new UnsupportedOperationException("Implementation only supports computation on list of a two-power size");
+      throw new UnsupportedOperationException(
+          "Implementation only supports computation on list of a two-power size");
     }
     // Verify that the payloads all have the same size, to avoid leaking info based on this
-    unsortedNumbers.forEach( current -> {
+    unsortedNumbers.forEach(current -> {
       if (current.getSecond().size() != unsortedNumbers.get(0).getSecond().size()) {
-        throw new UnsupportedOperationException("All payload lists must have equal length to avoid leaking info");
+        throw new UnsupportedOperationException(
+            "All payload lists must have equal length to avoid leaking info");
       }
     });
     this.numbers = unsortedNumbers;
@@ -51,11 +52,13 @@ public class OddEvenIntegerMerge implements
   }
 
   private void compareAndSwapAtIndices(int i, int j, ProtocolBuilderNumeric builder) {
-    builder.par(par -> new IntegerKeyedCompareAndSwap(numbers.get(i), numbers.get(j)).buildComputation(par)).par((par, res) -> {
-      numbers.set(i, res.get(0));
-      numbers.set(j, res.get(1));
-      return null;
-    });
+    builder.par(
+        par -> new IntegerKeyedCompareAndSwap(numbers.get(i), numbers.get(j)).buildComputation(par))
+        .par((par, res) -> {
+          numbers.set(i, res.get(0));
+          numbers.set(j, res.get(1));
+          return null;
+        });
   }
 
   private void merge(int first, int length, int step, ProtocolBuilderNumeric builder) {

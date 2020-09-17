@@ -6,14 +6,13 @@ import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.real.SReal;
 import dk.alexandra.fresco.lib.real.fixed.SFixed;
-import dk.alexandra.fresco.lib.real.fixed.utils.MultiplyWithSInt;
 import java.math.BigDecimal;
 
 /**
- * This computation samples from an exponential distribution with rate <i>1/lambda</i> and location 0.
+ * This computation samples from an exponential distribution with rate <i>1/lambda</i> and location
+ * 0.
  *
  * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
- *
  */
 public class SampleExponentialDistribution implements Computation<SReal, ProtocolBuilderNumeric> {
 

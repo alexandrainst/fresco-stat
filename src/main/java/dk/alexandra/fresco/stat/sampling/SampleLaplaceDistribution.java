@@ -7,7 +7,6 @@ import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.real.SReal;
 import dk.alexandra.fresco.lib.real.fixed.SFixed;
-
 import java.math.BigDecimal;
 import java.util.Objects;
 
@@ -40,7 +39,7 @@ public class SampleLaplaceDistribution implements Computation<SReal, ProtocolBui
         exponential = new SampleExponentialDistribution(bKnown).buildComputation(par);
       } else {
         exponential = new SampleExponentialDistribution(b).buildComputation(par);
-          //DRes<SReal> bInverse = seq.realAdvanced().reciprocal(b);
+        //DRes<SReal> bInverse = seq.realAdvanced().reciprocal(b);
 //          return new SampleExponentialDistribution(bInverse).buildComputation(par);
 //        });
       }

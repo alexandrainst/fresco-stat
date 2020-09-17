@@ -1,17 +1,15 @@
 package dk.alexandra.fresco.stat.descriptive;
 
-import java.util.List;
-
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.lib.real.SReal;
+import java.util.List;
 
 /**
  * Compute the mean of a list of observations.
- * 
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  *
+ * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
 public class SampleMean implements Computation<SReal, ProtocolBuilderNumeric> {
 

@@ -11,7 +11,7 @@ public class RealUtils {
   /**
    * Compute the product of all elements in the list.
    *
-   * @param input The list of factors.
+   * @param input   The list of factors.
    * @param builder The builder to use.
    * @return
    */

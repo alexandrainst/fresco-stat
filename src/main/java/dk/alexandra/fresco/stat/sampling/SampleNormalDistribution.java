@@ -9,9 +9,8 @@ import java.math.BigDecimal;
 /**
  * Sample a number from an approximately standard normal distribution. The actual distribution is
  * Irwin-Hall with n = 12 subtracted by 6.
- * 
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  *
+ * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
 public class SampleNormalDistribution implements Computation<SReal, ProtocolBuilderNumeric> {
 

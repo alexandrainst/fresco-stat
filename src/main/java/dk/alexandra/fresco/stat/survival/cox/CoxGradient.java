@@ -109,9 +109,9 @@ public class CoxGradient implements Computation<List<DRes<SReal>>, ProtocolBuild
 
       // Correct for ties
       for (int j = data.size() - 2; j >= 0; j--) {
-        if (state.tiedGroups.get(j).equals(state.tiedGroups.get(j+1))) {
-          state.sum1.set(j, state.sum1.get(j+1));
-          state.sum2.set(j, state.sum2.get(j+1));
+        if (state.tiedGroups.get(j).equals(state.tiedGroups.get(j + 1))) {
+          state.sum1.set(j, state.sum1.get(j + 1));
+          state.sum2.set(j, state.sum2.get(j + 1));
         }
       }
 

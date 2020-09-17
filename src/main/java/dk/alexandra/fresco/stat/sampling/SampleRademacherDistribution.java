@@ -11,7 +11,6 @@ import java.math.BigInteger;
  * propability 1/2.
  *
  * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
- *
  */
 public class SampleRademacherDistribution implements Computation<SInt, ProtocolBuilderNumeric> {
 

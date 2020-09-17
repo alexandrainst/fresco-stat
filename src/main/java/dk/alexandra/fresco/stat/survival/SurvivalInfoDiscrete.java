@@ -16,7 +16,8 @@ public class SurvivalInfoDiscrete {
   private final DRes<SInt> time;
   private final DRes<SInt> censored;
 
-  public SurvivalInfoDiscrete(List<Pair<List<DRes<SInt>>, DRes<SInt>>> covariates, DRes<SInt> time, DRes<SInt> censored) {
+  public SurvivalInfoDiscrete(List<Pair<List<DRes<SInt>>, DRes<SInt>>> covariates, DRes<SInt> time,
+      DRes<SInt> censored) {
     this.covariates = covariates;
     this.time = time;
     this.censored = censored;

@@ -20,12 +20,13 @@ public class CoxRegression implements Computation<List<DRes<SReal>>, ProtocolBui
   /**
    * Estimate the coefficients of a Cox model on the given data using gradient descent.
    *
-   * @param data The data.
+   * @param data       The data.
    * @param iterations The number of iterations.
-   * @param alpha The learning rate.
-   * @param beta The initial guess.
+   * @param alpha      The learning rate.
+   * @param beta       The initial guess.
    */
-  public CoxRegression(List<SurvivalInfoDiscrete> data, int iterations, double alpha, double[] beta) {
+  public CoxRegression(List<SurvivalInfoDiscrete> data, int iterations, double alpha,
+      double[] beta) {
     this.data = data;
     this.iterations = iterations;
     this.alpha = alpha;
@@ -36,7 +37,8 @@ public class CoxRegression implements Computation<List<DRes<SReal>>, ProtocolBui
   public DRes<List<DRes<SReal>>> buildComputation(ProtocolBuilderNumeric builder) {
 
     return builder.seq(seq -> {
-      DRes<List<SurvivalInfoDiscrete>> sorted = new SortSurvivalInfoList(data).buildComputation(seq);
+      DRes<List<SurvivalInfoDiscrete>> sorted = new SortSurvivalInfoList(data)
+          .buildComputation(seq);
       return sorted;
     }).par((par, sorted) -> {
       List<DRes<SReal>> initialBeta = Arrays.stream(beta).mapToObj(par.realNumeric()::known)
@@ -45,7 +47,8 @@ public class CoxRegression implements Computation<List<DRes<SReal>>, ProtocolBui
       return () -> new State(sorted, 0, initialBeta);
     }).whileLoop((state) -> state.iteration < iterations, (seq, state) -> {
       return seq.seq(sub -> {
-        DRes<List<DRes<SReal>>> gradient = new CoxGradient(state.data, state.beta).buildComputation(sub);
+        DRes<List<DRes<SReal>>> gradient = new CoxGradient(state.data, state.beta)
+            .buildComputation(sub);
         return gradient;
       }).seq((sub, gradient) -> {
         List<DRes<SReal>> delta = VectorUtils.scale(gradient, alpha, sub);
@@ -56,6 +59,7 @@ public class CoxRegression implements Computation<List<DRes<SReal>>, ProtocolBui
   }
 
   private class State {
+
     private final List<SurvivalInfoDiscrete> data;
     private final int iteration;
     private final List<DRes<SReal>> beta;

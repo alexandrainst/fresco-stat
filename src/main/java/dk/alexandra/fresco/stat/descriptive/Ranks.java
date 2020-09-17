@@ -83,7 +83,8 @@ public class Ranks implements Computation<Pair<List<DRes<SReal>>, Double>, Proto
       if (averageTies) {
 
         // Break ties by opening entrypted values. Note that this leaks the ranks of elements that are equal
-        DRes<List<Double>> r1 = new LeakyBreakTies(sorted.stream().map(Pair::getFirst).collect(Collectors.toList())).buildComputation(seq);
+        DRes<List<Double>> r1 = new LeakyBreakTies(
+            sorted.stream().map(Pair::getFirst).collect(Collectors.toList())).buildComputation(seq);
         out = new Pair(sorted, r1);
 
       } else {
@@ -109,12 +110,12 @@ public class Ranks implements Computation<Pair<List<DRes<SReal>>, Double>, Proto
         int groups = 0;
         int i = 1;
         while (i < ranks.size()) {
-          if (sameRank(ranks.get(i), ranks.get(i-1))) {
+          if (sameRank(ranks.get(i), ranks.get(i - 1))) {
             // New group
             int count = 1;
 
             // Continue until we are no longer in group
-            while (sameRank(ranks.get(i), ranks.get(i-1))) {
+            while (sameRank(ranks.get(i), ranks.get(i - 1))) {
               count++;
               i++;
             }

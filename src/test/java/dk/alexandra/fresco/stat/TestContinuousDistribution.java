@@ -11,7 +11,6 @@ import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.sce.resources.ResourcePool;
 import dk.alexandra.fresco.lib.real.SReal;
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -21,10 +20,9 @@ import org.apache.commons.math3.stat.inference.KolmogorovSmirnovTest;
 
 /**
  * Generic test for continuous distribtion sampling.
- * 
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  *
  * @param <ResourcePoolT>
+ * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
 public class TestContinuousDistribution<ResourcePoolT extends ResourcePool>
     extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
@@ -37,7 +35,7 @@ public class TestContinuousDistribution<ResourcePoolT extends ResourcePool>
   /**
    * Create a new test which samples n times and compares the result to an expected distribution
    * using a Kolmogorov Smirnov Test for goodness of fit with significance alpha.
-   * 
+   *
    * @param n
    * @param sampler
    * @param expected
@@ -59,7 +57,6 @@ public class TestContinuousDistribution<ResourcePoolT extends ResourcePool>
 
       @Override
       public void test() throws Exception {
-
 
         Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication = producer -> {
 

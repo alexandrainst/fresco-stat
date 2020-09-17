@@ -62,7 +62,7 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
 
   @Test
   public void test_catagorical_distribution_sampling() throws Exception {
-    double[] p = new double[] {0.1, 0.2, 0.1, 0.6};
+    double[] p = new double[]{0.1, 0.2, 0.1, 0.6};
 
     runTest(
         new TestDiscreteDistribution<>(100, () -> new SampleCatagoricalDistribution(p), p, 0.05),
@@ -71,7 +71,7 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
 
   @Test
   public void test_bernoulli_distribution_sampling() throws Exception {
-    double[] p = new double[] {0.6, 0.4};
+    double[] p = new double[]{0.6, 0.4};
 
     runTest(
         new TestDiscreteDistribution<>(100, () -> new SampleBernoulliDistribution(0.7), p, 0.05),
@@ -156,5 +156,10 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   @Test
   public void test_cox_regression() {
     runTest(new StatTests.TestCoxRegression<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_find_ties() {
+    runTest(new StatTests.TestTiedGroups<>(), TEST_PARAMETERS);
   }
 }

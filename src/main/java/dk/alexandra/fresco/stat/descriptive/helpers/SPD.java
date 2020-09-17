@@ -1,18 +1,16 @@
 package dk.alexandra.fresco.stat.descriptive.helpers;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.lib.real.SReal;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Compute the sum of products of deviations of two samples.
- * 
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  *
+ * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
 public class SPD implements Computation<SReal, ProtocolBuilderNumeric> {
 
@@ -22,7 +20,7 @@ public class SPD implements Computation<SReal, ProtocolBuilderNumeric> {
   private DRes<SReal> meanY;
 
   public SPD(List<DRes<SReal>> x, DRes<SReal> meanX, List<DRes<SReal>> y, DRes<SReal> meanY) {
-    assert(x.size() == y.size());
+    assert (x.size() == y.size());
     this.x = x;
     this.meanX = meanX;
     this.y = y;

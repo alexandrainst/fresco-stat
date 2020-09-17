@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Assuming that the input data is sorted, this computation outputs the ranks of the elements using the given strategy.
- * The computation leaks what indices of elements are equal in the dataset.
+ * Assuming that the input data is sorted, this computation outputs the ranks of the elements using
+ * the given strategy. The computation leaks what indices of elements are equal in the dataset.
  */
 public class LeakyBreakTies implements Computation<List<Double>, ProtocolBuilderNumeric> {
 

@@ -7,9 +7,8 @@ import dk.alexandra.fresco.lib.real.SReal;
 
 /**
  * Sample a number uniformly in the interval <i>[0,1)</i>.
- * 
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  *
+ * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
 public class SampleUniformDistribution implements Computation<SReal, ProtocolBuilderNumeric> {
 

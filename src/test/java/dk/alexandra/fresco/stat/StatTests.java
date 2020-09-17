@@ -2,6 +2,7 @@ package dk.alexandra.fresco.stat;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 import dk.alexandra.fresco.framework.Application;
@@ -17,13 +18,14 @@ import dk.alexandra.fresco.lib.real.SReal;
 import dk.alexandra.fresco.stat.descriptive.LeakyBreakTies;
 import dk.alexandra.fresco.stat.descriptive.LeakyFrequencyTable;
 import dk.alexandra.fresco.stat.descriptive.Ranks;
+import dk.alexandra.fresco.stat.regression.LinearRegression.LinearFunction;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoDiscrete;
 import dk.alexandra.fresco.stat.survival.cox.CoxGradient;
 import dk.alexandra.fresco.stat.survival.cox.CoxRegression;
 import dk.alexandra.fresco.stat.tests.FTest;
 import dk.alexandra.fresco.stat.tests.KruskallWallisTest;
-import dk.alexandra.fresco.stat.regression.LinearRegression.LinearFunction;
 import dk.alexandra.fresco.stat.utils.MatrixUtils;
+import dk.alexandra.fresco.stat.utils.sort.FindTiedGroups;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -44,6 +46,69 @@ import org.apache.commons.math3.stat.regression.RegressionResults;
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 public class StatTests {
+
+  public static List<List<Integer>> ranksDataset() {
+    List<Integer> data1 = List
+        .of(200, 215, 225, 229, 230, 232, 241, 253, 256, 264, 268, 288, 288);
+    List<Integer> data2 = List
+        .of(163, 182, 188, 195, 202, 205, 212, 214, 215, 230, 235, 255, 272);
+    List<Integer> data3 = List
+        .of(268, 271, 273, 282, 285, 299, 309, 310, 314, 320, 337, 340, 345);
+    List<Integer> data4 = List
+        .of(201, 216, 241, 257, 259, 267, 269, 282, 283, 291, 291, 312, 326);
+    return List.of(data1, data2, data3, data4);
+  }
+
+  public static List<SurvivalInfoDiscrete> survivalAnalysisDataset(ProtocolBuilderNumeric builder) {
+    return survivalAnalysisDataset(builder, false);
+  }
+
+  public static List<SurvivalInfoDiscrete> survivalAnalysisDataset(ProtocolBuilderNumeric builder,
+      boolean sorted) {
+
+    // Dataset from https://www.statsdirect.com/help/survival_analysis/cox_regression.htm
+    int[] group1 = new int[]{6, 19, 32, 42, 42, 43, 94, 126, 169, 207, 211, 227, 253, 255, 270,
+        310, 316, 335, 346};
+    int[] group1censor = new int[]{1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0};
+    int[] group2 = new int[]{4, 6, 10, 11, 11, 11, 13, 17, 20, 20, 21, 22, 24, 24, 29, 30, 30,
+        31, 33, 34, 35, 39, 40, 41, 43, 45, 46, 50, 56, 61, 61, 63, 68, 82, 85, 88, 89, 90,
+        93, 104, 110, 134, 137, 160, 169, 171, 173, 175, 184, 201, 222, 235, 247, 260, 284,
+        290, 291, 302, 304, 341, 345};
+    int[] group2censor = new int[]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0};
+
+    int[][] combined = new int[group1.length + group2.length][];
+    for (int i = 0; i < group1.length; i++) {
+      combined[i] = new int[]{0, group1[i], group1censor[i]};
+    }
+    for (int i = 0; i < group2.length; i++) {
+      combined[i + group1.length] = new int[]{1, group2[i], group2censor[i]};
+    }
+
+    if (sorted) {
+      // Sort descending
+      Arrays.sort(combined, Comparator.comparingInt(a -> -a[1]));
+    }
+
+    List<SurvivalInfoDiscrete> data = new ArrayList<>();
+    for (int[] row : combined) {
+      if (row[0] == 0) {
+        data.add(new SurvivalInfoDiscrete(List.of(new Pair<>(
+            List.of(builder.numeric().known(1), builder.numeric().known(0)),
+            builder.numeric().known(row[0]))), builder.numeric().known(row[1]),
+            builder.numeric().known(row[2])));
+      } else {
+        data.add(new SurvivalInfoDiscrete(List.of(new Pair<>(
+            List.of(builder.numeric().known(0), builder.numeric().known(1)),
+            builder.numeric().known(row[0]))), builder.numeric().known(row[1]),
+            builder.numeric().known(row[2])));
+      }
+    }
+
+    return data;
+  }
 
   public static class TestTTest<ResourcePoolT extends ResourcePool>
       extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
@@ -451,13 +516,13 @@ public class StatTests {
 
           List<Pair<BigInteger, Integer>> output = runApplication(testApplication);
           for (int i = 0; i < output.size(); i++) {
-            assertEquals(expected.get(output.get(i).getFirst().intValue()), output.get(i).getSecond());
+            assertEquals(expected.get(output.get(i).getFirst().intValue()),
+                output.get(i).getSecond());
           }
         }
       };
     }
   }
-
 
   public static class TestFTest<ResourcePoolT extends ResourcePool>
       extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
@@ -466,26 +531,24 @@ public class StatTests {
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
       return new TestThread<>() {
 
-        List<Integer> data1 = List
-            .of(200, 215, 225, 229, 230, 232, 241, 253, 256, 264, 268, 288, 288);
-        List<Integer> data2 = List
-            .of(163, 182, 188, 195, 202, 205, 212, 214, 215, 230, 235, 255, 272);
-        List<Integer> data3 = List
-            .of(268, 271, 273, 282, 285, 299, 309, 310, 314, 320, 337, 340, 345);
-        List<Integer> data4 = List
-            .of(201, 216, 241, 257, 259, 267, 269, 282, 283, 291, 291, 312, 326);
+
+        List<List<Integer>> data = ranksDataset();
 
         @Override
         public void test() throws Exception {
 
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
-            List<DRes<SReal>> input1 = data1.stream().map(x -> builder.realNumeric().input(x, 1))
+            List<DRes<SReal>> input1 = data.get(0).stream()
+                .map(x -> builder.realNumeric().input(x, 1))
                 .collect(Collectors.toList());
-            List<DRes<SReal>> input2 = data2.stream().map(x -> builder.realNumeric().input(x, 2))
+            List<DRes<SReal>> input2 = data.get(1).stream()
+                .map(x -> builder.realNumeric().input(x, 2))
                 .collect(Collectors.toList());
-            List<DRes<SReal>> input3 = data3.stream().map(x -> builder.realNumeric().input(x, 1))
+            List<DRes<SReal>> input3 = data.get(2).stream()
+                .map(x -> builder.realNumeric().input(x, 1))
                 .collect(Collectors.toList());
-            List<DRes<SReal>> input4 = data4.stream().map(x -> builder.realNumeric().input(x, 2))
+            List<DRes<SReal>> input4 = data.get(3).stream()
+                .map(x -> builder.realNumeric().input(x, 2))
                 .collect(Collectors.toList());
 
             DRes<SReal> f = new FTest(List.of(input1, input2, input3, input4))
@@ -497,10 +560,10 @@ public class StatTests {
 
           OneWayAnova oneWayAnova = new OneWayAnova();
           double f = oneWayAnova.anovaFValue(List.of(
-              data1.stream().mapToDouble(Double::valueOf).toArray(),
-              data2.stream().mapToDouble(Double::valueOf).toArray(),
-              data3.stream().mapToDouble(Double::valueOf).toArray(),
-              data4.stream().mapToDouble(Double::valueOf).toArray()));
+              data.get(0).stream().mapToDouble(Double::valueOf).toArray(),
+              data.get(1).stream().mapToDouble(Double::valueOf).toArray(),
+              data.get(2).stream().mapToDouble(Double::valueOf).toArray(),
+              data.get(3).stream().mapToDouble(Double::valueOf).toArray()));
 
           assertEquals(output.doubleValue(), f, 0.01);
         }
@@ -515,22 +578,11 @@ public class StatTests {
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
       return new TestThread<>() {
 
-        List<Integer> data1 = List
-            .of(200, 215, 225, 229, 230, 232, 241, 253, 256, 264, 268, 288, 288);
-        List<Integer> data2 = List
-            .of(163, 182, 188, 195, 202, 205, 212, 214, 215, 230, 235, 255, 272);
-        List<Integer> data3 = List
-            .of(268, 271, 273, 282, 285, 299, 309, 310, 314, 320, 337, 340, 345);
-        List<Integer> data4 = List
-            .of(201, 216, 241, 257, 259, 267, 269, 282, 283, 291, 291, 312, 326);
-        List<Integer> data = new ArrayList<>();
+        List<Integer> data = ranksDataset().stream().flatMap(List::stream)
+            .collect(Collectors.toList());
 
         @Override
         public void test() throws Exception {
-          data.addAll(data1);
-          data.addAll(data2);
-          data.addAll(data3);
-          data.addAll(data4);
           data.sort(Integer::compareTo);
 
           Application<List<Double>, ProtocolBuilderNumeric> testApplication = builder -> {
@@ -559,22 +611,10 @@ public class StatTests {
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
       return new TestThread<>() {
 
-        List<Integer> data1 = List
-            .of(200, 215, 225, 229, 230, 232, 241, 253, 256, 264, 268, 288, 288);
-        List<Integer> data2 = List
-            .of(163, 182, 188, 195, 202, 205, 212, 214, 215, 230, 235, 255, 272);
-        List<Integer> data3 = List
-            .of(268, 271, 273, 282, 285, 299, 309, 310, 314, 320, 337, 340, 345);
-        List<Integer> data4 = List
-            .of(201, 216, 241, 257, 259, 267, 269, 282, 283, 291, 291, 312, 326);
-        List<List<Integer>> data = new ArrayList<>();
+        List<List<Integer>> data = ranksDataset();
 
         @Override
         public void test() throws Exception {
-          data.add(data1);
-          data.add(data2);
-          data.add(data3);
-          data.add(data4);
 
           Application<Pair<List<BigDecimal>, Double>, ProtocolBuilderNumeric> testApplication = builder -> builder
               .seq(seq -> {
@@ -612,22 +652,10 @@ public class StatTests {
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
       return new TestThread<>() {
 
-        List<Integer> data1 = List
-            .of(200, 215, 225, 229, 230, 232, 241, 253, 256, 264, 268, 288, 288);
-        List<Integer> data2 = List
-            .of(163, 182, 188, 195, 202, 205, 212, 214, 215, 230, 235, 255, 272);
-        List<Integer> data3 = List
-            .of(268, 271, 273, 282, 285, 299, 309, 310, 314, 320, 337, 340, 345);
-        List<Integer> data4 = List
-            .of(201, 216, 241, 257, 259, 267, 269, 282, 283, 291, 291, 312, 326);
-        List<List<Integer>> data = new ArrayList<>();
+        List<List<Integer>> data = ranksDataset();
 
         @Override
         public void test() {
-          data.add(data1);
-          data.add(data2);
-          data.add(data3);
-          data.add(data4);
 
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
             List<List<DRes<SInt>>> input = data.stream().map(
@@ -654,63 +682,26 @@ public class StatTests {
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
       return new TestThread<>() {
 
-        int[] group1 = new int[]{6, 19, 32, 42, 42, 43, 94, 126, 169, 207, 211, 227, 253, 255, 270, 310,
-            316, 335, 346};
-        int[] group1censor = new int[]{1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0};
-
-        int[] group2 = new int[]{4, 6, 10, 11, 11, 11, 13, 17, 20, 20, 21, 22, 24, 24, 29, 30, 30,
-            31, 33, 34, 35, 39, 40, 41, 43, 45, 46, 50, 56, 61, 61, 63, 68, 82, 85, 88, 89, 90,
-            93, 104, 110, 134, 137, 160, 169, 171, 173, 175, 184, 201, 222, 235, 247, 260, 284,
-            290, 291, 302, 304, 341, 345};
-        int[] group2censor = new int[]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1,
-            1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0};
-
         @Override
         public void test() {
-          List<List<Integer>> combined = new ArrayList<>();
-          for (int i = 0; i < group1.length; i++) {
-            combined.add(List.of(0, group1[i], group1censor[i]));
-          }
-          for (int i = 0; i < group2.length; i++) {
-            combined.add(List.of(1, group2[i], group2censor[i]));
-          }
-          // Expects descending order
-          combined.sort(Comparator.comparingInt(a -> -a.get(1)));
-          System.out.println(combined);
-          List<List<Integer>> finalCombined = combined;
 
           Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication = builder -> builder
               .seq(seq -> {
 
-            List<SurvivalInfoDiscrete> input = new ArrayList<>();
-            for (List<Integer> p : finalCombined) {
-              if (p.get(0) == 0) {
-                input.add(new SurvivalInfoDiscrete(List.of(new Pair<>(
-                    List.of(seq.numeric().known(1), seq.numeric().known(0)),
-                    seq.numeric().known(0))), seq.numeric().known(p.get(1)),
-                    seq.numeric().known(p.get(2))));
-              } else {
-                input.add(new SurvivalInfoDiscrete(List.of(new Pair<>(
-                    List.of(seq.numeric().known(0), seq.numeric().known(1)),
-                    seq.numeric().known(1))), seq.numeric().known(p.get(1)),
-                    seq.numeric().known(p.get(2))));
-              }
-            }
-
-            DRes<List<DRes<SReal>>> beta = new CoxGradient(input, List.of(seq.realNumeric().known(1))).buildComputation(seq);
-            return beta;
-          }).seq((seq, beta) -> {
-            List<DRes<BigDecimal>> openBeta =
-                beta.stream().map(seq.realNumeric()::open)
-                    .collect(Collectors.toList());
-            return () ->
-                openBeta.stream().map(DRes::out).collect(Collectors.toList());
-          });
+                List<SurvivalInfoDiscrete> input = survivalAnalysisDataset(seq, true);
+                DRes<List<DRes<SReal>>> beta = new CoxGradient(input,
+                    List.of(seq.realNumeric().known(1))).buildComputation(seq);
+                return beta;
+              }).seq((seq, beta) -> {
+                List<DRes<BigDecimal>> openBeta =
+                    beta.stream().map(seq.realNumeric()::open)
+                        .collect(Collectors.toList());
+                return () ->
+                    openBeta.stream().map(DRes::out).collect(Collectors.toList());
+              });
 
           List<BigDecimal> output = runApplication(testApplication);
-          System.out.println(output);
+          assertEquals(-0.25862161094245983, output.get(0).doubleValue(), 0.001);
         }
       };
     }
@@ -723,53 +714,14 @@ public class StatTests {
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
       return new TestThread<>() {
 
-        int[] group1 = new int[]{6, 19, 32, 42, 42, 43, 94, 126, 169, 207, 211, 227, 253, 255, 270,
-            310, 316, 335, 346};
-        int[] group1censor = new int[]{1, 1, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0};
-
-        int[] group2 = new int[]{4, 6, 10, 11, 11, 11, 13, 17, 20, 20, 21, 22, 24, 24, 29, 30, 30,
-            31, 33, 34, 35, 39, 40, 41, 43, 45, 46, 50, 56, 61, 61, 63, 68, 82, 85, 88, 89, 90,
-            93, 104, 110, 134, 137, 160, 169, 171, 173, 175, 184, 201, 222, 235, 247, 260, 284,
-            290, 291, 302, 304, 341, 345};
-        int[] group2censor = new int[]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-            1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1,
-            1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0};
-
         @Override
         public void test() {
-          List<List<Integer>> combined = new ArrayList<>();
-          for (int i = 0; i < group1.length; i++) {
-            combined.add(List.of(0, group1[i], group1censor[i]));
-          }
-          for (int i = 0; i < group2.length; i++) {
-            combined.add(List.of(1, group2[i], group2censor[i]));
-          }
-          // Expects descending order
-          combined.sort(Comparator.comparingInt(a -> -a.get(1)));
-          System.out.println(combined);
-          List<List<Integer>> finalCombined = combined;
-
           Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication = builder -> builder
               .seq(seq -> {
 
-                List<SurvivalInfoDiscrete> input = new ArrayList<>();
-                for (List<Integer> p : finalCombined) {
-                  if (p.get(0) == 0) {
-                    input.add(new SurvivalInfoDiscrete(List.of(new Pair<>(
-                        List.of(seq.numeric().known(1), seq.numeric().known(0)),
-                        seq.numeric().known(0))), seq.numeric().known(p.get(1)),
-                        seq.numeric().known(p.get(2))));
-                  } else {
-                    input.add(new SurvivalInfoDiscrete(List.of(new Pair<>(
-                        List.of(seq.numeric().known(0), seq.numeric().known(1)),
-                        seq.numeric().known(1))), seq.numeric().known(p.get(1)),
-                        seq.numeric().known(p.get(2))));
-                  }
-                }
-
-                DRes<List<DRes<SReal>>> beta = new CoxRegression(input, 10,0.01,
-                    new double[] {1}).buildComputation(seq);
+                List<SurvivalInfoDiscrete> input = survivalAnalysisDataset(seq);
+                DRes<List<DRes<SReal>>> beta = new CoxRegression(input, 5, 0.1,
+                    new double[]{1}).buildComputation(seq);
                 return beta;
               }).seq((seq, beta) -> {
                 List<DRes<BigDecimal>> openBeta =
@@ -780,7 +732,40 @@ public class StatTests {
               });
 
           List<BigDecimal> output = runApplication(testApplication);
-          System.out.println(output);
+          assertEquals(0.9610201322467578, output.get(0).doubleValue(), 0.001);
+        }
+      };
+    }
+  }
+
+  public static class TestTiedGroups<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        List<Integer> data = List.of(2, 5, 3, 6, 1, 3, 7, 6, 3, 9, 8, 7, 5, 5);
+
+        @Override
+        public void test() throws Exception {
+          Application<List<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> {
+            List<DRes<SInt>> input = data.stream().map(x -> builder.numeric().input(x, 1))
+                .collect(Collectors.toList());
+
+            return new FindTiedGroups(input).buildComputation(builder);
+          };
+
+          List<BigInteger> output = runApplication(testApplication);
+
+          assertNotEquals(output.get(1), output.get(7));
+          assertNotEquals(output.get(1), output.get(11));
+          assertEquals(output.get(1), output.get(12));
+          assertEquals(output.get(1), output.get(13));
+
+          assertNotEquals(output.get(2), output.get(4));
+          assertEquals(output.get(2), output.get(5));
+          assertEquals(output.get(2), output.get(8));
         }
       };
     }

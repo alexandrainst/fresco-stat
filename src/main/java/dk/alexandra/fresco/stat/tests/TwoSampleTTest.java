@@ -6,7 +6,6 @@ import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.lib.real.SReal;
 import dk.alexandra.fresco.stat.descriptive.SampleMean;
-// import dk.alexandra.fresco.stat.descriptive.Mean;
 import dk.alexandra.fresco.stat.descriptive.SampleVariance;
 import java.math.BigDecimal;
 import java.util.List;
@@ -19,9 +18,9 @@ public class TwoSampleTTest implements Computation<SReal, ProtocolBuilderNumeric
   /**
    * This implements the calculation of a t-test statistics for two samples where it can be assumed
    * that the variances are equal.
-   * 
+   * <p>
    * TODO: Also implement case where variances are unequal.
-   * 
+   *
    * @param data1
    * @param data2
    */

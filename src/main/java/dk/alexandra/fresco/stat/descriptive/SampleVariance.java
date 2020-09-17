@@ -5,14 +5,12 @@ import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.lib.real.SReal;
 import dk.alexandra.fresco.stat.descriptive.helpers.SSD;
-
 import java.util.List;
 
 /**
  * Compute the sample variance for a list of observations.
- * 
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  *
+ * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
 public class SampleVariance implements Computation<SReal, ProtocolBuilderNumeric> {
 
@@ -21,7 +19,7 @@ public class SampleVariance implements Computation<SReal, ProtocolBuilderNumeric
 
   /**
    * Create a new computation with a given computed sample mean.
-   * 
+   *
    * @param observed
    * @param mean
    */

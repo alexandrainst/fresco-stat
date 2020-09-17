@@ -14,14 +14,13 @@ import dk.alexandra.fresco.stat.descriptive.SampleMean;
 import dk.alexandra.fresco.stat.descriptive.SampleStandardDeviation;
 import dk.alexandra.fresco.stat.descriptive.SampleVariance;
 import dk.alexandra.fresco.stat.descriptive.TwoDimensionalHistogram;
+import dk.alexandra.fresco.stat.regression.LinearRegression;
+import dk.alexandra.fresco.stat.regression.LinearRegression.LinearFunction;
 import dk.alexandra.fresco.stat.tests.ChiSquareTest;
 import dk.alexandra.fresco.stat.tests.FTest;
 import dk.alexandra.fresco.stat.tests.KruskallWallisTest;
-import dk.alexandra.fresco.stat.regression.LinearRegression;
-import dk.alexandra.fresco.stat.regression.LinearRegression.LinearFunction;
 import dk.alexandra.fresco.stat.tests.OneSampleTTest;
 import dk.alexandra.fresco.stat.tests.TwoSampleTTest;
-
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -91,7 +90,8 @@ public class DefaultStatistics implements Statistics {
   public DRes<SReal> chiSquare(List<DRes<SReal>> data, List<DRes<SReal>> buckets,
       List<DRes<SReal>> expected) {
     if (buckets.size() + 1 != expected.size()) {
-      throw new IllegalArgumentException("There should be an expected value for each bucket and an extra for all values exceeding the largest bucket.");
+      throw new IllegalArgumentException(
+          "There should be an expected value for each bucket and an extra for all values exceeding the largest bucket.");
     }
     return builder.seq(seq -> {
       Statistics stat = Statistics.using(seq);
@@ -107,7 +107,8 @@ public class DefaultStatistics implements Statistics {
   public DRes<SReal> chiSquare(List<DRes<SReal>> data, List<DRes<SReal>> buckets,
       double[] expected) {
     if (buckets.size() + 1 != expected.length) {
-      throw new IllegalArgumentException("There should be an expected value for each bucket and an extra for all values exceeding the largest bucket.");
+      throw new IllegalArgumentException(
+          "There should be an expected value for each bucket and an extra for all values exceeding the largest bucket.");
     }
     return builder.seq(seq -> {
       Statistics stat = Statistics.using(seq);
@@ -180,7 +181,9 @@ public class DefaultStatistics implements Statistics {
 
   @Override
   public DRes<List<DRes<SInt>>> histogramReal(double[] buckets, List<DRes<SReal>> data) {
-    return histogramReal(Arrays.stream(buckets).mapToObj(builder.realNumeric()::known).collect(Collectors.toList()), data);
+    return histogramReal(
+        Arrays.stream(buckets).mapToObj(builder.realNumeric()::known).collect(Collectors.toList()),
+        data);
   }
 
   @Override

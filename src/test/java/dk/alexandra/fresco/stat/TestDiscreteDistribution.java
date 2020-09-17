@@ -23,10 +23,9 @@ import org.apache.commons.math3.stat.inference.ChiSquareTest;
 
 /**
  * Generic test for continuous distribtion sampling.
- * 
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  *
  * @param <ResourcePoolT>
+ * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
 public class TestDiscreteDistribution<ResourcePoolT extends ResourcePool>
     extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
@@ -39,7 +38,7 @@ public class TestDiscreteDistribution<ResourcePoolT extends ResourcePool>
   /**
    * Create a new test which samples n times and compares the result to an expected distribution
    * using a Chi-squared Test for goodness of fit with significance alpha.
-   * 
+   *
    * @param n
    * @param sampler
    * @param expected

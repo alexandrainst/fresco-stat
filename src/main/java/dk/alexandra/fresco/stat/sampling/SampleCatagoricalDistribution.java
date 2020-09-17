@@ -14,7 +14,6 @@ import java.util.List;
  * Sample an element from a catagorical distribution.
  *
  * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
- *
  */
 public class SampleCatagoricalDistribution implements Computation<SInt, ProtocolBuilderNumeric> {
 
@@ -23,10 +22,9 @@ public class SampleCatagoricalDistribution implements Computation<SInt, Protocol
   private double[] knownPropabilities;
 
   /**
-   * 
    * @param propabilities The i'th element of this list is the propabily of drawing i from this
-   *        distribution.
-   * @param normalized Does the propabilities sum to 1?
+   *                      distribution.
+   * @param normalized    Does the propabilities sum to 1?
    */
   public SampleCatagoricalDistribution(List<DRes<SReal>> propabilities, boolean normalized) {
     this.propabilities = propabilities;
@@ -40,9 +38,9 @@ public class SampleCatagoricalDistribution implements Computation<SInt, Protocol
   }
 
   /**
-   * 
    * @param propabilities The i'th element of this list is the propabily of drawing i from this
-   *        distribution. The propabilities should have been normalized such that they sum to 1.
+   *                      distribution. The propabilities should have been normalized such that they
+   *                      sum to 1.
    */
   public SampleCatagoricalDistribution(List<DRes<SReal>> propabilities) {
     this(propabilities, true);
@@ -54,10 +52,10 @@ public class SampleCatagoricalDistribution implements Computation<SInt, Protocol
 
       /*
        * Let p_0,...,p_{n-1} be the probabilities of drawing 0, ..., n-1 resp.
-       * 
+       *
        * Now sample r uniformly in [0,1). Let c_i = p_0 + ... + p_i and let t_i = 0 if c_i <= r and
        * 1 otherwise.
-       * 
+       *
        * We return Sum_{j=0}^n t_j which will be i with probability p_i
        */
 

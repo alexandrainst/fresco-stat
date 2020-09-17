@@ -23,7 +23,7 @@ public class IntegerKeyedCompareAndSwap implements
    * compare the keys of two key-value pairs and produce a list of pairs so that the first pair has
    * the largest key.
    *
-   * @param leftKeyAndValue the key-value of the left pair
+   * @param leftKeyAndValue  the key-value of the left pair
    * @param rightKeyAndValue the key-value of the right pair
    */
   public IntegerKeyedCompareAndSwap(
@@ -50,7 +50,7 @@ public class IntegerKeyedCompareAndSwap implements
       DRes<SInt> firstKey = par.advancedNumeric().condSelect(data, leftKey, rightKey);
       List<DRes<SInt>> firstValue = leftValue.stream().map(e ->
           par.advancedNumeric().condSelect(data, e, rightValue.get(
-          leftValue.indexOf(e)))).collect(Collectors.toList());
+              leftValue.indexOf(e)))).collect(Collectors.toList());
 
       return () -> new Pair<>(firstKey, firstValue);
     }).par((par, data) -> {

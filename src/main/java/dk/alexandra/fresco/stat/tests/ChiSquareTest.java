@@ -11,9 +11,8 @@ import java.util.Objects;
 
 /**
  * Compute the &Chi;<sup>2</sup>-test for goodness of fit of the given observatinos.
- * 
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  *
+ * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
 public class ChiSquareTest implements Computation<SReal, ProtocolBuilderNumeric> {
 

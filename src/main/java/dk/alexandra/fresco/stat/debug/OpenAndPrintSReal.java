@@ -1,17 +1,16 @@
 package dk.alexandra.fresco.stat.debug;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.lib.real.RealNumeric;
 import dk.alexandra.fresco.lib.real.SReal;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
-public class OpenAndPrintSReal implements Computation<Void, ProtocolBuilderNumeric>{
-  
+public class OpenAndPrintSReal implements Computation<Void, ProtocolBuilderNumeric> {
+
   private DRes<SReal> number;
   private String label;
 
@@ -19,7 +18,7 @@ public class OpenAndPrintSReal implements Computation<Void, ProtocolBuilderNumer
     this.label = label;
     this.number = number;
   }
-  
+
   @Override
   public DRes<Void> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.seq(seq -> {

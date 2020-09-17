@@ -37,6 +37,20 @@ public class KruskallWallisTest implements Computation<SReal, ProtocolBuilderNum
     this.averageTies = averageTies;
   }
 
+  /**
+   * If the test is to be applied on fixed point numbers (SReal's), this method should be used to
+   * transform the data,
+   *
+   * @param observed The data as SReal's
+   * @return The input data as SInts to be used in the test.
+   */
+  public static List<List<DRes<SInt>>> fromSReal(List<List<DRes<SReal>>> observed) {
+    return observed.stream().map(
+        sample -> sample.stream().map(x -> ((SFixed) x).getSInt()).collect(Collectors.toList()))
+        .collect(
+            Collectors.toList());
+  }
+
   @Override
   public DRes<SReal> buildComputation(ProtocolBuilderNumeric builder) {
     int groups = observed.size();
@@ -72,19 +86,5 @@ public class KruskallWallisTest implements Computation<SReal, ProtocolBuilderNum
 
       return h;
     });
-  }
-
-  /**
-   * If the test is to be applied on fixed point numbers (SReal's), this method should be used to
-   * transform the data,
-   *
-   * @param observed The data as SReal's
-   * @return The input data as SInts to be used in the test.
-   */
-  public static List<List<DRes<SInt>>> fromSReal(List<List<DRes<SReal>>> observed) {
-    return observed.stream().map(
-        sample -> sample.stream().map(x -> ((SFixed) x).getSInt()).collect(Collectors.toList()))
-        .collect(
-            Collectors.toList());
   }
 }

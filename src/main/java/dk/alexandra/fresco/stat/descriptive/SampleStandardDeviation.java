@@ -8,9 +8,8 @@ import java.util.List;
 
 /**
  * Compute the stanard deviation of a list of observations.
- * 
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  *
+ * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
 public class SampleStandardDeviation implements Computation<SReal, ProtocolBuilderNumeric> {
 

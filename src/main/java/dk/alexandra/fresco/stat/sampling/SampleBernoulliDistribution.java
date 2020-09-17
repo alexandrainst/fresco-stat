@@ -10,9 +10,8 @@ import java.math.BigDecimal;
 /**
  * Sample a number from a Bernoulli distribution which is 0 with propability <i>p</i> and 1 with
  * propability <i>1-p</i>.
- * 
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  *
+ * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
 public class SampleBernoulliDistribution implements Computation<SInt, ProtocolBuilderNumeric> {
 

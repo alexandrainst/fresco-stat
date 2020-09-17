@@ -1,14 +1,13 @@
 package dk.alexandra.fresco.stat.descriptive;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.collections.Matrix;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Histogram implements Computation<List<DRes<SInt>>, ProtocolBuilderNumeric> {
 
@@ -19,9 +18,9 @@ public class Histogram implements Computation<List<DRes<SInt>>, ProtocolBuilderN
    * Given a list of upper bounds for buckets and a list of samples, this computation computes the
    * histogram for the given buckets. The last bucket contains all samples larger than the last
    * upper bound.
-   * 
+   *
    * @param buckets Soft upper bounds for buckets
-   * @param data List of samples
+   * @param data    List of samples
    */
   public Histogram(List<DRes<SInt>> buckets, List<DRes<SInt>> data) {
     this.buckets = buckets;
