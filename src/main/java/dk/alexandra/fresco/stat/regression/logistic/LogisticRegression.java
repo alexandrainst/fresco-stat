@@ -5,10 +5,7 @@ import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.lib.collections.Matrix;
 import dk.alexandra.fresco.lib.real.SReal;
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.function.IntToDoubleFunction;
 import java.util.stream.Collectors;
@@ -54,7 +51,7 @@ public class LogisticRegression implements Computation<List<DRes<SReal>>, Protoc
         }).whileLoop((state) -> state.round < epochs, (seq, state) -> {
             seq.debug().marker("Round " + state.round, System.out);
             DRes<List<DRes<SReal>>> newB =
-                    new LogisticRegressionSGD(data, expected, rate.applyAsDouble(state.round), state.b.out()).buildComputation(seq);
+                    new LogisticRegressionGD(data, expected, rate.applyAsDouble(state.round), state.b.out()).buildComputation(seq);
             return new IterationState(state.round + 1, newB);
         }).seq((seq, state) -> state.b);
     }

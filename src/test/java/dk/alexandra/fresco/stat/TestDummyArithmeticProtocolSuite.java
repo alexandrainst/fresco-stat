@@ -165,17 +165,17 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
 
   @Test
   public void test_logistic_regression_prediction() throws Exception {
-    runTest(new StatTests.TestLogRegPrediction<>(), EvaluationStrategy.SEQUENTIAL, 2);
+    runTest(new StatTests.TestLogRegPrediction<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_logistic_regression_sgd_single_epoch() throws Exception {
-    runTest(new StatTests.TestLogRegSGDSingleEpoch<>(), EvaluationStrategy.SEQUENTIAL, 2);
+    runTest(new StatTests.TestLogRegSGDSingleEpoch<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_logistic_regression() throws Exception {
-    runTest(new StatTests.TestLogisticRegression<>(), EvaluationStrategy.SEQUENTIAL, 2);
+    runTest(new StatTests.TestLogisticRegression<>(), TEST_PARAMETERS);
   }
 
 }

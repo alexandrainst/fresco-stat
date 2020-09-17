@@ -21,7 +21,7 @@ import dk.alexandra.fresco.stat.descriptive.Ranks;
 import dk.alexandra.fresco.stat.regression.LinearRegression.LinearFunction;
 import dk.alexandra.fresco.stat.regression.logistic.LogisticRegression;
 import dk.alexandra.fresco.stat.regression.logistic.LogisticRegressionPrediction;
-import dk.alexandra.fresco.stat.regression.logistic.LogisticRegressionSGD;
+import dk.alexandra.fresco.stat.regression.logistic.LogisticRegressionGD;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoDiscrete;
 import dk.alexandra.fresco.stat.survival.cox.CoxGradient;
 import dk.alexandra.fresco.stat.survival.cox.CoxRegression;
@@ -29,25 +29,17 @@ import dk.alexandra.fresco.stat.tests.FTest;
 import dk.alexandra.fresco.stat.tests.KruskallWallisTest;
 import dk.alexandra.fresco.stat.utils.MatrixUtils;
 import dk.alexandra.fresco.stat.utils.sort.FindTiedGroups;
-import java.io.Reader;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.ToDoubleBiFunction;
-import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.inference.ChiSquareTest;
 import org.apache.commons.math3.stat.inference.OneWayAnova;
@@ -853,7 +845,7 @@ public class StatTests {
                     seq.realNumeric().known(2.0));
 
                 DRes<List<DRes<SReal>>> b =
-                    new LogisticRegressionSGD(data.getFirst(), data.getSecond(), 0.1, initB)
+                    new LogisticRegressionGD(data.getFirst(), data.getSecond(), 0.1, initB)
                         .buildComputation(seq);
                 return b;
               }).seq((seq, b) -> {
