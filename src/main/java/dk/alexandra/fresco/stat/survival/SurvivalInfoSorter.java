@@ -11,6 +11,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Convert an instance of type T into a <code>Pair<DRes<SInt>, List<DRes<SInt>>></code> and back for
+ * use with {@link OddEvenIntegerMerge} to sort on the time of event parameter.
+ *
+ * @param <T> A subject for survival analysis.
+ */
 public abstract class SurvivalInfoSorter<T> implements
     Computation<List<T>, ProtocolBuilderNumeric> {
 
