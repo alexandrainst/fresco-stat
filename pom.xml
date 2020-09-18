@@ -4,7 +4,7 @@
   <artifactId>fresco-stat</artifactId>
   <packaging>pom</packaging>
   <modules>
-    <module>demo</module>
+    <module>cox-demo</module>
   </modules>
   <dependencies>
     <dependency>

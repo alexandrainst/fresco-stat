@@ -8,7 +8,8 @@ import dk.alexandra.fresco.stat.LogRegTests.TestLogRegPrediction;
 import dk.alexandra.fresco.stat.LogRegTests.TestLogRegSGDSingleEpoch;
 import dk.alexandra.fresco.stat.LogRegTests.TestLogisticRegression;
 import dk.alexandra.fresco.stat.SurvivalAnalysisTests.TestCoxGradient;
-import dk.alexandra.fresco.stat.SurvivalAnalysisTests.TestCoxRegression;
+import dk.alexandra.fresco.stat.SurvivalAnalysisTests.TestCoxRegressionDiscrete;
+import dk.alexandra.fresco.stat.SurvivalAnalysisTests.TestCoxRegressionContinuous;
 import dk.alexandra.fresco.stat.TestsTests.TestChiSquareTest;
 import dk.alexandra.fresco.stat.TestsTests.TestChiSquareTestKnown;
 import dk.alexandra.fresco.stat.TestsTests.TestChiSquareTestWithKnownBuckets;
@@ -168,8 +169,13 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   }
 
   @Test
-  public void test_cox_regression() {
-    runTest(new TestCoxRegression<>(), TEST_PARAMETERS);
+  public void test_cox_regression_discrete() {
+    runTest(new TestCoxRegressionDiscrete<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_cox_regression_continuous() {
+    runTest(new TestCoxRegressionContinuous<>(), TEST_PARAMETERS);
   }
 
   @Test
