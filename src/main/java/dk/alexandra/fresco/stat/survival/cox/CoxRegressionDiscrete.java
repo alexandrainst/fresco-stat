@@ -1,6 +1,6 @@
 package dk.alexandra.fresco.stat.survival.cox;
 
-import dk.alexandra.fresco.stat.survival.SortSurvivalInfoListDiscrete;
+import dk.alexandra.fresco.stat.survival.SurvivalInfoSorterDiscrete;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoDiscrete;
 import java.util.List;
 
@@ -18,6 +18,6 @@ public class CoxRegressionDiscrete extends CoxRegression<SurvivalInfoDiscrete> {
       double[] beta) {
     super(data, iterations, alpha, beta,
         (d, b) -> builder -> new CoxGradientDiscrete(d, b).buildComputation(builder),
-        SortSurvivalInfoListDiscrete::new);
+        SurvivalInfoSorterDiscrete::new);
   }
 }

@@ -10,9 +10,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class SortSurvivalInfoListDiscrete extends SurvivalInfoSorter<SurvivalInfoDiscrete> {
+public class SurvivalInfoSorterDiscrete extends SurvivalInfoSorter<SurvivalInfoDiscrete> {
 
-  public SortSurvivalInfoListDiscrete(
+  public SurvivalInfoSorterDiscrete(
       List<SurvivalInfoDiscrete> data) {
     super(data);
   }

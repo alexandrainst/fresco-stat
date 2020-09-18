@@ -8,9 +8,9 @@ import dk.alexandra.fresco.lib.real.fixed.SFixed;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SortSurvivalInfoListContinuous extends SurvivalInfoSorter<SurvivalInfoContinuous> {
+public class SurvivalInfoSorterContinuous extends SurvivalInfoSorter<SurvivalInfoContinuous> {
 
-  public SortSurvivalInfoListContinuous(
+  public SurvivalInfoSorterContinuous(
       List<SurvivalInfoContinuous> data) {
     super(data);
   }

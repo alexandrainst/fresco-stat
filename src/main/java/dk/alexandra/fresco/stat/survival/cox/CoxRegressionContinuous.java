@@ -1,6 +1,6 @@
 package dk.alexandra.fresco.stat.survival.cox;
 
-import dk.alexandra.fresco.stat.survival.SortSurvivalInfoListContinuous;
+import dk.alexandra.fresco.stat.survival.SurvivalInfoSorterContinuous;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoContinuous;
 import java.util.List;
 
@@ -17,6 +17,6 @@ public class CoxRegressionContinuous extends CoxRegression<SurvivalInfoContinuou
       double[] beta) {
     super(data, iterations, alpha, beta,
         (d, b) -> builder -> new CoxGradientContinuous(d, b).buildComputation(builder),
-        SortSurvivalInfoListContinuous::new);
+        SurvivalInfoSorterContinuous::new);
   }
 }
