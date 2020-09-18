@@ -15,13 +15,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Tiny application for a two party case which computes the sum of the inputs, and outputs the
- * result.
- *
- * @author kasperdamgard
+ * Tiny application for a two party case which computes the Cox regression of a hard coded data set.
  */
 public class CoxRegressionApplication implements Application<List<BigDecimal>, ProtocolBuilderNumeric> {
-
 
   @Override
   public DRes<List<BigDecimal>> buildComputation(ProtocolBuilderNumeric producer) {
