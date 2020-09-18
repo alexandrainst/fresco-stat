@@ -15,7 +15,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CoxGradient implements Computation<List<DRes<SReal>>, ProtocolBuilderNumeric> {
+public class CoxGradientDiscrete implements Computation<List<DRes<SReal>>, ProtocolBuilderNumeric> {
 
   private final List<SurvivalInfoDiscrete> data;
   private final List<DRes<SReal>> beta;
@@ -27,7 +27,7 @@ public class CoxGradient implements Computation<List<DRes<SReal>>, ProtocolBuild
    * @param data
    * @param beta
    */
-  public CoxGradient(List<SurvivalInfoDiscrete> data, List<DRes<SReal>> beta) {
+  public CoxGradientDiscrete(List<SurvivalInfoDiscrete> data, List<DRes<SReal>> beta) {
     this.data = data;
     this.beta = beta;
   }

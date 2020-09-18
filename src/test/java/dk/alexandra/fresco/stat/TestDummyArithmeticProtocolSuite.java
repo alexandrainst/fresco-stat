@@ -3,6 +3,19 @@ package dk.alexandra.fresco.stat;
 import dk.alexandra.fresco.framework.builder.numeric.field.BigIntegerFieldDefinition;
 import dk.alexandra.fresco.framework.sce.evaluator.EvaluationStrategy;
 import dk.alexandra.fresco.framework.util.ModulusFinder;
+import dk.alexandra.fresco.stat.LinRegTests.TestLinearRegression;
+import dk.alexandra.fresco.stat.LogRegTests.TestLogRegPrediction;
+import dk.alexandra.fresco.stat.LogRegTests.TestLogRegSGDSingleEpoch;
+import dk.alexandra.fresco.stat.LogRegTests.TestLogisticRegression;
+import dk.alexandra.fresco.stat.SurvivalAnalysisTests.TestCoxGradient;
+import dk.alexandra.fresco.stat.SurvivalAnalysisTests.TestCoxRegression;
+import dk.alexandra.fresco.stat.TestsTests.TestChiSquareTest;
+import dk.alexandra.fresco.stat.TestsTests.TestChiSquareTestKnown;
+import dk.alexandra.fresco.stat.TestsTests.TestChiSquareTestWithKnownBuckets;
+import dk.alexandra.fresco.stat.TestsTests.TestFTest;
+import dk.alexandra.fresco.stat.TestsTests.TestKruskallWallis;
+import dk.alexandra.fresco.stat.TestsTests.TestTTest;
+import dk.alexandra.fresco.stat.TestsTests.TestTwoSampleTTest;
 import dk.alexandra.fresco.stat.sampling.SampleBernoulliDistribution;
 import dk.alexandra.fresco.stat.sampling.SampleCatagoricalDistribution;
 import dk.alexandra.fresco.stat.sampling.SampleExponentialDistribution;
@@ -16,6 +29,7 @@ import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.LaplaceDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTest {
@@ -27,37 +41,37 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
 
   @Test
   public void test_T_Test() throws Exception {
-    runTest(new StatTests.TestTTest<>(), TEST_PARAMETERS);
+    runTest(new TestTTest<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_two_sample_T_Test() throws Exception {
-    runTest(new StatTests.TestTwoSampleTTest<>(), TEST_PARAMETERS);
+    runTest(new TestTwoSampleTTest<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_chi_square_test() throws Exception {
-    runTest(new StatTests.TestChiSquareTest<>(), TEST_PARAMETERS);
+    runTest(new TestChiSquareTest<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_chi_square_test_known() throws Exception {
-    runTest(new StatTests.TestChiSquareTestKnown<>(), TEST_PARAMETERS);
+    runTest(new TestChiSquareTestKnown<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_chi_square_test_known_buckets() throws Exception {
-    runTest(new StatTests.TestChiSquareTestWithKnownBuckets<>(), TEST_PARAMETERS);
+    runTest(new TestChiSquareTestWithKnownBuckets<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_linear_regression() throws Exception {
-    runTest(new StatTests.TestLinearRegression<>(), TEST_PARAMETERS);
+    runTest(new TestLinearRegression<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_correlation() throws Exception {
-    runTest(new StatTests.TestCorrelation<>(), TEST_PARAMETERS);
+    runTest(new DescriptiveStatTests.TestCorrelation<>(), TEST_PARAMETERS);
   }
 
   @Test
@@ -110,72 +124,74 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
 
   @Test
   public void test_histogram_int() throws Exception {
-    runTest(new StatTests.TestHistogramInt<>(), TEST_PARAMETERS);
+    runTest(new DescriptiveStatTests.TestHistogramInt<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_histogram_fixed() throws Exception {
-    runTest(new StatTests.TestHistogramFixed<>(), TEST_PARAMETERS);
+    runTest(new DescriptiveStatTests.TestHistogramFixed<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_two_dim_histogram() throws Exception {
-    runTest(new StatTests.TestTwoDimHistogram<>(), TEST_PARAMETERS);
+    runTest(new DescriptiveStatTests.TestTwoDimHistogram<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_leaky_frequencies() {
-    runTest(new StatTests.TestLeakyFrequencyTable<>(), TEST_PARAMETERS);
+    runTest(new DescriptiveStatTests.TestLeakyFrequencyTable<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_f_test() {
-    runTest(new StatTests.TestFTest<>(), TEST_PARAMETERS);
+    runTest(new TestFTest<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_leaky_ranking() {
-    runTest(new StatTests.TestLeakyRanks<>(), TEST_PARAMETERS);
+    runTest(new DescriptiveStatTests.TestLeakyRanks<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_ranks() {
-    runTest(new StatTests.TestRanks<>(), TEST_PARAMETERS);
+    runTest(new DescriptiveStatTests.TestRanks<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_kruskall_wallis() {
-    runTest(new StatTests.TestKruskallWallis<>(), TEST_PARAMETERS);
+    runTest(new TestKruskallWallis<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_cox_gradient() {
-    runTest(new StatTests.TestCoxGradient<>(), TEST_PARAMETERS);
+    runTest(new TestCoxGradient<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_cox_regression() {
-    runTest(new StatTests.TestCoxRegression<>(), TEST_PARAMETERS);
+    runTest(new TestCoxRegression<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_find_ties() {
-    runTest(new StatTests.TestTiedGroups<>(), TEST_PARAMETERS);
+    runTest(new DescriptiveStatTests.TestTiedGroups<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_logistic_regression_prediction() throws Exception {
-    runTest(new StatTests.TestLogRegPrediction<>(), TEST_PARAMETERS);
+    runTest(new TestLogRegPrediction<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_logistic_regression_sgd_single_epoch() throws Exception {
-    runTest(new StatTests.TestLogRegSGDSingleEpoch<>(), TEST_PARAMETERS);
+    runTest(new TestLogRegSGDSingleEpoch<>(), TEST_PARAMETERS);
   }
 
+  // Slow test
+  @Ignore
   @Test
   public void test_logistic_regression() throws Exception {
-    runTest(new StatTests.TestLogisticRegression<>(), TEST_PARAMETERS);
+    runTest(new TestLogisticRegression<>(), TEST_PARAMETERS);
   }
 
 }

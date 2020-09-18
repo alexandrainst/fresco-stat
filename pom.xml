@@ -2,6 +2,10 @@
   xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <artifactId>fresco-stat</artifactId>
+  <packaging>pom</packaging>
+  <modules>
+    <module>demo</module>
+  </modules>
   <dependencies>
     <dependency>
       <artifactId>core</artifactId>
