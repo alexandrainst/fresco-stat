@@ -8,8 +8,8 @@ import dk.alexandra.fresco.framework.TestThreadRunner.TestThread;
 import dk.alexandra.fresco.framework.TestThreadRunner.TestThreadFactory;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.sce.resources.ResourcePool;
-import dk.alexandra.fresco.framework.util.Pair;
-import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoContinuous;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoDiscrete;
 import dk.alexandra.fresco.stat.survival.cox.CoxGradientDiscrete;
@@ -31,11 +31,9 @@ public class SurvivalAnalysisTests {
   public static List<SurvivalInfoContinuous> survivalAnalysisDatasetContinuous(ProtocolBuilderNumeric builder) {
     List<SurvivalInfoDiscrete> data = survivalAnalysisDataset(builder);
 
-    List<SurvivalInfoContinuous> continuousData =
-    data.stream().map(d -> new SurvivalInfoContinuous(d.getCovariates().stream().map(e -> builder.realNumeric().fromSInt(e.getSecond())).collect(
+    return data.stream().map(d -> new SurvivalInfoContinuous(d.getCovariates().stream().map(e -> FixedNumeric
+        .using(builder).fromSInt(e.get(1))).collect(
         Collectors.toList()), d.getTime(), d.getCensored())).collect(Collectors.toList());
-
-    return continuousData;
   }
 
   public static List<SurvivalInfoDiscrete> survivalAnalysisDataset(ProtocolBuilderNumeric builder,
@@ -70,14 +68,14 @@ public class SurvivalAnalysisTests {
     List<SurvivalInfoDiscrete> data = new ArrayList<>();
     for (int[] row : combined) {
       if (row[0] == 0) {
-        data.add(new SurvivalInfoDiscrete(List.of(new Pair<>(
-            List.of(builder.numeric().known(1), builder.numeric().known(0)),
-            builder.numeric().known(row[0]))), builder.numeric().known(row[1]),
+        data.add(new SurvivalInfoDiscrete(List.of(
+            List.of(builder.numeric().known(1), builder.numeric().known(0))),
+            builder.numeric().known(row[1]),
             builder.numeric().known(row[2])));
       } else {
-        data.add(new SurvivalInfoDiscrete(List.of(new Pair<>(
-            List.of(builder.numeric().known(0), builder.numeric().known(1)),
-            builder.numeric().known(row[0]))), builder.numeric().known(row[1]),
+        data.add(new SurvivalInfoDiscrete(List.of(
+            List.of(builder.numeric().known(0), builder.numeric().known(1))),
+            builder.numeric().known(row[1]),
             builder.numeric().known(row[2])));
       }
     }
@@ -99,12 +97,11 @@ public class SurvivalAnalysisTests {
               .seq(seq -> {
 
                 List<SurvivalInfoDiscrete> input = survivalAnalysisDataset(seq, true);
-                DRes<List<DRes<SReal>>> beta = new CoxGradientDiscrete(input,
-                    List.of(seq.realNumeric().known(1))).buildComputation(seq);
-                return beta;
+                return new CoxGradientDiscrete(input,
+                    List.of(FixedNumeric.using(seq).known(1))).buildComputation(seq);
               }).seq((seq, beta) -> {
                 List<DRes<BigDecimal>> openBeta =
-                    beta.stream().map(seq.realNumeric()::open)
+                    beta.stream().map(FixedNumeric.using(seq)::open)
                         .collect(Collectors.toList());
                 return () ->
                     openBeta.stream().map(DRes::out).collect(Collectors.toList());
@@ -130,12 +127,11 @@ public class SurvivalAnalysisTests {
               .seq(seq -> {
 
                 List<SurvivalInfoDiscrete> input = survivalAnalysisDataset(seq);
-                DRes<List<DRes<SReal>>> beta = new CoxRegressionDiscrete(input, 5, 0.1,
+                return new CoxRegressionDiscrete(input, 5, 0.1,
                     new double[]{1}).buildComputation(seq);
-                return beta;
               }).seq((seq, beta) -> {
                 List<DRes<BigDecimal>> openBeta =
-                    beta.stream().map(seq.realNumeric()::open)
+                    beta.stream().map(FixedNumeric.using(seq)::open)
                         .collect(Collectors.toList());
                 return () ->
                     openBeta.stream().map(DRes::out).collect(Collectors.toList());
@@ -162,12 +158,11 @@ public class SurvivalAnalysisTests {
               .seq(seq -> {
 
                 List<SurvivalInfoContinuous> input = survivalAnalysisDatasetContinuous(seq);
-                DRes<List<DRes<SReal>>> beta = new CoxRegressionContinuous(input, 5, 0.1,
+                return new CoxRegressionContinuous(input, 5, 0.1,
                     new double[]{1}).buildComputation(seq);
-                return beta;
               }).seq((seq, beta) -> {
                 List<DRes<BigDecimal>> openBeta =
-                    beta.stream().map(seq.realNumeric()::open)
+                    beta.stream().map(FixedNumeric.using(seq)::open)
                         .collect(Collectors.toList());
                 return () ->
                     openBeta.stream().map(DRes::out).collect(Collectors.toList());

@@ -3,22 +3,24 @@ package dk.alexandra.fresco.stat.regression.logistic;
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
-import dk.alexandra.fresco.lib.collections.Matrix;
-import dk.alexandra.fresco.lib.real.SReal;
-import dk.alexandra.fresco.stat.utils.VectorUtils;
+import dk.alexandra.fresco.lib.common.collections.Matrix;
+import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.linearalgebra.VectorUtils;
 import java.util.ArrayList;
 import java.util.List;
 
 public class LogisticRegressionGD
-    implements Computation<List<DRes<SReal>>, ProtocolBuilderNumeric> {
+    implements Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
-  private final Matrix<DRes<SReal>> data;
-  private final List<DRes<SReal>> expected;
+  private final Matrix<DRes<SFixed>> data;
+  private final List<DRes<SFixed>> expected;
   private final double rate;
-  private final List<DRes<SReal>> b;
+  private final List<DRes<SFixed>> b;
 
-  public LogisticRegressionGD(Matrix<DRes<SReal>> data, List<DRes<SReal>> expected, double rate,
-      List<DRes<SReal>> b) {
+  public LogisticRegressionGD(Matrix<DRes<SFixed>> data, List<DRes<SFixed>> expected, double rate,
+      List<DRes<SFixed>> b) {
 
     assert (data.getWidth() == b.size() - 1);
     assert (data.getHeight() == expected.size());
@@ -30,62 +32,61 @@ public class LogisticRegressionGD
   }
 
   @Override
-  public DRes<List<DRes<SReal>>> buildComputation(ProtocolBuilderNumeric builder) {
+  public DRes<List<DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.par(par -> {
-      List<DRes<List<DRes<SReal>>>> deltas = new ArrayList<>();
+      List<DRes<List<DRes<SFixed>>>> deltas = new ArrayList<>();
       for (int i = 0; i < data.getHeight(); i++) {
         deltas.add(new RowGradient(data.getRow(i), expected.get(i), b)
             .buildComputation(par));
       }
       return () -> deltas;
     }).par((par, deltas) -> {
-      List<DRes<SReal>> betaDeltas = new ArrayList<>();
+      List<DRes<SFixed>> betaDeltas = new ArrayList<>();
       for (int i = 0; i < b.size(); i++) {
         int finalI = i;
-        betaDeltas.add(par.realAdvanced()
+        betaDeltas.add(AdvancedFixedNumeric.using(par)
             .sum(VectorUtils.listBuilder(data.getHeight(), j -> deltas.get(j).out().get(
                 finalI))));
       }
       return () -> betaDeltas;
     }).par((par, betaDeltas) -> {
-      List<DRes<SReal>> scaledDeltas = new ArrayList<>();
+      List<DRes<SFixed>> scaledDeltas = new ArrayList<>();
       for (int i = 0; i < b.size(); i++) {
-        scaledDeltas.add(par.realNumeric().mult(rate, betaDeltas.get(i)));
+        scaledDeltas.add(FixedNumeric.using(par).mult(rate, betaDeltas.get(i)));
       }
       return () -> scaledDeltas;
     }).par((par, scaledDeltas) -> {
-      List<DRes<SReal>> newBeta = new ArrayList<>();
+      List<DRes<SFixed>> newBeta = new ArrayList<>();
       for (int i = 0; i < b.size(); i++) {
-        newBeta.add(par.realNumeric().add(b.get(i), scaledDeltas.get(i)));
+        newBeta.add(FixedNumeric.using(par).add(b.get(i), scaledDeltas.get(i)));
       }
       return () -> newBeta;
     });
   }
 
   private static class RowGradient
-      implements Computation<List<DRes<SReal>>, ProtocolBuilderNumeric> {
+      implements Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
-    private final List<DRes<SReal>> row;
-    private final DRes<SReal> expected;
-    private final List<DRes<SReal>> b;
+    private final List<DRes<SFixed>> row;
+    private final DRes<SFixed> expected;
+    private final List<DRes<SFixed>> b;
 
-    private RowGradient(List<DRes<SReal>> row, DRes<SReal> expected, List<DRes<SReal>> b) {
+    private RowGradient(List<DRes<SFixed>> row, DRes<SFixed> expected, List<DRes<SFixed>> b) {
       this.row = row;
       this.expected = expected;
       this.b = b;
     }
 
     @Override
-    public DRes<List<DRes<SReal>>> buildComputation(ProtocolBuilderNumeric builder) {
+    public DRes<List<DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric builder) {
       return builder.seq(seq -> {
-        DRes<SReal> yHat = new LogisticRegressionPrediction(row, b).buildComputation(seq);
-        DRes<SReal> error = seq.realNumeric().sub(expected, yHat);
-        return error;
+        DRes<SFixed> yHat = new LogisticRegressionPrediction(row, b).buildComputation(seq);
+        return FixedNumeric.using(seq).sub(expected, yHat);
       }).par((par, t) -> {
-        List<DRes<SReal>> delta = new ArrayList<>(b.size());
+        List<DRes<SFixed>> delta = new ArrayList<>(b.size());
         delta.add(t);
-        for (DRes<SReal> ri : row) {
-          delta.add(par.realNumeric().mult(t, ri));
+        for (DRes<SFixed> ri : row) {
+          delta.add(FixedNumeric.using(par).mult(t, ri));
         }
         return () -> delta;
       });

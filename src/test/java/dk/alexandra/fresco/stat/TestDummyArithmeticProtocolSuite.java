@@ -1,15 +1,18 @@
 package dk.alexandra.fresco.stat;
 
 import dk.alexandra.fresco.framework.builder.numeric.field.BigIntegerFieldDefinition;
+import dk.alexandra.fresco.framework.builder.numeric.field.MersennePrimeFieldDefinition;
 import dk.alexandra.fresco.framework.sce.evaluator.EvaluationStrategy;
 import dk.alexandra.fresco.framework.util.ModulusFinder;
+import dk.alexandra.fresco.stat.LATests.TestGramSchmidt;
+import dk.alexandra.fresco.stat.LATests.TestQR;
 import dk.alexandra.fresco.stat.LinRegTests.TestLinearRegression;
 import dk.alexandra.fresco.stat.LogRegTests.TestLogRegPrediction;
 import dk.alexandra.fresco.stat.LogRegTests.TestLogRegSGDSingleEpoch;
 import dk.alexandra.fresco.stat.LogRegTests.TestLogisticRegression;
 import dk.alexandra.fresco.stat.SurvivalAnalysisTests.TestCoxGradient;
-import dk.alexandra.fresco.stat.SurvivalAnalysisTests.TestCoxRegressionDiscrete;
 import dk.alexandra.fresco.stat.SurvivalAnalysisTests.TestCoxRegressionContinuous;
+import dk.alexandra.fresco.stat.SurvivalAnalysisTests.TestCoxRegressionDiscrete;
 import dk.alexandra.fresco.stat.TestsTests.TestChiSquareTest;
 import dk.alexandra.fresco.stat.TestsTests.TestChiSquareTestKnown;
 import dk.alexandra.fresco.stat.TestsTests.TestChiSquareTestWithKnownBuckets;
@@ -30,13 +33,13 @@ import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.LaplaceDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTest {
 
   private static final TestParameters TEST_PARAMETERS = new TestParameters().maxBitLength(128)
-      .field(new BigIntegerFieldDefinition(ModulusFinder.findSuitableModulus(256)))
+      .field(new MersennePrimeFieldDefinition(256, 587))
+//      .field(new BigIntegerFieldDefinition(ModulusFinder.findSuitableModulus(256)))
       .fixedPointPrecesion(16).evaluationStrategy(EvaluationStrategy.SEQUENTIAL).numParties(2)
       .performanceLogging(false);
 
@@ -194,10 +197,18 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   }
 
   // Slow test
-  @Ignore
   @Test
   public void test_logistic_regression() throws Exception {
     runTest(new TestLogisticRegression<>(), TEST_PARAMETERS);
   }
 
+  @Test
+  public void test_gram_schmidt() {
+    runTest(new TestGramSchmidt<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_qr_decomposition() {
+    runTest(new TestQR<>(), TEST_PARAMETERS);
+  }
 }

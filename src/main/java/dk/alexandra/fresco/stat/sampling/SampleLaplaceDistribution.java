@@ -5,20 +5,19 @@ import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
-import dk.alexandra.fresco.lib.real.SReal;
-import dk.alexandra.fresco.lib.real.fixed.SFixed;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
  * This computation samples from a Laplace distribution with scale <i>b</i> and location 0.
  */
-public class SampleLaplaceDistribution implements Computation<SReal, ProtocolBuilderNumeric> {
+public class SampleLaplaceDistribution implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-  private DRes<SReal> b;
+  private DRes<SFixed> b;
   private BigDecimal bKnown;
 
-  public SampleLaplaceDistribution(DRes<SReal> b) {
+  public SampleLaplaceDistribution(DRes<SFixed> b) {
     this.b = b;
   }
 
@@ -31,24 +30,21 @@ public class SampleLaplaceDistribution implements Computation<SReal, ProtocolBui
   }
 
   @Override
-  public DRes<SReal> buildComputation(ProtocolBuilderNumeric builder) {
+  public DRes<SFixed> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.par(par -> {
 
-      DRes<SReal> exponential;
+      DRes<SFixed> exponential;
       if (Objects.nonNull(bKnown)) {
         exponential = new SampleExponentialDistribution(bKnown).buildComputation(par);
       } else {
         exponential = new SampleExponentialDistribution(b).buildComputation(par);
-        //DRes<SReal> bInverse = seq.realAdvanced().reciprocal(b);
-//          return new SampleExponentialDistribution(bInverse).buildComputation(par);
-//        });
       }
 
       DRes<SInt> rademacher = new SampleRademacherDistribution().buildComputation(par);
 
       return () -> new Pair<>(exponential, rademacher);
     }).seq((seq, p) -> {
-      SFixed exp = (SFixed) p.getFirst().out();
+      SFixed exp = p.getFirst().out();
       DRes<SInt> product = seq.numeric().mult(exp.getSInt(), p.getSecond());
       return new SFixed(product);
     });

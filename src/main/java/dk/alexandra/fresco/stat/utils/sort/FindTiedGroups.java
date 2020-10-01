@@ -40,8 +40,6 @@ public class FindTiedGroups implements Computation<List<BigInteger>, ProtocolBui
         ciphers.add(openedCipher);
       }
       return () -> ciphers;
-    }).seq((seq, ciphers) -> {
-      return () -> ciphers.stream().map(DRes::out).collect(Collectors.toList());
-    });
+    }).seq((seq, ciphers) -> () -> ciphers.stream().map(DRes::out).collect(Collectors.toList()));
   }
 }

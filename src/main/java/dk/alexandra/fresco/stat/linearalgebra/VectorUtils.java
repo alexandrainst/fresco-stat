@@ -1,10 +1,11 @@
-package dk.alexandra.fresco.stat.utils;
+package dk.alexandra.fresco.stat.linearalgebra;
 
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.value.SInt;
-import dk.alexandra.fresco.lib.real.SReal;
-import dk.alexandra.fresco.lib.real.fixed.SFixed;
+import dk.alexandra.fresco.lib.common.math.AdvancedNumeric;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
@@ -24,7 +25,7 @@ public class VectorUtils {
    * @param builder The builder to use.
    * @return The inner product of a and b.
    */
-  public static DRes<SReal> innerProductWithBitvectorPublic(List<DRes<SInt>> a, List<Double> b,
+  public static DRes<SFixed> innerProductWithBitvectorPublic(List<DRes<SInt>> a, List<Double> b,
       ProtocolBuilderNumeric builder) {
     return builder.seq(seq -> {
 
@@ -37,15 +38,15 @@ public class VectorUtils {
         throw new IllegalArgumentException("Vectors must have same size");
       }
 
-      // See dk.alexandra.fresco.lib.real.fixed.FixedNumeric.unscaled
+      /* See dk.alexandra.fresco.lib.fixed.fixed.FixedNumeric.unscaled */
       List<BigInteger> bFixed =
           b.stream().map(x -> BigDecimal.valueOf(x).multiply(new BigDecimal(
-              BigInteger.valueOf(2).pow(builder.getRealNumericContext().getPrecision())))
+              BigInteger.valueOf(2).pow(builder.getBasicNumericContext().getDefaultFixedPointPrecision())))
               .setScale(0, RoundingMode.HALF_UP)
               .toBigIntegerExact()).collect(Collectors.toList());
-      DRes<SInt> innerProduct = seq.advancedNumeric().innerProductWithPublicPart(bFixed, a);
+      DRes<SInt> innerProduct = AdvancedNumeric.using(seq).innerProductWithPublicPart(bFixed, a);
 
-      // No truncation needed
+      /* No truncation needed */
       return new SFixed(innerProduct);
     });
   }
@@ -58,7 +59,7 @@ public class VectorUtils {
    * @param builder The builder to use.
    * @return The inner product of a and b.
    */
-  public static DRes<SReal> innerProductWithBitvector(List<DRes<SInt>> a, List<DRes<SReal>> b,
+  public static DRes<SFixed> innerProductWithBitvector(List<DRes<SInt>> a, List<DRes<SFixed>> b,
       ProtocolBuilderNumeric builder) {
     return builder.seq(seq -> {
 
@@ -71,12 +72,12 @@ public class VectorUtils {
         throw new IllegalArgumentException("Vectors must have same size");
       }
 
-      // See dk.alexandra.fresco.lib.real.fixed.FixedNumeric.unscaled
+      /* See dk.alexandra.fresco.lib.fixed.fixed.FixedNumeric.unscaled */
       List<DRes<SInt>> bFixed =
-          b.stream().map(x -> ((SFixed) x.out()).getSInt()).collect(Collectors.toList());
-      DRes<SInt> innerProduct = seq.advancedNumeric().innerProduct(bFixed, a);
+          b.stream().map(x -> x.out().getSInt()).collect(Collectors.toList());
+      DRes<SInt> innerProduct = AdvancedNumeric.using(seq).innerProduct(bFixed, a);
 
-      // No truncation needed
+      /* No truncation needed */
       return new SFixed(innerProduct);
     });
   }
@@ -119,12 +120,12 @@ public class VectorUtils {
    * @param builder The builder to use.
    * @return A scaled vector.
    */
-  public static List<DRes<SReal>> scale(List<DRes<SReal>> vector, DRes<SReal> scalar,
+  public static List<DRes<SFixed>> scale(List<DRes<SFixed>> vector, DRes<SFixed> scalar,
       ProtocolBuilderNumeric builder) {
-    List<DRes<SReal>> result = new ArrayList<>();
+    List<DRes<SFixed>> result = new ArrayList<>();
     builder.par(par -> {
       for (int i = 0; i < vector.size(); i++) {
-        result.add(par.realNumeric().mult(vector.get(i), scalar));
+        result.add(FixedNumeric.using(par).mult(vector.get(i), scalar));
       }
       return () -> result;
     });
@@ -139,12 +140,12 @@ public class VectorUtils {
    * @param builder The builder to use.
    * @return A scaled vector.
    */
-  public static List<DRes<SReal>> scale(List<DRes<SReal>> vector, double scalar,
+  public static List<DRes<SFixed>> scale(List<DRes<SFixed>> vector, double scalar,
       ProtocolBuilderNumeric builder) {
-    List<DRes<SReal>> result = new ArrayList<>();
+    List<DRes<SFixed>> result = new ArrayList<>();
     builder.par(par -> {
       for (int i = 0; i < vector.size(); i++) {
-        result.add(par.realNumeric().mult(scalar, vector.get(i)));
+        result.add(FixedNumeric.using(par).mult(scalar, vector.get(i)));
       }
       return () -> result;
     });
@@ -159,12 +160,12 @@ public class VectorUtils {
    * @param builder The builder to use.
    * @return
    */
-  public static List<DRes<SReal>> div(List<DRes<SReal>> vector, DRes<SReal> scalar,
+  public static List<DRes<SFixed>> div(List<DRes<SFixed>> vector, DRes<SFixed> scalar,
       ProtocolBuilderNumeric builder) {
-    List<DRes<SReal>> result = new ArrayList<>();
+    List<DRes<SFixed>> result = new ArrayList<>();
     builder.par(par -> {
       for (int i = 0; i < vector.size(); i++) {
-        result.add(par.realNumeric().div(vector.get(i), scalar));
+        result.add(FixedNumeric.using(par).div(vector.get(i), scalar));
       }
       return () -> result;
     });
@@ -179,15 +180,15 @@ public class VectorUtils {
    * @param builder The builder to use.
    * @return a+b
    */
-  public static List<DRes<SReal>> add(List<DRes<SReal>> a, List<DRes<SReal>> b,
+  public static List<DRes<SFixed>> add(List<DRes<SFixed>> a, List<DRes<SFixed>> b,
       ProtocolBuilderNumeric builder) {
-    List<DRes<SReal>> result = new ArrayList<>();
+    List<DRes<SFixed>> result = new ArrayList<>();
     builder.par(par -> {
       if (a.size() != b.size()) {
         throw new IllegalArgumentException("Vector size mismatch");
       }
       for (int i = 0; i < a.size(); i++) {
-        result.add(par.realNumeric().add(a.get(i), b.get(i)));
+        result.add(FixedNumeric.using(par).add(a.get(i), b.get(i)));
       }
       return null;
     });
@@ -202,15 +203,15 @@ public class VectorUtils {
    * @param builder The builder to use.
    * @return a-b
    */
-  public static List<DRes<SReal>> sub(List<DRes<SReal>> a, List<DRes<SReal>> b,
+  public static List<DRes<SFixed>> sub(List<DRes<SFixed>> a, List<DRes<SFixed>> b,
       ProtocolBuilderNumeric builder) {
-    List<DRes<SReal>> result = new ArrayList<>();
+    List<DRes<SFixed>> result = new ArrayList<>();
     builder.par(par -> {
       if (a.size() != b.size()) {
         throw new IllegalArgumentException("Vector size mismatch");
       }
       for (int i = 0; i < a.size(); i++) {
-        result.add(par.realNumeric().sub(a.get(i), b.get(i)));
+        result.add(FixedNumeric.using(par).sub(a.get(i), b.get(i)));
       }
       return null;
     });

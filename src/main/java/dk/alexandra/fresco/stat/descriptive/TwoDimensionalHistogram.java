@@ -5,8 +5,10 @@ import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
-import dk.alexandra.fresco.lib.collections.Matrix;
-import dk.alexandra.fresco.stat.utils.MatrixUtils;
+import dk.alexandra.fresco.lib.common.collections.Matrix;
+import dk.alexandra.fresco.lib.common.compare.Comparison;
+import dk.alexandra.fresco.lib.common.math.AdvancedNumeric;
+import dk.alexandra.fresco.stat.linearalgebra.MatrixUtils;
 import dk.alexandra.fresco.stat.utils.MultiDimensionalArray;
 import java.util.List;
 
@@ -38,10 +40,10 @@ public class TwoDimensionalHistogram
             if (i == w - 1 && j == h - 1) {
               return par.numeric().known(1);
             } else if (i == w - 1) {
-              return par.comparison().compareLEQ(data.get(k).getFirst(),
+              return Comparison.using(par).compareLEQ(data.get(k).getFirst(),
                   buckets.getSecond().get(j));
             } else if (j == h - 1) {
-              return par.comparison().compareLEQ(data.get(k).getSecond(),
+              return Comparison.using(par).compareLEQ(data.get(k).getSecond(),
                   buckets.getFirst().get(i));
             } else {
               return new LEQPair(data.get(k).getFirst(), buckets.getSecond().get(j),
@@ -50,7 +52,7 @@ public class TwoDimensionalHistogram
           });
       return () -> counts;
     }).par((par, counts) -> {
-      MultiDimensionalArray<DRes<SInt>> sums = counts.project(r -> par.advancedNumeric().sum(r));
+      MultiDimensionalArray<DRes<SInt>> sums = counts.project(r -> AdvancedNumeric.using(par).sum(r));
       return () -> sums;
     }).par((par, sums) -> {
       Matrix<DRes<SInt>> histogram = MatrixUtils.buildMatrix(h, w, (i, j) -> {
@@ -82,12 +84,11 @@ public class TwoDimensionalHistogram
     @Override
     public DRes<SInt> buildComputation(ProtocolBuilderNumeric builder) {
       return builder.par(par -> {
-        DRes<SInt> c1 = par.comparison().compareLEQ(a1, a2);
-        DRes<SInt> c2 = par.comparison().compareLEQ(b1, b2);
+        Comparison comparison = Comparison.using(par);
+        DRes<SInt> c1 = comparison.compareLEQ(a1, a2);
+        DRes<SInt> c2 = comparison.compareLEQ(b1, b2);
         return Pair.lazy(c1, c2);
-      }).seq((seq, c) -> {
-        return seq.numeric().mult(c.getFirst(), c.getSecond());
-      });
+      }).seq((seq, c) -> seq.numeric().mult(c.getFirst(), c.getSecond()));
     }
 
   }

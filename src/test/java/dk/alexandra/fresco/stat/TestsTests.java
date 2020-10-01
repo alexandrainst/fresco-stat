@@ -10,7 +10,8 @@ import dk.alexandra.fresco.framework.TestThreadRunner.TestThreadFactory;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.sce.resources.ResourcePool;
 import dk.alexandra.fresco.framework.value.SInt;
-import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.tests.FTest;
 import dk.alexandra.fresco.stat.tests.KruskallWallisTest;
 import java.math.BigDecimal;
@@ -39,11 +40,12 @@ public class TestsTests {
         public void test() throws Exception {
 
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
-            List<DRes<SReal>> input =
-                data.stream().map(x -> builder.realNumeric().known(x)).collect(Collectors.toList());
-            DRes<SReal> t = Statistics.using(builder)
-                .ttest(input, builder.realNumeric().known(BigDecimal.valueOf(expectedMean)));
-            return builder.realNumeric().open(t);
+            FixedNumeric numeric = FixedNumeric.using(builder);
+            List<DRes<SFixed>> input =
+                data.stream().map(x -> numeric.known(x)).collect(Collectors.toList());
+            DRes<SFixed> t = Statistics.using(builder)
+                .ttest(input, numeric.known(BigDecimal.valueOf(expectedMean)));
+            return numeric.open(t);
           };
 
           BigDecimal t = runApplication(testApplication);
@@ -72,12 +74,12 @@ public class TestsTests {
         public void test() throws Exception {
 
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
-            List<DRes<SReal>> input1 = data1.stream().map(x -> builder.realNumeric().input(x, 1))
+            List<DRes<SFixed>> input1 = data1.stream().map(x -> FixedNumeric.using(builder).input(x, 1))
                 .collect(Collectors.toList());
-            List<DRes<SReal>> input2 = data2.stream().map(x -> builder.realNumeric().input(x, 2))
+            List<DRes<SFixed>> input2 = data2.stream().map(x -> FixedNumeric.using(builder).input(x, 2))
                 .collect(Collectors.toList());
-            DRes<SReal> t = Statistics.using(builder).ttest(input1, input2);
-            return builder.realNumeric().open(t);
+            DRes<SFixed> t = Statistics.using(builder).ttest(input1, input2);
+            return FixedNumeric.using(builder).open(t);
           };
 
           BigDecimal output = runApplication(testApplication);
@@ -107,12 +109,12 @@ public class TestsTests {
         public void test() throws Exception {
 
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
-            List<DRes<SReal>> e = expected.stream().map(x -> builder.realNumeric().input(x, 1))
+            List<DRes<SFixed>> e = expected.stream().map(x -> FixedNumeric.using(builder).input(x, 1))
                 .collect(Collectors.toList());
             List<DRes<SInt>> o = observed.stream().map(x -> builder.numeric().input(x, 2))
                 .collect(Collectors.toList());
-            DRes<SReal> x = Statistics.using(builder).chiSquare(o, e);
-            return builder.realNumeric().open(x);
+            DRes<SFixed> x = Statistics.using(builder).chiSquare(o, e);
+            return FixedNumeric.using(builder).open(x);
           };
 
           BigDecimal output = runApplication(testApplication);
@@ -143,11 +145,11 @@ public class TestsTests {
         public void test() {
 
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
-            List<DRes<SReal>> secretData = Arrays.stream(data)
-                .mapToObj(builder.realNumeric()::known)
+            List<DRes<SFixed>> secretData = Arrays.stream(data)
+                .mapToObj(FixedNumeric.using(builder)::known)
                 .collect(Collectors.toList());
-            DRes<SReal> x = Statistics.using(builder).chiSquare(secretData, buckets, expected);
-            return builder.realNumeric().open(x);
+            DRes<SFixed> x = Statistics.using(builder).chiSquare(secretData, buckets, expected);
+            return FixedNumeric.using(builder).open(x);
           };
 
           BigDecimal output = runApplication(testApplication);
@@ -177,8 +179,8 @@ public class TestsTests {
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
             List<DRes<SInt>> o = observed.stream().map(x -> builder.numeric().input(x, 2))
                 .collect(Collectors.toList());
-            DRes<SReal> x = Statistics.using(builder).chiSquare(o, expected);
-            return builder.realNumeric().open(x);
+            DRes<SFixed> x = Statistics.using(builder).chiSquare(o, expected);
+            return FixedNumeric.using(builder).open(x);
           };
 
           BigDecimal output = runApplication(testApplication);
@@ -207,22 +209,22 @@ public class TestsTests {
         public void test() throws Exception {
 
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
-            List<DRes<SReal>> input1 = data.get(0).stream()
-                .map(x -> builder.realNumeric().input(x, 1))
+            List<DRes<SFixed>> input1 = data.get(0).stream()
+                .map(x -> FixedNumeric.using(builder).input(x, 1))
                 .collect(Collectors.toList());
-            List<DRes<SReal>> input2 = data.get(1).stream()
-                .map(x -> builder.realNumeric().input(x, 2))
+            List<DRes<SFixed>> input2 = data.get(1).stream()
+                .map(x -> FixedNumeric.using(builder).input(x, 2))
                 .collect(Collectors.toList());
-            List<DRes<SReal>> input3 = data.get(2).stream()
-                .map(x -> builder.realNumeric().input(x, 1))
+            List<DRes<SFixed>> input3 = data.get(2).stream()
+                .map(x -> FixedNumeric.using(builder).input(x, 1))
                 .collect(Collectors.toList());
-            List<DRes<SReal>> input4 = data.get(3).stream()
-                .map(x -> builder.realNumeric().input(x, 2))
+            List<DRes<SFixed>> input4 = data.get(3).stream()
+                .map(x -> FixedNumeric.using(builder).input(x, 2))
                 .collect(Collectors.toList());
 
-            DRes<SReal> f = new FTest(List.of(input1, input2, input3, input4))
+            DRes<SFixed> f = new FTest(List.of(input1, input2, input3, input4))
                 .buildComputation(builder);
-            return builder.realNumeric().open(f);
+            return FixedNumeric.using(builder).open(f);
           };
 
           BigDecimal output = runApplication(testApplication);
@@ -256,9 +258,8 @@ public class TestsTests {
             List<List<DRes<SInt>>> input = data.stream().map(
                 sample -> sample.stream().map(x -> builder.numeric().input(x, 1))
                     .collect(Collectors.toList())).collect(Collectors.toList());
-            DRes<SReal> h = new KruskallWallisTest(input, true).buildComputation(builder);
-            DRes<BigDecimal> output = builder.realNumeric().open(h);
-            return output;
+            DRes<SFixed> h = new KruskallWallisTest(input, true).buildComputation(builder);
+            return FixedNumeric.using(builder).open(h);
           };
 
           // Data and expected values from example 12.3 in Blæsild & Granfeldt: "Statistics with

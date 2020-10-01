@@ -4,7 +4,9 @@ import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.value.SInt;
-import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -14,13 +16,13 @@ import java.util.Objects;
  *
  * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
-public class ChiSquareTest implements Computation<SReal, ProtocolBuilderNumeric> {
+public class ChiSquareTest implements Computation<SFixed, ProtocolBuilderNumeric> {
 
   private final double[] expectedKnown;
   private final List<DRes<SInt>> observed;
-  private final List<DRes<SReal>> expected;
+  private final List<DRes<SFixed>> expected;
 
-  public ChiSquareTest(List<DRes<SInt>> observed, List<DRes<SReal>> expected) {
+  public ChiSquareTest(List<DRes<SInt>> observed, List<DRes<SFixed>> expected) {
     this.observed = observed;
     this.expected = expected;
     this.expectedKnown = null;
@@ -33,9 +35,9 @@ public class ChiSquareTest implements Computation<SReal, ProtocolBuilderNumeric>
   }
 
   @Override
-  public DRes<SReal> buildComputation(ProtocolBuilderNumeric builder) {
+  public DRes<SFixed> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.par(par -> {
-      List<DRes<SReal>> terms = new ArrayList<>();
+      List<DRes<SFixed>> terms = new ArrayList<>();
       for (int i = 0; i < observed.size(); i++) {
         if (Objects.nonNull(expectedKnown)) {
           terms.add(par.seq(calculateTerm(observed.get(i), expectedKnown[i])));
@@ -44,22 +46,24 @@ public class ChiSquareTest implements Computation<SReal, ProtocolBuilderNumeric>
         }
       }
       return () -> terms;
-    }).seq((seq, terms) -> seq.realAdvanced().sum(terms));
+    }).seq((seq, terms) -> AdvancedFixedNumeric.using(seq).sum(terms));
   }
 
-  private Computation<SReal, ProtocolBuilderNumeric> calculateTerm(DRes<SInt> o, DRes<SReal> e) {
+  private Computation<SFixed, ProtocolBuilderNumeric> calculateTerm(DRes<SInt> o, DRes<SFixed> e) {
     return builder -> {
-      DRes<SReal> t = builder.realNumeric().sub(builder.realNumeric().fromSInt(o), e);
-      t = builder.realNumeric().mult(t, t);
-      return builder.realNumeric().div(t, e);
+      FixedNumeric numeric = FixedNumeric.using(builder);
+      DRes<SFixed> t = numeric.sub(numeric.fromSInt(o), e);
+      t = numeric.mult(t, t);
+      return numeric.div(t, e);
     };
   }
 
-  private Computation<SReal, ProtocolBuilderNumeric> calculateTerm(DRes<SInt> o, double e) {
+  private Computation<SFixed, ProtocolBuilderNumeric> calculateTerm(DRes<SInt> o, double e) {
     return builder -> {
-      DRes<SReal> t = builder.realNumeric().sub(builder.realNumeric().fromSInt(o), e);
-      t = builder.realNumeric().mult(t, t);
-      return builder.realNumeric().div(t, e);
+      FixedNumeric numeric = FixedNumeric.using(builder);
+      DRes<SFixed> t = numeric.sub(numeric.fromSInt(o), e);
+      t = numeric.mult(t, t);
+      return numeric.div(t, e);
     };
   }
 }

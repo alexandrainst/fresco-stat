@@ -13,12 +13,13 @@ import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.sce.resources.ResourcePool;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
-import dk.alexandra.fresco.lib.collections.Matrix;
-import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.common.collections.Matrix;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.descriptive.LeakyBreakTies;
 import dk.alexandra.fresco.stat.descriptive.LeakyFrequencyTable;
 import dk.alexandra.fresco.stat.descriptive.Ranks;
-import dk.alexandra.fresco.stat.utils.MatrixUtils;
+import dk.alexandra.fresco.stat.linearalgebra.MatrixUtils;
 import dk.alexandra.fresco.stat.utils.sort.FindTiedGroups;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -62,12 +63,13 @@ public class DescriptiveStatTests {
         public void test() throws Exception {
 
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
-            List<DRes<SReal>> xSecret =
-                x.stream().map(x -> builder.realNumeric().input(x, 1)).collect(Collectors.toList());
-            List<DRes<SReal>> ySecret =
-                y.stream().map(y -> builder.realNumeric().input(y, 2)).collect(Collectors.toList());
-            DRes<SReal> r = Statistics.using(builder).correlation(xSecret, ySecret);
-            return builder.realNumeric().open(r);
+            FixedNumeric numeric = FixedNumeric.using(builder);
+            List<DRes<SFixed>> xSecret =
+                x.stream().map(x -> numeric.input(x, 1)).collect(Collectors.toList());
+            List<DRes<SFixed>> ySecret =
+                y.stream().map(y -> numeric.input(y, 2)).collect(Collectors.toList());
+            DRes<SFixed> r = Statistics.using(builder).correlation(xSecret, ySecret);
+            return numeric.open(r);
           };
 
           double[] xArray = x.stream().mapToDouble(i -> i).toArray();
@@ -77,7 +79,6 @@ public class DescriptiveStatTests {
           double expected = correlation.correlation(xArray, yArray);
 
           BigDecimal output = runApplication(testApplication);
-          System.out.println(output + " ~ " + expected);
           assertTrue(Math.abs(expected - output.doubleValue()) < 0.01);
         }
       };
@@ -99,20 +100,17 @@ public class DescriptiveStatTests {
         @Override
         public void test() throws Exception {
 
-          Application<List<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> {
-            return builder.seq(seq -> {
-              List<DRes<SInt>> xSecret =
-                  x.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList());
-              List<DRes<SInt>> bSecret =
-                  buckets.stream().map(b -> seq.numeric().input(b, 2)).collect(Collectors.toList());
-              DRes<List<DRes<SInt>>> h = Statistics.using(seq).histogramInt(bSecret, xSecret);
-              return h;
-            }).seq((seq, h) -> {
-              List<DRes<BigInteger>> out =
-                  h.stream().map(seq.numeric()::open).collect(Collectors.toList());
-              return () -> out.stream().map(DRes::out).collect(Collectors.toList());
-            });
-          };
+          Application<List<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder.seq(seq -> {
+            List<DRes<SInt>> xSecret =
+                x.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList());
+            List<DRes<SInt>> bSecret =
+                buckets.stream().map(b -> seq.numeric().input(b, 2)).collect(Collectors.toList());
+            return Statistics.using(seq).histogramInt(bSecret, xSecret);
+          }).seq((seq, h) -> {
+            List<DRes<BigInteger>> out =
+                h.stream().map(seq.numeric()::open).collect(Collectors.toList());
+            return () -> out.stream().map(DRes::out).collect(Collectors.toList());
+          });
 
           List<BigInteger> output = runApplication(testApplication);
           for (int i = 0; i < output.size(); i++) {
@@ -137,20 +135,17 @@ public class DescriptiveStatTests {
         @Override
         public void test() throws Exception {
 
-          Application<List<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> {
-            return builder.seq(seq -> {
-              List<DRes<SReal>> xSecret =
-                  x.stream().map(x -> seq.realNumeric().input(x, 1)).collect(Collectors.toList());
-              List<DRes<SReal>> bSecret = buckets.stream().map(b -> seq.realNumeric().input(b, 2))
-                  .collect(Collectors.toList());
-              DRes<List<DRes<SInt>>> h = Statistics.using(seq).histogramReal(bSecret, xSecret);
-              return h;
-            }).seq((seq, h) -> {
-              List<DRes<BigInteger>> out =
-                  h.stream().map(seq.numeric()::open).collect(Collectors.toList());
-              return () -> out.stream().map(DRes::out).collect(Collectors.toList());
-            });
-          };
+          Application<List<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder.seq(seq -> {
+            List<DRes<SFixed>> xSecret =
+                x.stream().map(x -> FixedNumeric.using(seq).input(x, 1)).collect(Collectors.toList());
+            List<DRes<SFixed>> bSecret = buckets.stream().map(b -> FixedNumeric.using(seq).input(b, 2))
+                .collect(Collectors.toList());
+            return Statistics.using(seq).histogramReal(bSecret, xSecret);
+          }).seq((seq, h) -> {
+            List<DRes<BigInteger>> out =
+                h.stream().map(seq.numeric()::open).collect(Collectors.toList());
+            return () -> out.stream().map(DRes::out).collect(Collectors.toList());
+          });
 
           List<BigInteger> output = runApplication(testApplication);
           for (int i = 0; i < output.size(); i++) {
@@ -176,26 +171,23 @@ public class DescriptiveStatTests {
         @Override
         public void test() throws Exception {
 
-          Application<Matrix<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> {
-            return builder.seq(seq -> {
-              Pair<List<DRes<SInt>>, List<DRes<SInt>>> buckets = new Pair<>(
-                  bucketsX.stream().map(x -> seq.numeric().input(x, 1))
-                      .collect(Collectors.toList()),
-                  bucketsY.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList())
-              );
-              List<Pair<DRes<SInt>, DRes<SInt>>> data = IntStream.range(0, x.size()).mapToObj(
-                  i -> new Pair<>(seq.numeric().input(x.get(i), 1),
-                      seq.numeric().input(y.get(i), 1))).collect(Collectors.toList());
-              x.stream().map(x -> seq.realNumeric().input(x, 1)).collect(Collectors.toList());
+          Application<Matrix<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder.seq(seq -> {
+            Pair<List<DRes<SInt>>, List<DRes<SInt>>> buckets = new Pair<>(
+                bucketsX.stream().map(x -> seq.numeric().input(x, 1))
+                    .collect(Collectors.toList()),
+                bucketsY.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList())
+            );
+            List<Pair<DRes<SInt>, DRes<SInt>>> data = IntStream.range(0, x.size()).mapToObj(
+                i -> new Pair<>(seq.numeric().input(x.get(i), 1),
+                    seq.numeric().input(y.get(i), 1))).collect(Collectors.toList());
+            x.stream().map(x -> FixedNumeric.using(seq).input(x, 1)).collect(Collectors.toList());
 
-              DRes<Matrix<DRes<SInt>>> histogram = Statistics.using(seq)
-                  .twoDimensionalHistogramInt(buckets, data);
-              return histogram;
-            }).seq((seq, histogram) -> {
-              Matrix<DRes<BigInteger>> opened = MatrixUtils.map(histogram, seq.numeric()::open);
-              return () -> MatrixUtils.map(opened, DRes::out);
-            });
-          };
+            return Statistics.using(seq)
+                .twoDimensionalHistogramInt(buckets, data);
+          }).seq((seq, histogram) -> {
+            Matrix<DRes<BigInteger>> opened = MatrixUtils.map(histogram, seq.numeric()::open);
+            return () -> MatrixUtils.map(opened, DRes::out);
+          });
 
           Matrix<BigInteger> output = runApplication(testApplication);
           assertEquals(BigInteger.valueOf(0), output.getRow(0).get(0));
@@ -220,9 +212,8 @@ public class DescriptiveStatTests {
               builder.seq(seq -> {
                 List<DRes<SInt>> xSecret =
                     x.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList());
-                DRes<List<Pair<DRes<SInt>, Integer>>> frequencyTable = new LeakyFrequencyTable(
+                return new LeakyFrequencyTable(
                     xSecret).buildComputation(seq);
-                return frequencyTable;
               }).seq((seq, ft) -> {
                 List<Pair<DRes<BigInteger>, Integer>> out =
                     ft.stream()
@@ -298,12 +289,11 @@ public class DescriptiveStatTests {
                 List<List<DRes<SInt>>> input = data.stream().map(
                     sample -> sample.stream().map(x -> seq.numeric().input(x, 1))
                         .collect(Collectors.toList())).collect(Collectors.toList());
-                DRes<Pair<List<DRes<SReal>>, Double>> ranks = new Ranks(input, true)
+                return new Ranks(input, true)
                     .buildComputation(seq);
-                return ranks;
               }).seq((seq, ranks) -> {
                 List<DRes<BigDecimal>> openList =
-                    ranks.getFirst().stream().map(seq.realNumeric()::open)
+                    ranks.getFirst().stream().map(FixedNumeric.using(seq)::open)
                         .collect(Collectors.toList());
                 return () -> new Pair<>(
                     openList.stream().map(DRes::out).collect(Collectors.toList()),

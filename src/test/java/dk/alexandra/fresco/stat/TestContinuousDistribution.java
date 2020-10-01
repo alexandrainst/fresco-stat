@@ -9,7 +9,8 @@ import dk.alexandra.fresco.framework.TestThreadRunner.TestThreadFactory;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.sce.resources.ResourcePool;
-import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.function.Supplier;
@@ -28,7 +29,7 @@ public class TestContinuousDistribution<ResourcePoolT extends ResourcePool>
     extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
 
   private int n;
-  private Supplier<Computation<SReal, ProtocolBuilderNumeric>> sampler;
+  private Supplier<Computation<SFixed, ProtocolBuilderNumeric>> sampler;
   private double alpha;
   private RealDistribution expected;
 
@@ -42,7 +43,7 @@ public class TestContinuousDistribution<ResourcePoolT extends ResourcePool>
    * @param alpha
    */
   public TestContinuousDistribution(int n,
-      Supplier<Computation<SReal, ProtocolBuilderNumeric>> sampler, RealDistribution expected,
+      Supplier<Computation<SFixed, ProtocolBuilderNumeric>> sampler, RealDistribution expected,
       double alpha) {
     this.n = n;
     this.sampler = sampler;
@@ -60,12 +61,12 @@ public class TestContinuousDistribution<ResourcePoolT extends ResourcePool>
 
         Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication = producer -> {
 
-          List<DRes<SReal>> samples =
+          List<DRes<SFixed>> samples =
               Stream.generate(() -> sampler.get().buildComputation(producer)).limit(n)
                   .collect(Collectors.toList());
 
           List<DRes<BigDecimal>> opened =
-              samples.stream().map(producer.realNumeric()::open).collect(Collectors.toList());
+              samples.stream().map(FixedNumeric.using(producer)::open).collect(Collectors.toList());
 
           return () -> opened.stream().map(DRes::out).collect(Collectors.toList());
         };

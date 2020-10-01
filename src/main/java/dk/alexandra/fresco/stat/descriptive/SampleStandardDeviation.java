@@ -3,7 +3,8 @@ package dk.alexandra.fresco.stat.descriptive;
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
-import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.util.List;
 
 /**
@@ -11,21 +12,21 @@ import java.util.List;
  *
  * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
-public class SampleStandardDeviation implements Computation<SReal, ProtocolBuilderNumeric> {
+public class SampleStandardDeviation implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-  private List<DRes<SReal>> observed;
-  private DRes<SReal> mean;
+  private List<DRes<SFixed>> observed;
+  private DRes<SFixed> mean;
 
-  public SampleStandardDeviation(List<DRes<SReal>> observed, DRes<SReal> mean) {
+  public SampleStandardDeviation(List<DRes<SFixed>> observed, DRes<SFixed> mean) {
     this.observed = observed;
     this.mean = mean;
   }
 
   @Override
-  public DRes<SReal> buildComputation(ProtocolBuilderNumeric root) {
+  public DRes<SFixed> buildComputation(ProtocolBuilderNumeric root) {
     return root.seq(builder -> {
-      DRes<SReal> ssd = new SampleVariance(observed, mean).buildComputation(builder);
-      return builder.realAdvanced().sqrt(ssd);
+      DRes<SFixed> ssd = new SampleVariance(observed, mean).buildComputation(builder);
+      return AdvancedFixedNumeric.using(builder).sqrt(ssd);
     });
   }
 

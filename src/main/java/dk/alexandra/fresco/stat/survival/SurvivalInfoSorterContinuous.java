@@ -3,8 +3,7 @@ package dk.alexandra.fresco.stat.survival;
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
-import dk.alexandra.fresco.lib.real.SReal;
-import dk.alexandra.fresco.lib.real.fixed.SFixed;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,8 +20,8 @@ public class SurvivalInfoSorterContinuous extends SurvivalInfoSorter<SurvivalInf
 
     row.add(subject.getCensored());
 
-    for (DRes<SReal> covariate : subject.getCovariates()) {
-      row.add(((SFixed) covariate.out()).getSInt());
+    for (DRes<SFixed> covariate : subject.getCovariates()) {
+      row.add(covariate.out().getSInt());
     }
 
     return new Pair<>(subject.getTime(), row);
@@ -33,7 +32,7 @@ public class SurvivalInfoSorterContinuous extends SurvivalInfoSorter<SurvivalInf
     DRes<SInt> censored = subject.getSecond().get(0);
     DRes<SInt> time = subject.getFirst();
 
-    List<DRes<SReal>> covariates = new ArrayList<>();
+    List<DRes<SFixed>> covariates = new ArrayList<>();
     for (int i = 1; i < subject.getSecond().size(); i++) {
       covariates
           .add(new SFixed(subject.getSecond().get(i)));

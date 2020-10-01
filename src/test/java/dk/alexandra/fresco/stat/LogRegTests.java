@@ -9,8 +9,9 @@ import dk.alexandra.fresco.framework.TestThreadRunner.TestThreadFactory;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.sce.resources.ResourcePool;
 import dk.alexandra.fresco.framework.util.Pair;
-import dk.alexandra.fresco.lib.collections.Matrix;
-import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.common.collections.Matrix;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.regression.logistic.LogisticRegression;
 import dk.alexandra.fresco.stat.regression.logistic.LogisticRegressionGD;
 import dk.alexandra.fresco.stat.regression.logistic.LogisticRegressionPrediction;
@@ -24,7 +25,7 @@ import org.junit.Assert;
 
 public class LogRegTests {
 
-  public static Pair<Matrix<DRes<SReal>>, List<DRes<SReal>>> logisticRegressionDataset(
+  public static Pair<Matrix<DRes<SFixed>>, List<DRes<SFixed>>> logisticRegressionDataset(
       ProtocolBuilderNumeric builder) {
 
     // Data from https://en.wikipedia.org/wiki/Logistic_regression
@@ -36,12 +37,12 @@ public class LogRegTests {
         .collect(Collectors.toList());
     List<Double> e = Arrays.stream(pass).boxed().collect(Collectors.toList());
 
-    Matrix<DRes<SReal>> secretData = new Matrix<>(data.size(), data.get(0).size(),
-        i -> data.get(i).stream().map(BigDecimal::valueOf).map(builder.realNumeric()::known)
+    Matrix<DRes<SFixed>> secretData = new Matrix<>(data.size(), data.get(0).size(),
+        i -> data.get(i).stream().map(BigDecimal::valueOf).map(FixedNumeric.using(builder)::known)
             .collect(Collectors.toCollection(ArrayList::new)));
 
-    List<DRes<SReal>> secretE =
-        e.stream().map(BigDecimal::valueOf).map(builder.realNumeric()::known)
+    List<DRes<SFixed>> secretE =
+        e.stream().map(BigDecimal::valueOf).map(FixedNumeric.using(builder)::known)
             .collect(Collectors.toList());
 
     return new Pair(secretData, secretE);
@@ -62,18 +63,18 @@ public class LogRegTests {
 
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = seq -> {
 
-            List<DRes<SReal>> secretRow =
-                row.stream().map(i -> seq.realNumeric().known(BigDecimal.valueOf(i)))
+            List<DRes<SFixed>> secretRow =
+                row.stream().map(i -> FixedNumeric.using(seq).known(BigDecimal.valueOf(i)))
                     .collect(Collectors.toList());
 
-            List<DRes<SReal>> secretB =
-                b.stream().map(i -> seq.realNumeric().known(BigDecimal.valueOf(i)))
+            List<DRes<SFixed>> secretB =
+                b.stream().map(i -> FixedNumeric.using(seq).known(BigDecimal.valueOf(i)))
                     .collect(Collectors.toList());
 
-            DRes<SReal> y =
+            DRes<SFixed> y =
                 new LogisticRegressionPrediction(secretRow, secretB).buildComputation(seq);
 
-            return seq.realNumeric().open(y);
+            return FixedNumeric.using(seq).open(y);
           };
           double expected = 1.0 / (1.0 + Math.exp(-b.get(0) - b.get(1) * row.get(0)));
           BigDecimal output = runApplication(testApplication);
@@ -95,19 +96,17 @@ public class LogRegTests {
 
           Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication =
               root -> root.seq(seq -> {
-                Pair<Matrix<DRes<SReal>>, List<DRes<SReal>>> data = logisticRegressionDataset(seq);
+                Pair<Matrix<DRes<SFixed>>, List<DRes<SFixed>>> data = logisticRegressionDataset(seq);
 
-                List<DRes<SReal>> initB = List.of(seq.realNumeric().known(-3.0),
-                    seq.realNumeric().known(2.0));
+                List<DRes<SFixed>> initB = List.of(FixedNumeric.using(seq).known(-3.0),
+                    FixedNumeric.using(seq).known(2.0));
 
-                DRes<List<DRes<SReal>>> b =
-                    new LogisticRegressionGD(data.getFirst(), data.getSecond(), 0.1, initB)
-                        .buildComputation(seq);
-                return b;
+                return new LogisticRegressionGD(data.getFirst(), data.getSecond(), 0.1, initB)
+                    .buildComputation(seq);
               }).seq((seq, b) -> {
 
                 List<DRes<BigDecimal>> openB =
-                    b.stream().map(bi -> seq.realNumeric().open(bi)).collect(Collectors.toList());
+                    b.stream().map(bi -> FixedNumeric.using(seq).open(bi)).collect(Collectors.toList());
 
                 return () -> openB.stream().map(DRes::out).collect(Collectors.toList());
               });
@@ -149,18 +148,16 @@ public class LogRegTests {
           Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication =
               root -> root.seq(seq -> {
 
-                Pair<Matrix<DRes<SReal>>, List<DRes<SReal>>> data = logisticRegressionDataset(seq);
+                Pair<Matrix<DRes<SFixed>>, List<DRes<SFixed>>> data = logisticRegressionDataset(seq);
 
                 double[] guess = new double[]{0, 0};
 
-                DRes<List<DRes<SReal>>> b =
-                    new LogisticRegression(data.getFirst(), data.getSecond(), guess,
-                        i -> 5.0 / (i + 35.0), 50).buildComputation(seq);
-                return b;
+                return new LogisticRegression(data.getFirst(), data.getSecond(), guess,
+                    i -> 5.0 / (i + 35.0), 50).buildComputation(seq);
               }).seq((seq, b) -> {
 
                 List<DRes<BigDecimal>> openB =
-                    b.stream().map(bi -> seq.realNumeric().open(bi)).collect(Collectors.toList());
+                    b.stream().map(bi -> FixedNumeric.using(seq).open(bi)).collect(Collectors.toList());
 
                 return () -> openB.stream().map(DRes::out).collect(Collectors.toList());
               });

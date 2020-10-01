@@ -5,8 +5,9 @@ import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
-import dk.alexandra.fresco.lib.real.SReal;
-import dk.alexandra.fresco.lib.real.fixed.SFixed;
+import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.descriptive.Ranks;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,10 +24,10 @@ import java.util.stream.Collectors;
  * affect the test statistic too much. If averageTies is set to true, the ranks of the ties will be
  * leaked to all parties.</p>
  */
-public class KruskallWallisTest implements Computation<SReal, ProtocolBuilderNumeric> {
+public class KruskallWallisTest implements Computation<SFixed, ProtocolBuilderNumeric> {
 
   private final List<List<DRes<SInt>>> observed;
-  private boolean averageTies;
+  private final boolean averageTies;
 
   public KruskallWallisTest(List<List<DRes<SInt>>> observed) {
     this(observed, false);
@@ -38,13 +39,13 @@ public class KruskallWallisTest implements Computation<SReal, ProtocolBuilderNum
   }
 
   /**
-   * If the test is to be applied on fixed point numbers (SReal's), this method should be used to
+   * If the test is to be applied on fixed point numbers (SFixed's), this method should be used to
    * transform the data,
    *
-   * @param observed The data as SReal's
+   * @param observed The data as SFixed's
    * @return The input data as SInts to be used in the test.
    */
-  public static List<List<DRes<SInt>>> fromSReal(List<List<DRes<SReal>>> observed) {
+  public static List<List<DRes<SInt>>> fromSFixed(List<List<DRes<SFixed>>> observed) {
     return observed.stream().map(
         sample -> sample.stream().map(x -> ((SFixed) x).getSInt()).collect(Collectors.toList()))
         .collect(
@@ -52,36 +53,34 @@ public class KruskallWallisTest implements Computation<SReal, ProtocolBuilderNum
   }
 
   @Override
-  public DRes<SReal> buildComputation(ProtocolBuilderNumeric builder) {
+  public DRes<SFixed> buildComputation(ProtocolBuilderNumeric builder) {
     int groups = observed.size();
     int N = observed.stream().mapToInt(List::size).sum();
 
-    return builder.seq(seq -> {
-      DRes<Pair<List<DRes<SReal>>, Double>> ranks = new Ranks(observed, averageTies)
-          .buildComputation(seq);
-      return ranks;
-    }).par((par, ranks) -> {
-      List<DRes<SReal>> squared = ranks.getFirst().stream()
-          .map(rank -> par.realNumeric().mult(rank, rank))
+    return builder.seq(seq -> new Ranks(observed, averageTies)
+        .buildComputation(seq)).par((par, ranks) -> {
+      List<DRes<SFixed>> squared = ranks.getFirst().stream()
+          .map(rank -> FixedNumeric.using(par).mult(rank, rank))
           .collect(
               Collectors.toList());
       return Pair.lazy(squared, ranks.getSecond());
     }).par((par, squared) -> {
-      List<DRes<SReal>> squaredAverages = new ArrayList<>();
+      List<DRes<SFixed>> squaredAverages = new ArrayList<>();
       for (int i = 0; i < groups; i++) {
         squaredAverages
-            .add(par.realNumeric().div(squared.getFirst().get(i), observed.get(i).size()));
+            .add(FixedNumeric.using(par).div(squared.getFirst().get(i), observed.get(i).size()));
       }
       return Pair.lazy(squaredAverages, squared.getSecond());
     }).seq((seq, squaredAverages) -> {
-      DRes<SReal> h = seq.realAdvanced().sum(squaredAverages.getFirst());
+      DRes<SFixed> h = AdvancedFixedNumeric.using(seq).sum(squaredAverages.getFirst());
 
-      h = seq.realNumeric().mult(12.0, h);
-      h = seq.realNumeric().div(h, N * (N + 1));
-      h = seq.realNumeric().sub(h, 3 * (N + 1));
+      FixedNumeric numeric = FixedNumeric.using(seq);
+      h = numeric.mult(12.0, h);
+      h = numeric.div(h, N * (N + 1));
+      h = numeric.sub(h, 3 * (N + 1));
 
       if (averageTies) {
-        h = seq.realNumeric().mult(squaredAverages.getSecond(), h);
+        h = numeric.mult(squaredAverages.getSecond(), h);
       }
 
       return h;

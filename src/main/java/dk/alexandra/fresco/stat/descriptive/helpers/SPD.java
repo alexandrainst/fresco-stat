@@ -3,7 +3,9 @@ package dk.alexandra.fresco.stat.descriptive.helpers;
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
-import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,14 +14,14 @@ import java.util.List;
  *
  * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
-public class SPD implements Computation<SReal, ProtocolBuilderNumeric> {
+public class SPD implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-  private List<DRes<SReal>> x;
-  private DRes<SReal> meanX;
-  private List<DRes<SReal>> y;
-  private DRes<SReal> meanY;
+  private List<DRes<SFixed>> x;
+  private DRes<SFixed> meanX;
+  private List<DRes<SFixed>> y;
+  private DRes<SFixed> meanY;
 
-  public SPD(List<DRes<SReal>> x, DRes<SReal> meanX, List<DRes<SReal>> y, DRes<SReal> meanY) {
+  public SPD(List<DRes<SFixed>> x, DRes<SFixed> meanX, List<DRes<SFixed>> y, DRes<SFixed> meanY) {
     assert (x.size() == y.size());
     this.x = x;
     this.meanX = meanX;
@@ -28,34 +30,30 @@ public class SPD implements Computation<SReal, ProtocolBuilderNumeric> {
   }
 
   @Override
-  public DRes<SReal> buildComputation(ProtocolBuilderNumeric root) {
+  public DRes<SFixed> buildComputation(ProtocolBuilderNumeric root) {
     return root.par(builder -> {
-      List<DRes<SReal>> terms = new ArrayList<>(x.size());
+      List<DRes<SFixed>> terms = new ArrayList<>(x.size());
       for (int i = 0; i < x.size(); i++) {
         terms.add(new ComputePD(x.get(i), y.get(i)).buildComputation(builder));
       }
       return () -> terms;
-    }).seq((builder, terms) -> {
-      return builder.realAdvanced().sum(terms);
-    });
+    }).seq((builder, terms) -> AdvancedFixedNumeric.using(builder).sum(terms));
   }
 
-  private class ComputePD implements Computation<SReal, ProtocolBuilderNumeric> {
+  private class ComputePD implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-    private DRes<SReal> yi;
-    private DRes<SReal> xi;
+    private DRes<SFixed> yi;
+    private DRes<SFixed> xi;
 
-    private ComputePD(DRes<SReal> xi, DRes<SReal> yi) {
+    private ComputePD(DRes<SFixed> xi, DRes<SFixed> yi) {
       this.xi = xi;
       this.yi = yi;
     }
 
     @Override
-    public DRes<SReal> buildComputation(ProtocolBuilderNumeric builder) {
-      return builder.seq(seq -> {
-        return seq.realNumeric().mult(seq.realNumeric().sub(xi, meanX),
-            seq.realNumeric().sub(yi, meanY));
-      });
+    public DRes<SFixed> buildComputation(ProtocolBuilderNumeric builder) {
+      return builder.seq(seq -> FixedNumeric.using(seq).mult(FixedNumeric.using(seq).sub(xi, meanX),
+          FixedNumeric.using(seq).sub(yi, meanY)));
     }
 
   }

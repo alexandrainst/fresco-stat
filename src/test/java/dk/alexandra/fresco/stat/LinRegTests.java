@@ -9,7 +9,8 @@ import dk.alexandra.fresco.framework.TestThreadRunner.TestThreadFactory;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.sce.resources.ResourcePool;
 import dk.alexandra.fresco.framework.util.Pair;
-import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.regression.LinearRegression.LinearFunction;
 import java.math.BigDecimal;
 import java.util.Arrays;
@@ -35,16 +36,17 @@ public class LinRegTests {
 
           Application<Pair<BigDecimal, BigDecimal>, ProtocolBuilderNumeric> testApplication =
               builder -> {
-                List<DRes<SReal>> xSecret = x.stream().map(x -> builder.realNumeric().input(x, 1))
+                List<DRes<SFixed>> xSecret = x.stream().map(x -> FixedNumeric
+                    .using(builder).input(x, 1))
                     .collect(Collectors.toList());
-                List<DRes<SReal>> ySecret = y.stream().map(y -> builder.realNumeric().input(y, 2))
+                List<DRes<SFixed>> ySecret = y.stream().map(y -> FixedNumeric.using(builder).input(y, 2))
                     .collect(Collectors.toList());
                 DRes<LinearFunction> f = Statistics.using(builder)
                     .linearRegression(xSecret, ySecret);
                 return builder.par(par -> {
                   Pair<DRes<BigDecimal>, DRes<BigDecimal>> result =
-                      new Pair<>(par.realNumeric().open(f.out().getA()),
-                          par.realNumeric().open(f.out().getB()));
+                      new Pair<>(FixedNumeric.using(par).open(f.out().getA()),
+                          FixedNumeric.using(par).open(f.out().getB()));
                   return () -> new Pair<>(result.getFirst().out(), result.getSecond().out());
                 });
               };

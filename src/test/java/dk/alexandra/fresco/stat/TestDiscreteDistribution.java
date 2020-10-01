@@ -41,7 +41,6 @@ public class TestDiscreteDistribution<ResourcePoolT extends ResourcePool>
    *
    * @param n
    * @param sampler
-   * @param expected
    * @param alpha
    */
   public TestDiscreteDistribution(int n,

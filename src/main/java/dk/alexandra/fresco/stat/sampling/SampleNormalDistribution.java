@@ -3,7 +3,8 @@ package dk.alexandra.fresco.stat.sampling;
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
-import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.math.BigDecimal;
 
 /**
@@ -12,14 +13,12 @@ import java.math.BigDecimal;
  *
  * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
-public class SampleNormalDistribution implements Computation<SReal, ProtocolBuilderNumeric> {
+public class SampleNormalDistribution implements Computation<SFixed, ProtocolBuilderNumeric> {
 
   @Override
-  public DRes<SReal> buildComputation(ProtocolBuilderNumeric root) {
-    return root.seq(builder -> {
-      return builder.realNumeric().sub(
-          new SampleIrwinHallDistribution(12).buildComputation(builder), BigDecimal.valueOf(6.0));
-    });
+  public DRes<SFixed> buildComputation(ProtocolBuilderNumeric root) {
+    return root.seq(builder -> FixedNumeric.using(builder).sub(
+        new SampleIrwinHallDistribution(12).buildComputation(builder), BigDecimal.valueOf(6.0)));
   }
 
 }

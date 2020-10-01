@@ -2,29 +2,52 @@
   xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <artifactId>fresco-stat</artifactId>
-  <packaging>pom</packaging>
-  <modules>
-    <module>cox-demo</module>
-  </modules>
+
+  <groupId>dk.alexandra.fresco</groupId>
+  <modelVersion>4.0.0</modelVersion>
+  <properties>
+    <maven.compiler.source>9</maven.compiler.source>
+    <maven.compiler.target>9</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <version>1.0.0-SNAPSHOT</version>
+
+  <build>
+    <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <version>2.22.2</version>
+    </plugin>
+    </plugins>
+  </build>
+
   <dependencies>
     <dependency>
       <artifactId>core</artifactId>
       <groupId>dk.alexandra.fresco</groupId>
       <scope>test</scope>
       <type>test-jar</type>
-      <version>1.2.2-SNAPSHOT</version>
+      <version>1.3.0</version>
     </dependency>
 
     <dependency>
       <artifactId>core</artifactId>
       <groupId>dk.alexandra.fresco</groupId>
-      <version>1.2.2-SNAPSHOT</version>
+      <version>1.3.0</version>
     </dependency>
 
     <dependency>
       <artifactId>mimc</artifactId>
       <groupId>dk.alexandra.fresco</groupId>
-      <version>1.2.2-SNAPSHOT</version>
+      <version>1.3.0</version>
+    </dependency>
+
+    <dependency>
+      <artifactId>fixed</artifactId>
+      <groupId>dk.alexandra.fresco</groupId>
+      <version>1.3.0</version>
     </dependency>
 
     <dependency>
@@ -40,15 +63,6 @@
       <scope>test</scope>
       <version>3.6.1</version>
     </dependency>
+
   </dependencies>
-  <groupId>dk.alexandra.fresco</groupId>
-  <modelVersion>4.0.0</modelVersion>
-  <properties>
-    <maven.compiler.source>9</maven.compiler.source>
-    <maven.compiler.target>9</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
-
-  <version>0.0.2-SNAPSHOT</version>
-
 </project>

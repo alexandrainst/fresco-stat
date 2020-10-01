@@ -4,7 +4,9 @@ import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.value.SInt;
-import dk.alexandra.fresco.lib.collections.Matrix;
+import dk.alexandra.fresco.lib.common.collections.Matrix;
+import dk.alexandra.fresco.lib.common.compare.Comparison;
+import dk.alexandra.fresco.lib.common.math.AdvancedNumeric;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,12 +33,12 @@ public class Histogram implements Computation<List<DRes<SInt>>, ProtocolBuilderN
   public DRes<List<DRes<SInt>>> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.par(par -> {
       Matrix<DRes<SInt>> c = new Matrix<>(buckets.size(), data.size(),
-          i -> data.stream().map(x -> par.comparison().compareLEQ(x, buckets.get(i)))
+          i -> data.stream().map(x -> Comparison.using(par).compareLEQ(x, buckets.get(i)))
               .collect(Collectors.toCollection(ArrayList::new)));
       return () -> c;
     }).par((par, c) -> {
       List<DRes<SInt>> counts =
-          c.getRows().stream().map(r -> par.advancedNumeric().sum(r)).collect(Collectors.toList());
+          c.getRows().stream().map(r -> AdvancedNumeric.using(par).sum(r)).collect(Collectors.toList());
       counts.add(par.numeric().known(data.size()));
       return () -> counts;
     }).seq((seq, counts) -> {

@@ -4,7 +4,10 @@ import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.value.SInt;
-import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.common.math.AdvancedNumeric;
+import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,33 +20,33 @@ import java.util.List;
  */
 public class SampleCatagoricalDistribution implements Computation<SInt, ProtocolBuilderNumeric> {
 
-  private List<DRes<SReal>> propabilities;
+  private List<DRes<SFixed>> probabilities;
   private boolean normalized;
-  private double[] knownPropabilities;
+  private double[] knownProbabilities;
 
   /**
    * @param propabilities The i'th element of this list is the propabily of drawing i from this
    *                      distribution.
    * @param normalized    Does the propabilities sum to 1?
    */
-  public SampleCatagoricalDistribution(List<DRes<SReal>> propabilities, boolean normalized) {
-    this.propabilities = propabilities;
+  public SampleCatagoricalDistribution(List<DRes<SFixed>> propabilities, boolean normalized) {
+    this.probabilities = propabilities;
     this.normalized = normalized;
   }
 
   public SampleCatagoricalDistribution(double[] propabilities) {
     double sum = Arrays.stream(propabilities).sum();
-    this.knownPropabilities = Arrays.stream(propabilities).map(p -> p / sum).toArray();
+    this.knownProbabilities = Arrays.stream(propabilities).map(p -> p / sum).toArray();
     this.normalized = true;
   }
 
   /**
-   * @param propabilities The i'th element of this list is the propabily of drawing i from this
-   *                      distribution. The propabilities should have been normalized such that they
+   * @param probabilities The i'th element of this list is the propabily of drawing i from this
+   *                      distribution. The probabilities should have been normalized such that they
    *                      sum to 1.
    */
-  public SampleCatagoricalDistribution(List<DRes<SReal>> propabilities) {
-    this(propabilities, true);
+  public SampleCatagoricalDistribution(List<DRes<SFixed>> probabilities) {
+    this(probabilities, true);
   }
 
   @Override
@@ -59,37 +62,39 @@ public class SampleCatagoricalDistribution implements Computation<SInt, Protocol
        * We return Sum_{j=0}^n t_j which will be i with probability p_i
        */
 
-      DRes<SReal> r = new SampleUniformDistribution().buildComputation(builder);
+      DRes<SFixed> r = new SampleUniformDistribution().buildComputation(builder);
 
+      FixedNumeric numeric = FixedNumeric.using(builder);
       if (!normalized) {
-        DRes<SReal> sum = builder.realAdvanced().sum(propabilities);
-        r = builder.realNumeric().mult(sum, r);
+        DRes<SFixed> sum = AdvancedFixedNumeric.using(builder).sum(probabilities);
+        r = numeric.mult(sum, r);
       }
 
-      if (knownPropabilities != null) {
+      if (knownProbabilities != null) {
 
-        double c = knownPropabilities[0];
+        double c = knownProbabilities[0];
         List<DRes<SInt>> terms = new ArrayList<>();
-        for (int i = 0; i < knownPropabilities.length; i++) {
+        for (int i = 0; i < knownProbabilities.length; i++) {
           if (i > 0) {
-            c += knownPropabilities[i];
+            c += knownProbabilities[i];
           }
           terms.add(
-              builder.realNumeric().leq(builder.realNumeric().known(BigDecimal.valueOf(c)), r));
+              numeric
+                  .leq(numeric.known(BigDecimal.valueOf(c)), r));
         }
-        return builder.advancedNumeric().sum(terms);
+        return AdvancedNumeric.using(builder).sum(terms);
 
       } else {
 
-        DRes<SReal> c = propabilities.get(0);
+        DRes<SFixed> c = probabilities.get(0);
         List<DRes<SInt>> terms = new ArrayList<>();
-        for (int i = 0; i < propabilities.size(); i++) {
+        for (int i = 0; i < probabilities.size(); i++) {
           if (i > 0) {
-            c = builder.realNumeric().add(c, propabilities.get(i));
+            c = numeric.add(c, probabilities.get(i));
           }
-          terms.add(builder.realNumeric().leq(c, r));
+          terms.add(numeric.leq(c, r));
         }
-        return builder.advancedNumeric().sum(terms);
+        return AdvancedNumeric.using(builder).sum(terms);
 
       }
     });

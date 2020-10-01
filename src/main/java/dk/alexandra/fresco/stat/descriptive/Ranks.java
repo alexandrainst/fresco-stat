@@ -5,10 +5,8 @@ import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
-import dk.alexandra.fresco.lib.real.SReal;
-import dk.alexandra.fresco.stat.utils.VectorUtils;
-import dk.alexandra.fresco.stat.utils.sort.OddEvenIntegerMerge;
-import java.math.BigInteger;
+import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.linearalgebra.VectorUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -19,7 +17,7 @@ import java.util.stream.IntStream;
 /**
  * Output ranks and correction term for Kruskall-Wallis if ties have been averaged.
  */
-public class Ranks implements Computation<Pair<List<DRes<SReal>>, Double>, ProtocolBuilderNumeric> {
+public class Ranks implements Computation<Pair<List<DRes<SFixed>>, Double>, ProtocolBuilderNumeric> {
 
   private final List<List<DRes<SInt>>> samples;
   private final boolean averageTies;
@@ -34,7 +32,7 @@ public class Ranks implements Computation<Pair<List<DRes<SReal>>, Double>, Proto
   }
 
   @Override
-  public DRes<Pair<List<DRes<SReal>>, Double>> buildComputation(
+  public DRes<Pair<List<DRes<SFixed>>, Double>> buildComputation(
       ProtocolBuilderNumeric builder) {
 
     List<Pair<DRes<SInt>, List<DRes<SInt>>>> valuesWithClassIndictators = new ArrayList<>();
@@ -53,29 +51,12 @@ public class Ranks implements Computation<Pair<List<DRes<SReal>>, Double>, Proto
       }
     }
 
-    // Compute the smallest two power larger than or equal to the number of data points
-    int m = 1;
-    while (m < n) {
-      m *= 2;
-    }
-
-    // Pad with small values to ensure size is a two power
-    DRes<SInt> min = builder.numeric().known(
-        BigInteger.ONE.shiftLeft(builder.getBasicNumericContext().getMaxBitLength() - 1).negate());
-    List<DRes<SInt>> indicators = new ArrayList<>(
-        Collections.nCopies(samples.size(), builder.numeric().known(0)));
-    for (int i = n; i < m; i++) {
-      valuesWithClassIndictators.add(new Pair<>(min, indicators));
-    }
-
     int finalN = n;
     return builder.seq(seq ->
         // Sort data points
-        new OddEvenIntegerMerge(valuesWithClassIndictators).buildComputation(seq)
+        dk.alexandra.fresco.lib.common.collections.Collections.using(seq).sort(valuesWithClassIndictators)
     ).seq((seq, sorted) -> {
 
-      // Ignore dummy entries and reverse to ascending order
-      sorted = sorted.subList(0, finalN);
       Collections.reverse(sorted);
 
       Pair<List<Pair<DRes<SInt>, List<DRes<SInt>>>>, DRes<List<Double>>> out;
@@ -135,7 +116,7 @@ public class Ranks implements Computation<Pair<List<DRes<SReal>>, Double>, Proto
       }
 
       // Sum of ranks for each group
-      List<DRes<SReal>> totals = new ArrayList<>();
+      List<DRes<SFixed>> totals = new ArrayList<>();
       for (int i = 0; i < samples.size(); i++) {
         List<DRes<SInt>> column = new ArrayList<>();
         for (Pair<DRes<SInt>, List<DRes<SInt>>> row : dataAndRanks.getFirst()) {

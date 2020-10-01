@@ -2,7 +2,7 @@ package dk.alexandra.fresco.stat.survival;
 
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.value.SInt;
-import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.util.List;
 
 /**
@@ -10,18 +10,18 @@ import java.util.List;
  */
 public class SurvivalInfoContinuous {
 
-  private final List<DRes<SReal>> covariates;
+  private final List<DRes<SFixed>> covariates;
   private final DRes<SInt> time;
   private final DRes<SInt> censored;
 
-  public SurvivalInfoContinuous(List<DRes<SReal>> covariates, DRes<SInt> time,
+  public SurvivalInfoContinuous(List<DRes<SFixed>> covariates, DRes<SInt> time,
       DRes<SInt> censored) {
     this.covariates = covariates;
     this.time = time;
     this.censored = censored;
   }
 
-  public List<DRes<SReal>> getCovariates() {
+  public List<DRes<SFixed>> getCovariates() {
     return covariates;
   }
 

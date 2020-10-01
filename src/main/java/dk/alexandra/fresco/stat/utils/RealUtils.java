@@ -2,7 +2,8 @@ package dk.alexandra.fresco.stat.utils;
 
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
-import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,16 +16,16 @@ public class RealUtils {
    * @param builder The builder to use.
    * @return
    */
-  public static DRes<SReal> product(List<DRes<SReal>> input, ProtocolBuilderNumeric builder) {
+  public static DRes<SFixed> product(List<DRes<SFixed>> input, ProtocolBuilderNumeric builder) {
     return builder.seq(seq -> () -> input)
         .whileLoop((inputs) -> inputs.size() > 1, (seq, inputs) -> seq.par(parallel -> {
-          List<DRes<SReal>> out = new ArrayList<>();
-          DRes<SReal> left = null;
-          for (DRes<SReal> input1 : inputs) {
+          List<DRes<SFixed>> out = new ArrayList<>();
+          DRes<SFixed> left = null;
+          for (DRes<SFixed> input1 : inputs) {
             if (left == null) {
               left = input1;
             } else {
-              out.add(parallel.realNumeric().mult(left, input1));
+              out.add(FixedNumeric.using(parallel).mult(left, input1));
               left = null;
             }
           }

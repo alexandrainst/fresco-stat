@@ -3,30 +3,31 @@ package dk.alexandra.fresco.stat.descriptive.helpers;
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
-import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
  * Compute the uncorrected sum of squares
  */
-public class USS implements Computation<SReal, ProtocolBuilderNumeric> {
+public class USS implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-  private List<DRes<SReal>> data;
+  private List<DRes<SFixed>> data;
 
-  public USS(List<DRes<SReal>> data) {
+  public USS(List<DRes<SFixed>> data) {
     this.data = data;
   }
 
   @Override
-  public DRes<SReal> buildComputation(ProtocolBuilderNumeric root) {
+  public DRes<SFixed> buildComputation(ProtocolBuilderNumeric root) {
     return root.par(par -> {
-      List<DRes<SReal>> squaredTerms =
-          data.stream().map(x -> par.realNumeric().mult(x, x)).collect(Collectors.toList());
+      List<DRes<SFixed>> squaredTerms =
+          data.stream().map(x -> FixedNumeric.using(par).mult(x, x)).collect(Collectors.toList());
       return () -> squaredTerms;
     }).seq((seq, terms) -> {
-      DRes<SReal> sum = seq.realAdvanced().sum(terms);
-      return sum;
+      return AdvancedFixedNumeric.using(seq).sum(terms);
     });
   }
 

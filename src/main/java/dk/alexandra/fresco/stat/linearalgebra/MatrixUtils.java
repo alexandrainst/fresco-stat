@@ -1,6 +1,6 @@
-package dk.alexandra.fresco.stat.utils;
+package dk.alexandra.fresco.stat.linearalgebra;
 
-import dk.alexandra.fresco.lib.collections.Matrix;
+import dk.alexandra.fresco.lib.common.collections.Matrix;
 import java.util.ArrayList;
 import java.util.function.BiFunction;
 import java.util.function.Function;

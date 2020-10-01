@@ -3,7 +3,9 @@ package dk.alexandra.fresco.stat.descriptive.helpers;
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
-import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -12,29 +14,28 @@ import java.util.stream.Collectors;
  *
  * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
-public class SSD implements Computation<SReal, ProtocolBuilderNumeric> {
+public class SSD implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-  private List<DRes<SReal>> data;
-  private DRes<SReal> mean;
+  private List<DRes<SFixed>> data;
+  private DRes<SFixed> mean;
 
-  public SSD(List<DRes<SReal>> data, DRes<SReal> mean) {
+  public SSD(List<DRes<SFixed>> data, DRes<SFixed> mean) {
     this.data = data;
     this.mean = mean;
   }
 
   @Override
-  public DRes<SReal> buildComputation(ProtocolBuilderNumeric root) {
+  public DRes<SFixed> buildComputation(ProtocolBuilderNumeric root) {
     return root.par(par -> {
-      List<DRes<SReal>> terms = data.stream().map(x -> par.realNumeric().sub(x, mean))
+      List<DRes<SFixed>> terms = data.stream().map(x -> FixedNumeric.using(par).sub(x, mean))
           .collect(Collectors.toList());
       return () -> terms;
     }).par((par, terms) -> {
-      List<DRes<SReal>> squaredTerms =
-          terms.stream().map(x -> par.realNumeric().mult(x, x)).collect(Collectors.toList());
+      List<DRes<SFixed>> squaredTerms =
+          terms.stream().map(x -> FixedNumeric.using(par).mult(x, x)).collect(Collectors.toList());
       return () -> squaredTerms;
     }).seq((seq, terms) -> {
-      DRes<SReal> sum = seq.realAdvanced().sum(terms);
-      return sum;
+      return AdvancedFixedNumeric.using(seq).sum(terms);
     });
   }
 

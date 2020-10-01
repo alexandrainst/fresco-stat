@@ -124,10 +124,8 @@ public abstract class MultiDimensionalArray<T> {
     List<Integer> dim = getWidths();
     List<Integer> newDimensions = dim.subList(0, dim.size() - 1);
 
-    return build(newDimensions, l -> {
-      return projection.apply(IntStream.range(0, dim.get(dim.size() - 1))
-          .mapToObj(i -> get(append(l, i))).collect(Collectors.toList()));
-    });
+    return build(newDimensions, l -> projection.apply(IntStream.range(0, dim.get(dim.size() - 1))
+        .mapToObj(i -> get(append(l, i))).collect(Collectors.toList())));
   }
 
   public <S> MultiDimensionalArray<S> map(Function<T, S> function) {

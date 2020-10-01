@@ -3,18 +3,19 @@ package dk.alexandra.fresco.stat.debug;
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
-import dk.alexandra.fresco.lib.real.RealNumeric;
-import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.debug.DefaultDebug;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class OpenAndPrintSReal implements Computation<Void, ProtocolBuilderNumeric> {
+public class OpenAndPrintSFixed implements Computation<Void, ProtocolBuilderNumeric> {
 
-  private DRes<SReal> number;
+  private DRes<SFixed> number;
   private String label;
 
-  public OpenAndPrintSReal(String label, DRes<SReal> number) {
+  public OpenAndPrintSFixed(String label, DRes<SFixed> number) {
     this.label = label;
     this.number = number;
   }
@@ -22,7 +23,7 @@ public class OpenAndPrintSReal implements Computation<Void, ProtocolBuilderNumer
   @Override
   public DRes<Void> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.seq(seq -> {
-      RealNumeric num = seq.realNumeric();
+      FixedNumeric num = FixedNumeric.using(seq);
       List<DRes<BigDecimal>> res = new ArrayList<>();
       res.add(num.open(number));
       return () -> res;
@@ -31,7 +32,7 @@ public class OpenAndPrintSReal implements Computation<Void, ProtocolBuilderNumer
       sb.append(label);
       sb.append("\n");
       sb.append(res.get(0).out());
-      seq.debug().marker(sb.toString(), System.out);
+      new DefaultDebug(seq).marker(sb.toString(), System.out);
       return null;
     });
   }

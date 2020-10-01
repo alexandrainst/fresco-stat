@@ -3,18 +3,20 @@ package dk.alexandra.fresco.stat.regression.logistic;
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
-import dk.alexandra.fresco.lib.real.SReal;
-import dk.alexandra.fresco.lib.real.math.Reciprocal;
+import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.lib.fixed.math.Reciprocal;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
-public class LogisticRegressionPrediction implements Computation<SReal, ProtocolBuilderNumeric> {
+public class LogisticRegressionPrediction implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-  private final List<DRes<SReal>> row;
-  private final List<DRes<SReal>> b;
+  private final List<DRes<SFixed>> row;
+  private final List<DRes<SFixed>> b;
 
-  public LogisticRegressionPrediction(List<DRes<SReal>> row, List<DRes<SReal>> b) {
+  public LogisticRegressionPrediction(List<DRes<SFixed>> row, List<DRes<SFixed>> b) {
     assert (row.size() == b.size() - 1);
 
     this.row = row;
@@ -22,21 +24,20 @@ public class LogisticRegressionPrediction implements Computation<SReal, Protocol
   }
 
   @Override
-  public DRes<SReal> buildComputation(ProtocolBuilderNumeric builder) {
+  public DRes<SFixed> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.par(par -> {
-      List<DRes<SReal>> terms = new ArrayList<>();
+      List<DRes<SFixed>> terms = new ArrayList<>();
       terms.add(b.get(0));
       for (int i = 0; i < row.size(); i++) {
-        terms.add(par.realNumeric().mult(b.get(i + 1), row.get(i)));
+        terms.add(FixedNumeric.using(par).mult(b.get(i + 1), row.get(i)));
       }
       return () -> terms;
     }).seq((seq, terms) -> {
-      DRes<SReal> sum = seq.realAdvanced().sum(terms);
-      DRes<SReal> yHat = new Reciprocal(
-          seq.realNumeric().add(1,
-              new Reciprocal(seq.realAdvanced().exp(sum)).buildComputation(seq)))
+      DRes<SFixed> sum = AdvancedFixedNumeric.using(seq).sum(terms);
+      return new Reciprocal(
+          FixedNumeric.using(seq).add(1,
+              new Reciprocal(AdvancedFixedNumeric.using(seq).exp(sum)).buildComputation(seq)))
           .buildComputation(seq);
-      return yHat;
     });
   }
 

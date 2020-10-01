@@ -4,8 +4,9 @@ import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.value.SInt;
-import dk.alexandra.fresco.lib.real.SReal;
-import dk.alexandra.fresco.lib.real.fixed.SFixed;
+import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.math.BigDecimal;
 
 /**
@@ -14,12 +15,12 @@ import java.math.BigDecimal;
  *
  * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
-public class SampleExponentialDistribution implements Computation<SReal, ProtocolBuilderNumeric> {
+public class SampleExponentialDistribution implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-  private DRes<SReal> lambdaInverse;
+  private DRes<SFixed> lambdaInverse;
   private BigDecimal lambdaInverseKnown;
 
-  public SampleExponentialDistribution(DRes<SReal> b) {
+  public SampleExponentialDistribution(DRes<SFixed> b) {
     this.lambdaInverse = b;
   }
 
@@ -32,19 +33,18 @@ public class SampleExponentialDistribution implements Computation<SReal, Protoco
   }
 
   @Override
-  public DRes<SReal> buildComputation(ProtocolBuilderNumeric root) {
+  public DRes<SFixed> buildComputation(ProtocolBuilderNumeric root) {
     return root.seq(builder -> {
-      DRes<SReal> uniform = new SampleUniformDistribution().buildComputation(builder);
-      DRes<SReal> logUniform = builder.realAdvanced().log(uniform);
-      return logUniform;
+      DRes<SFixed> uniform = new SampleUniformDistribution().buildComputation(builder);
+      return AdvancedFixedNumeric.using(builder).log(uniform);
     }).seq((builder, logUniform) -> {
-      DRes<SInt> negated = builder.numeric().mult(-1, ((SFixed) logUniform.out()).getSInt());
+      DRes<SInt> negated = builder.numeric().mult(-1, logUniform.out().getSInt());
       logUniform = new SFixed(negated);
 
       if (lambdaInverseKnown != null) {
-        return builder.realNumeric().mult(lambdaInverseKnown, logUniform);
+        return FixedNumeric.using(builder).mult(lambdaInverseKnown, logUniform);
       } else {
-        return builder.realNumeric().mult(lambdaInverse, logUniform);
+        return FixedNumeric.using(builder).mult(lambdaInverse, logUniform);
       }
     });
 

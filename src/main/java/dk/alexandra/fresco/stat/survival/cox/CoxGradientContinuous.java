@@ -5,21 +5,21 @@ import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
-import dk.alexandra.fresco.lib.real.SReal;
-import dk.alexandra.fresco.lib.real.math.Exponential;
+import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.lib.fixed.math.Exponential;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoContinuous;
-import dk.alexandra.fresco.stat.survival.SurvivalInfoDiscrete;
-import dk.alexandra.fresco.stat.utils.RealUtils;
-import dk.alexandra.fresco.stat.utils.VectorUtils;
+import dk.alexandra.fresco.stat.linearalgebra.VectorUtils;
 import dk.alexandra.fresco.stat.utils.sort.FindTiedGroups;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CoxGradientContinuous implements Computation<List<DRes<SReal>>, ProtocolBuilderNumeric> {
+public class CoxGradientContinuous implements Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
   private final List<SurvivalInfoContinuous> data;
-  private final List<DRes<SReal>> beta;
+  private final List<DRes<SFixed>> beta;
 
   /**
    * Compute the gradient of the score function for a Cox model on the given data with coefficients
@@ -28,20 +28,20 @@ public class CoxGradientContinuous implements Computation<List<DRes<SReal>>, Pro
    * @param data
    * @param beta
    */
-  public CoxGradientContinuous(List<SurvivalInfoContinuous> data, List<DRes<SReal>> beta) {
+  public CoxGradientContinuous(List<SurvivalInfoContinuous> data, List<DRes<SFixed>> beta) {
     this.data = data;
     this.beta = beta;
   }
 
   @Override
-  public DRes<List<DRes<SReal>>> buildComputation(ProtocolBuilderNumeric builder) {
+  public DRes<List<DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.par(par -> {
       State state = new State();
 
         for (int j = 0; j < data.size(); j++) {
-          List<DRes<SReal>> row = new ArrayList<>();
+          List<DRes<SFixed>> row = new ArrayList<>();
           for (int i = 0; i < beta.size(); i++) {
-            row.add(par.realNumeric().mult(beta.get(i), data.get(j).getCovariates()
+            row.add(FixedNumeric.using(par).mult(beta.get(i), data.get(j).getCovariates()
                 .get(i)));
         }
           state.innerProductTerms.add(row);
@@ -50,7 +50,7 @@ public class CoxGradientContinuous implements Computation<List<DRes<SReal>>, Pro
       return () -> state;
     }).par((par, state) -> {
       for (int j = 0; j < data.size(); j++) {
-        state.innerProducts.add(par.realAdvanced().sum(state.innerProductTerms.get(j)));
+        state.innerProducts.add(AdvancedFixedNumeric.using(par).sum(state.innerProductTerms.get(j)));
       }
       return () -> state;
     }).par((par, state) -> {
@@ -85,7 +85,7 @@ public class CoxGradientContinuous implements Computation<List<DRes<SReal>>, Pro
 
       state.sum2.add(state.thetas.get(0));
       for (int j = 1; j < state.thetas.size(); j++) {
-        state.sum2.add(seq.realNumeric().add(state.sum2.get(j - 1), state.thetas.get(j)));
+        state.sum2.add(FixedNumeric.using(seq).add(state.sum2.get(j - 1), state.thetas.get(j)));
       }
 
       // Correct for ties
@@ -105,7 +105,7 @@ public class CoxGradientContinuous implements Computation<List<DRes<SReal>>, Pro
       return () -> state;
     }).par((par, state) -> {
       // The terms in the final sum are x_j - ratio_j
-      List<List<DRes<SReal>>> terms = new ArrayList<>();
+      List<List<DRes<SFixed>>> terms = new ArrayList<>();
       for (int j = 0; j < data.size(); j++) {
         terms.add(VectorUtils.sub(data.get(j).getCovariates(), state.ratios.get(j), par));
       }
@@ -115,7 +115,7 @@ public class CoxGradientContinuous implements Computation<List<DRes<SReal>>, Pro
       // Only include terms with status = 1
       List<DRes<SInt>> censored = VectorUtils
           .listBuilder(data.size(), j -> data.get(j).getCensored());
-      List<DRes<SReal>> result = VectorUtils
+      List<DRes<SFixed>> result = VectorUtils
           .listBuilder(beta.size(), i -> VectorUtils.innerProductWithBitvector(
               censored,
               // The i'th entries in the terms
@@ -127,14 +127,14 @@ public class CoxGradientContinuous implements Computation<List<DRes<SReal>>, Pro
 
   private class State {
 
-    List<List<DRes<SReal>>> innerProductTerms = new ArrayList<>();
-    List<DRes<SReal>> innerProducts = new ArrayList<>();
-    List<DRes<SReal>> thetas = new ArrayList<>();
-    List<List<DRes<SReal>>> sum1terms = new ArrayList<>();
-    List<List<DRes<SReal>>> sum1 = new ArrayList<>();
-    List<DRes<SReal>> sum2 = new ArrayList<>();
-    List<List<DRes<SReal>>> ratios = new ArrayList<>();
-    List<List<DRes<SReal>>> terms = new ArrayList<>();
+    List<List<DRes<SFixed>>> innerProductTerms = new ArrayList<>();
+    List<DRes<SFixed>> innerProducts = new ArrayList<>();
+    List<DRes<SFixed>> thetas = new ArrayList<>();
+    List<List<DRes<SFixed>>> sum1terms = new ArrayList<>();
+    List<List<DRes<SFixed>>> sum1 = new ArrayList<>();
+    List<DRes<SFixed>> sum2 = new ArrayList<>();
+    List<List<DRes<SFixed>>> ratios = new ArrayList<>();
+    List<List<DRes<SFixed>>> terms = new ArrayList<>();
     List<BigInteger> tiedGroups = new ArrayList<>();
 
   }

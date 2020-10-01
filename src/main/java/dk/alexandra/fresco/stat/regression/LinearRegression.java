@@ -4,7 +4,9 @@ import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
-import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.descriptive.helpers.SPD;
 import dk.alexandra.fresco.stat.descriptive.helpers.SSD;
 import dk.alexandra.fresco.stat.regression.LinearRegression.LinearFunction;
@@ -16,12 +18,13 @@ import java.util.List;
  */
 public class LinearRegression implements Computation<LinearFunction, ProtocolBuilderNumeric> {
 
-  private List<DRes<SReal>> x;
-  private List<DRes<SReal>> y;
-  private DRes<SReal> meanY;
-  private DRes<SReal> meanX;
-  public LinearRegression(List<DRes<SReal>> x, DRes<SReal> meanX, List<DRes<SReal>> y,
-      DRes<SReal> meanY) {
+  private List<DRes<SFixed>> x;
+  private List<DRes<SFixed>> y;
+  private DRes<SFixed> meanY;
+  private DRes<SFixed> meanX;
+
+  public LinearRegression(List<DRes<SFixed>> x, DRes<SFixed> meanX, List<DRes<SFixed>> y,
+      DRes<SFixed> meanY) {
     this.x = x;
     this.meanX = meanX;
     this.y = y;
@@ -32,38 +35,39 @@ public class LinearRegression implements Computation<LinearFunction, ProtocolBui
   public DRes<LinearFunction> buildComputation(ProtocolBuilderNumeric root) {
     return root.par(builder -> {
 
-      DRes<SReal> spd = new SPD(x, meanX, y, meanY).buildComputation(builder);
-      DRes<SReal> ssd = new SSD(x, meanX).buildComputation(builder);
+      DRes<SFixed> spd = new SPD(x, meanX, y, meanY).buildComputation(builder);
+      DRes<SFixed> ssd = new SSD(x, meanX).buildComputation(builder);
 
       return () -> new Pair<>(spd, ssd);
 
     }).seq((builder, spdAndSsd) -> {
 
-      DRes<SReal> b = builder.realNumeric()
-          .mult(spdAndSsd.getFirst(), builder.realAdvanced().reciprocal(spdAndSsd.getSecond()));
-      //DRes<SReal> b = builder.realNumeric().div(spdAndSsd.getFirst(), spdAndSsd.getSecond());
-      DRes<SReal> a = builder.realNumeric().sub(meanY, builder.realNumeric().mult(b, meanX));
+      FixedNumeric numeric = FixedNumeric.using(builder);
+      DRes<SFixed> b = numeric
+          .mult(spdAndSsd.getFirst(), AdvancedFixedNumeric.using(builder).reciprocal(spdAndSsd.getSecond()));
+      DRes<SFixed> a = numeric
+          .sub(meanY, numeric.mult(b, meanX));
 
       return () -> new LinearFunction(a, b);
 
     });
   }
 
-  public class LinearFunction {
+  public static class LinearFunction {
 
-    private DRes<SReal> b;
-    private DRes<SReal> a;
+    private DRes<SFixed> b;
+    private DRes<SFixed> a;
 
-    private LinearFunction(DRes<SReal> a, DRes<SReal> b) {
+    private LinearFunction(DRes<SFixed> a, DRes<SFixed> b) {
       this.a = a;
       this.b = b;
     }
 
-    public DRes<SReal> getA() {
+    public DRes<SFixed> getA() {
       return a;
     }
 
-    public DRes<SReal> getB() {
+    public DRes<SFixed> getB() {
       return b;
     }
   }

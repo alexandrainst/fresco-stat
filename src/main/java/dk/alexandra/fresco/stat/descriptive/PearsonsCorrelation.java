@@ -3,18 +3,20 @@ package dk.alexandra.fresco.stat.descriptive;
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
-import dk.alexandra.fresco.lib.real.SReal;
+import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.descriptive.helpers.SPD;
 import dk.alexandra.fresco.stat.descriptive.helpers.SSD;
 import java.util.List;
 
-public class PearsonsCorrelation implements Computation<SReal, ProtocolBuilderNumeric> {
+public class PearsonsCorrelation implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-  private List<DRes<SReal>> x, y;
-  private DRes<SReal> meanX, meanY;
+  private List<DRes<SFixed>> x, y;
+  private DRes<SFixed> meanX, meanY;
 
-  public PearsonsCorrelation(List<DRes<SReal>> x, DRes<SReal> meanX, List<DRes<SReal>> y,
-      DRes<SReal> meanY) {
+  public PearsonsCorrelation(List<DRes<SFixed>> x, DRes<SFixed> meanX, List<DRes<SFixed>> y,
+      DRes<SFixed> meanY) {
     assert (x.size() == y.size());
     this.x = x;
     this.meanX = meanX;
@@ -23,21 +25,23 @@ public class PearsonsCorrelation implements Computation<SReal, ProtocolBuilderNu
   }
 
   @Override
-  public DRes<SReal> buildComputation(ProtocolBuilderNumeric root) {
+  public DRes<SFixed> buildComputation(ProtocolBuilderNumeric root) {
     return root.par(builder -> {
 
-      DRes<SReal> gammaX = new SSD(x, meanX).buildComputation(builder);
-      DRes<SReal> gammaY = new SSD(y, meanY).buildComputation(builder);
-      DRes<SReal> spd = new SPD(x, meanX, y, meanY).buildComputation(builder);
+      DRes<SFixed> gammaX = new SSD(x, meanX).buildComputation(builder);
+      DRes<SFixed> gammaY = new SSD(y, meanY).buildComputation(builder);
+      DRes<SFixed> spd = new SPD(x, meanX, y, meanY).buildComputation(builder);
 
       return () -> List.of(spd, gammaX, gammaY);
 
     }).seq((builder, descriptive) -> {
-      DRes<SReal> denom = builder.realNumeric().mult(descriptive.get(1), descriptive.get(2));
-      denom = builder.realAdvanced().sqrt(denom);
-      denom = builder.realAdvanced().reciprocal(denom);
-      DRes<SReal> result = builder.realNumeric().mult(descriptive.get(0), denom);
-      return result;
+      FixedNumeric numeric = FixedNumeric.using(builder);
+      AdvancedFixedNumeric advanced = AdvancedFixedNumeric.using(builder);
+
+      DRes<SFixed> denom = numeric.mult(descriptive.get(1), descriptive.get(2));
+      denom = advanced.sqrt(denom);
+      denom = advanced.reciprocal(denom);
+      return numeric.mult(descriptive.get(0), denom);
     });
   }
 }
