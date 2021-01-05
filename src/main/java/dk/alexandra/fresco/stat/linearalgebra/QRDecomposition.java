@@ -24,7 +24,7 @@ public class QRDecomposition implements
   public DRes<Pair<Matrix<DRes<SFixed>>, Matrix<DRes<SFixed>>>> buildComputation(
       ProtocolBuilderNumeric builder) {
     return builder.seq(seq -> {
-      List<List<DRes<SFixed>>> columns = VectorUtils.listBuilder(a.getHeight(), i -> a.getColumn(i));
+      List<List<DRes<SFixed>>> columns = VectorUtils.listBuilder(a.getHeight(), a::getColumn);
       return new GramSchmidt(columns).buildComputation(seq);
     }).par((par, gs) -> {
       List<DRes<List<DRes<SFixed>>>> normalized = gs.stream().map(v -> new NormalizeVector(v).buildComputation(par)).collect(

@@ -45,7 +45,7 @@ public class LogRegTests {
         e.stream().map(BigDecimal::valueOf).map(FixedNumeric.using(builder)::known)
             .collect(Collectors.toList());
 
-    return new Pair(secretData, secretE);
+    return new Pair<>(secretData, secretE);
   }
 
   public static class TestLogRegPrediction<ResourcePoolT extends ResourcePool>
@@ -53,10 +53,10 @@ public class LogRegTests {
 
     @Override
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
-      return new TestThread<ResourcePoolT, ProtocolBuilderNumeric>() {
+      return new TestThread<>() {
 
         @Override
-        public void test() throws Exception {
+        public void test() {
 
           List<Double> row = List.of(4.0);
           List<Double> b = List.of(-4.0777, 1.5046);
@@ -89,14 +89,15 @@ public class LogRegTests {
 
     @Override
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
-      return new TestThread<ResourcePoolT, ProtocolBuilderNumeric>() {
+      return new TestThread<>() {
 
         @Override
-        public void test() throws Exception {
+        public void test() {
 
           Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication =
               root -> root.seq(seq -> {
-                Pair<Matrix<DRes<SFixed>>, List<DRes<SFixed>>> data = logisticRegressionDataset(seq);
+                Pair<Matrix<DRes<SFixed>>, List<DRes<SFixed>>> data = logisticRegressionDataset(
+                    seq);
 
                 List<DRes<SFixed>> initB = List.of(FixedNumeric.using(seq).known(-3.0),
                     FixedNumeric.using(seq).known(2.0));
@@ -106,7 +107,8 @@ public class LogRegTests {
               }).seq((seq, b) -> {
 
                 List<DRes<BigDecimal>> openB =
-                    b.stream().map(bi -> FixedNumeric.using(seq).open(bi)).collect(Collectors.toList());
+                    b.stream().map(bi -> FixedNumeric.using(seq).open(bi))
+                        .collect(Collectors.toList());
 
                 return () -> openB.stream().map(DRes::out).collect(Collectors.toList());
               });
@@ -140,15 +142,16 @@ public class LogRegTests {
 
     @Override
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
-      return new TestThread<ResourcePoolT, ProtocolBuilderNumeric>() {
+      return new TestThread<>() {
 
         @Override
-        public void test() throws Exception {
+        public void test() {
 
           Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication =
               root -> root.seq(seq -> {
 
-                Pair<Matrix<DRes<SFixed>>, List<DRes<SFixed>>> data = logisticRegressionDataset(seq);
+                Pair<Matrix<DRes<SFixed>>, List<DRes<SFixed>>> data = logisticRegressionDataset(
+                    seq);
 
                 double[] guess = new double[]{0, 0};
 
@@ -157,7 +160,8 @@ public class LogRegTests {
               }).seq((seq, b) -> {
 
                 List<DRes<BigDecimal>> openB =
-                    b.stream().map(bi -> FixedNumeric.using(seq).open(bi)).collect(Collectors.toList());
+                    b.stream().map(bi -> FixedNumeric.using(seq).open(bi))
+                        .collect(Collectors.toList());
 
                 return () -> openB.stream().map(DRes::out).collect(Collectors.toList());
               });

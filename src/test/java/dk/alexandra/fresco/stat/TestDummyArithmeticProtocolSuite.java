@@ -6,6 +6,7 @@ import dk.alexandra.fresco.framework.sce.evaluator.EvaluationStrategy;
 import dk.alexandra.fresco.framework.util.ModulusFinder;
 import dk.alexandra.fresco.stat.LATests.TestGramSchmidt;
 import dk.alexandra.fresco.stat.LATests.TestQR;
+import dk.alexandra.fresco.stat.LATests.TestTriangularInverse;
 import dk.alexandra.fresco.stat.LinRegTests.TestLinearRegression;
 import dk.alexandra.fresco.stat.LogRegTests.TestLogRegPrediction;
 import dk.alexandra.fresco.stat.LogRegTests.TestLogRegSGDSingleEpoch;
@@ -211,4 +212,10 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   public void test_qr_decomposition() {
     runTest(new TestQR<>(), TEST_PARAMETERS);
   }
+
+  @Test
+  public void test_inverse_of_triangular_matrix() {
+    runTest(new TestTriangularInverse<>(), TEST_PARAMETERS);
+  }
+
 }
