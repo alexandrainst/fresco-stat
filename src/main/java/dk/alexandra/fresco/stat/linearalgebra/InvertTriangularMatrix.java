@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/* Invert upper triangular matrix. */
 public class InvertTriangularMatrix implements
     Computation<Matrix<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
