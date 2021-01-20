@@ -9,14 +9,15 @@ import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.lib.fixed.math.Exponential;
-import dk.alexandra.fresco.stat.survival.SurvivalInfoContinuous;
 import dk.alexandra.fresco.stat.linearalgebra.VectorUtils;
+import dk.alexandra.fresco.stat.survival.SurvivalInfoContinuous;
 import dk.alexandra.fresco.stat.utils.sort.FindTiedGroups;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CoxGradientContinuous implements Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
+public class CoxGradientContinuous implements
+    Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
   private final List<SurvivalInfoContinuous> data;
   private final List<DRes<SFixed>> beta;
@@ -38,19 +39,20 @@ public class CoxGradientContinuous implements Computation<List<DRes<SFixed>>, Pr
     return builder.par(par -> {
       State state = new State();
 
-        for (int j = 0; j < data.size(); j++) {
-          List<DRes<SFixed>> row = new ArrayList<>();
-          for (int i = 0; i < beta.size(); i++) {
-            row.add(FixedNumeric.using(par).mult(beta.get(i), data.get(j).getCovariates()
-                .get(i)));
+      for (int j = 0; j < data.size(); j++) {
+        List<DRes<SFixed>> row = new ArrayList<>();
+        for (int i = 0; i < beta.size(); i++) {
+          row.add(FixedNumeric.using(par).mult(beta.get(i), data.get(j).getCovariates()
+              .get(i)));
         }
-          state.innerProductTerms.add(row);
+        state.innerProductTerms.add(row);
       }
 
       return () -> state;
     }).par((par, state) -> {
       for (int j = 0; j < data.size(); j++) {
-        state.innerProducts.add(AdvancedFixedNumeric.using(par).sum(state.innerProductTerms.get(j)));
+        state.innerProducts
+            .add(AdvancedFixedNumeric.using(par).sum(state.innerProductTerms.get(j)));
       }
       return () -> state;
     }).par((par, state) -> {
@@ -62,7 +64,8 @@ public class CoxGradientContinuous implements Computation<List<DRes<SFixed>>, Pr
     }).par((par, state) -> {
       // Compute theta_j * x_j
       for (int j = 0; j < data.size(); j++) {
-        state.sum1terms.add(VectorUtils.scale(data.get(j).getCovariates(), state.thetas.get(j), par));
+        state.sum1terms
+            .add(VectorUtils.scale(data.get(j).getCovariates(), state.thetas.get(j), par));
       }
       return () -> state;
     }).seq((seq, state) -> {

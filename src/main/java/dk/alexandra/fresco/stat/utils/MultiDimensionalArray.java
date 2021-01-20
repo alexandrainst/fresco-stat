@@ -134,7 +134,7 @@ public abstract class MultiDimensionalArray<T> {
 
   static class OneDimensionalArray<S> extends MultiDimensionalArray<S> {
 
-    private List<S> entries;
+    private final List<S> entries;
 
     private OneDimensionalArray(List<S> entries) {
       this.entries = new ArrayList<>(entries);

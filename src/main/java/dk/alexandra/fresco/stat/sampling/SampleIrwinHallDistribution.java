@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class SampleIrwinHallDistribution implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-  private int n;
+  private final int n;
 
   public SampleIrwinHallDistribution(int n) {
     assert (n > 0);

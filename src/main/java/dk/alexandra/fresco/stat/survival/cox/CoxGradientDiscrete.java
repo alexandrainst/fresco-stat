@@ -10,15 +10,16 @@ import dk.alexandra.fresco.lib.common.math.AdvancedNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.lib.fixed.math.Exponential;
+import dk.alexandra.fresco.stat.linearalgebra.VectorUtils;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoDiscrete;
 import dk.alexandra.fresco.stat.utils.RealUtils;
-import dk.alexandra.fresco.stat.linearalgebra.VectorUtils;
 import dk.alexandra.fresco.stat.utils.sort.FindTiedGroups;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CoxGradientDiscrete implements Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
+public class CoxGradientDiscrete implements
+    Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
   private final List<SurvivalInfoDiscrete> data;
   private final List<DRes<SFixed>> beta;
@@ -77,7 +78,8 @@ public class CoxGradientDiscrete implements Computation<List<DRes<SFixed>>, Prot
       // Convert x_ji's to fixed point
       for (int i = 0; i < data.get(0).getCovariates().size(); i++) {
         state.xi.add(new ArrayList<>());
-        List<BigInteger> twoPowers = new MiscBigIntegerGenerators(par.getBasicNumericContext().getModulus())
+        List<BigInteger> twoPowers = new MiscBigIntegerGenerators(
+            par.getBasicNumericContext().getModulus())
             .getTwoPowersList(data.get(0).getCovariates().get(i).size());
         for (int j = 0; j < data.size(); j++) {
           state.xi.get(i).add(AdvancedNumeric.using(par)

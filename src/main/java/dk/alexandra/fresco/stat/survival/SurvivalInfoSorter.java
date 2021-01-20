@@ -11,7 +11,8 @@ import java.util.stream.Collectors;
 
 /**
  * Convert an instance of type T into a <code>Pair<DRes<SInt>, List<DRes<SInt>>></code> and back for
- * use with {@link dk.alexandra.fresco.lib.common.collections.Collections#sort(List)} to sort on the time of event parameter.
+ * use with {@link dk.alexandra.fresco.lib.common.collections.Collections#sort(List)} to sort on the
+ * time of event parameter.
  *
  * @param <T> A subject for survival analysis.
  */
@@ -20,12 +21,13 @@ public abstract class SurvivalInfoSorter<T> implements
 
   protected final List<T> data;
 
-  abstract Pair<DRes<SInt>, List<DRes<SInt>>> encode(T survivalInfo);
-  abstract T decode(Pair<DRes<SInt>, List<DRes<SInt>>> survivalInfo);
-
   public SurvivalInfoSorter(List<T> data) {
     this.data = data;
   }
+
+  abstract Pair<DRes<SInt>, List<DRes<SInt>>> encode(T survivalInfo);
+
+  abstract T decode(Pair<DRes<SInt>, List<DRes<SInt>>> survivalInfo);
 
   @Override
   public DRes<List<T>> buildComputation(

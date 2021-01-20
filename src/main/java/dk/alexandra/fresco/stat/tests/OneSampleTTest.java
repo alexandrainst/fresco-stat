@@ -11,8 +11,8 @@ import java.util.List;
 
 public class OneSampleTTest implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-  private List<DRes<SFixed>> observed;
-  private DRes<SFixed> mu;
+  private final List<DRes<SFixed>> observed;
+  private final DRes<SFixed> mu;
 
   public OneSampleTTest(List<DRes<SFixed>> observed, DRes<SFixed> mu) {
     this.observed = observed;

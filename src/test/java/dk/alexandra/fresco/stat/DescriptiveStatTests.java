@@ -60,7 +60,7 @@ public class DescriptiveStatTests {
         final List<Double> y = Arrays.asList(1.0, 2.0, 1.3, 3.75, 2.25);
 
         @Override
-        public void test() throws Exception {
+        public void test() {
 
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
             FixedNumeric numeric = FixedNumeric.using(builder);
@@ -98,7 +98,7 @@ public class DescriptiveStatTests {
         final List<Integer> expected = Arrays.asList(2, 5, 2, 1);
 
         @Override
-        public void test() throws Exception {
+        public void test() {
 
           Application<List<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder.seq(seq -> {
             List<DRes<SInt>> xSecret =
@@ -133,7 +133,7 @@ public class DescriptiveStatTests {
         final List<Integer> expected = Arrays.asList(2, 5, 2, 1);
 
         @Override
-        public void test() throws Exception {
+        public void test() {
 
           Application<List<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder.seq(seq -> {
             List<DRes<SFixed>> xSecret =
@@ -169,7 +169,7 @@ public class DescriptiveStatTests {
         final List<Integer> bucketsY = Arrays.asList(1, 4, 9);
 
         @Override
-        public void test() throws Exception {
+        public void test() {
 
           Application<Matrix<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder.seq(seq -> {
             Pair<List<DRes<SInt>>, List<DRes<SInt>>> buckets = new Pair<>(
@@ -180,7 +180,6 @@ public class DescriptiveStatTests {
             List<Pair<DRes<SInt>, DRes<SInt>>> data = IntStream.range(0, x.size()).mapToObj(
                 i -> new Pair<>(seq.numeric().input(x.get(i), 1),
                     seq.numeric().input(y.get(i), 1))).collect(Collectors.toList());
-            x.stream().map(x -> FixedNumeric.using(seq).input(x, 1)).collect(Collectors.toList());
 
             return Statistics.using(seq)
                 .twoDimensionalHistogramInt(buckets, data);
@@ -230,9 +229,9 @@ public class DescriptiveStatTests {
           }
 
           List<Pair<BigInteger, Integer>> output = runApplication(testApplication);
-          for (int i = 0; i < output.size(); i++) {
-            assertEquals(expected.get(output.get(i).getFirst().intValue()),
-                output.get(i).getSecond());
+          for (Pair<BigInteger, Integer> outputs : output) {
+            assertEquals(expected.get(outputs.getFirst().intValue()),
+                outputs.getSecond());
           }
         }
       };
@@ -250,7 +249,7 @@ public class DescriptiveStatTests {
             .collect(Collectors.toList());
 
         @Override
-        public void test() throws Exception {
+        public void test() {
           data.sort(Integer::compareTo);
 
           Application<List<Double>, ProtocolBuilderNumeric> testApplication = builder -> {
@@ -282,7 +281,7 @@ public class DescriptiveStatTests {
         final List<List<Integer>> data = ranksDataset();
 
         @Override
-        public void test() throws Exception {
+        public void test() {
 
           Application<Pair<List<BigDecimal>, Double>, ProtocolBuilderNumeric> testApplication = builder -> builder
               .seq(seq -> {
@@ -322,7 +321,7 @@ public class DescriptiveStatTests {
         final List<Integer> data = List.of(2, 5, 3, 6, 1, 3, 7, 6, 3, 9, 8, 7, 5, 5);
 
         @Override
-        public void test() throws Exception {
+        public void test() {
           Application<List<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> {
             List<DRes<SInt>> input = data.stream().map(x -> builder.numeric().input(x, 1))
                 .collect(Collectors.toList());

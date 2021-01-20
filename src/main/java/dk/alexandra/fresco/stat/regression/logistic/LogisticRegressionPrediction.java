@@ -7,7 +7,6 @@ import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.lib.fixed.math.Reciprocal;
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 

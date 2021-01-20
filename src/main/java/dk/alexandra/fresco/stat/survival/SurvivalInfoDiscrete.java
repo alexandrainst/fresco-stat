@@ -7,8 +7,8 @@ import java.util.List;
 /**
  * Represents a data point in data for survival analysis with only discrete covariates on finite
  * sets. Each entry in the covariates set is an 0-1 indicator vector with exactly one non-zero value
- * indicating the value of that particular covariate, e.g. (1,0,0,0), (0,1,0,0), (0,0,1,0) or (0,0,0,1)
- * if the covariate has four different values.
+ * indicating the value of that particular covariate, e.g. (1,0,0,0), (0,1,0,0), (0,0,1,0) or
+ * (0,0,0,1) if the covariate has four different values.
  */
 public class SurvivalInfoDiscrete {
 

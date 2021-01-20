@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 
 public class Histogram implements Computation<List<DRes<SInt>>, ProtocolBuilderNumeric> {
 
-  private List<DRes<SInt>> buckets;
-  private List<DRes<SInt>> data;
+  private final List<DRes<SInt>> buckets;
+  private final List<DRes<SInt>> data;
 
   /**
    * Given a list of upper bounds for buckets and a list of samples, this computation computes the
@@ -38,7 +38,8 @@ public class Histogram implements Computation<List<DRes<SInt>>, ProtocolBuilderN
       return () -> c;
     }).par((par, c) -> {
       List<DRes<SInt>> counts =
-          c.getRows().stream().map(r -> AdvancedNumeric.using(par).sum(r)).collect(Collectors.toList());
+          c.getRows().stream().map(r -> AdvancedNumeric.using(par).sum(r))
+              .collect(Collectors.toList());
       counts.add(par.numeric().known(data.size()));
       return () -> counts;
     }).seq((seq, counts) -> {

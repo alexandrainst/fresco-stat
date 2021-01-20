@@ -5,8 +5,8 @@ import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
-import dk.alexandra.fresco.stat.survival.SurvivalInfoSorter;
 import dk.alexandra.fresco.stat.linearalgebra.VectorUtils;
+import dk.alexandra.fresco.stat.survival.SurvivalInfoSorter;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -25,11 +25,11 @@ class CoxRegression<T> implements Computation<List<DRes<SFixed>>, ProtocolBuilde
   /**
    * Estimate the coefficients of a Cox model on the given data using gradient descent.
    *
-   * @param data       The data.
-   * @param iterations The number of iterations.
-   * @param alpha      The learning rate.
-   * @param beta       The initial guess.
-   * @param gradient   Provide a computation which computes the gradient on the data
+   * @param data           The data.
+   * @param iterations     The number of iterations.
+   * @param alpha          The learning rate.
+   * @param beta           The initial guess.
+   * @param gradient       Provide a computation which computes the gradient on the data
    * @param sorterProvider Provide a computation which sorts the data descending on time
    */
   CoxRegression(List<T> data, int iterations, double alpha,

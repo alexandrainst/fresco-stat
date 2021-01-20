@@ -15,7 +15,7 @@ import java.util.List;
  */
 public class SampleMean implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-  private List<DRes<SFixed>> observed;
+  private final List<DRes<SFixed>> observed;
 
   public SampleMean(List<DRes<SFixed>> observed) {
     this.observed = observed;

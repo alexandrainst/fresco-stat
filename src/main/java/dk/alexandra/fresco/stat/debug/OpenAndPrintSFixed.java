@@ -12,8 +12,8 @@ import java.util.List;
 
 public class OpenAndPrintSFixed implements Computation<Void, ProtocolBuilderNumeric> {
 
-  private DRes<SFixed> number;
-  private String label;
+  private final DRes<SFixed> number;
+  private final String label;
 
   public OpenAndPrintSFixed(String label, DRes<SFixed> number) {
     this.label = label;

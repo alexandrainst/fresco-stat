@@ -21,7 +21,7 @@ import java.util.List;
 public class SampleCatagoricalDistribution implements Computation<SInt, ProtocolBuilderNumeric> {
 
   private List<DRes<SFixed>> probabilities;
-  private boolean normalized;
+  private final boolean normalized;
   private double[] knownProbabilities;
 
   /**

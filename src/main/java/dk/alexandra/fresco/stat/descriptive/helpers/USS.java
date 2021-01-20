@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
  */
 public class USS implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-  private List<DRes<SFixed>> data;
+  private final List<DRes<SFixed>> data;
 
   public USS(List<DRes<SFixed>> data) {
     this.data = data;

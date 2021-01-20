@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
  */
 public class SSD implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-  private List<DRes<SFixed>> data;
-  private DRes<SFixed> mean;
+  private final List<DRes<SFixed>> data;
+  private final DRes<SFixed> mean;
 
   public SSD(List<DRes<SFixed>> data, DRes<SFixed> mean) {
     this.data = data;

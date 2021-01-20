@@ -12,8 +12,10 @@ import java.util.List;
 
 public class PearsonsCorrelation implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-  private List<DRes<SFixed>> x, y;
-  private DRes<SFixed> meanX, meanY;
+  private final List<DRes<SFixed>> x;
+  private final List<DRes<SFixed>> y;
+  private final DRes<SFixed> meanX;
+  private final DRes<SFixed> meanY;
 
   public PearsonsCorrelation(List<DRes<SFixed>> x, DRes<SFixed> meanX, List<DRes<SFixed>> y,
       DRes<SFixed> meanY) {

@@ -14,8 +14,8 @@ import java.util.List;
  */
 public class SampleStandardDeviation implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-  private List<DRes<SFixed>> observed;
-  private DRes<SFixed> mean;
+  private final List<DRes<SFixed>> observed;
+  private final DRes<SFixed> mean;
 
   public SampleStandardDeviation(List<DRes<SFixed>> observed, DRes<SFixed> mean) {
     this.observed = observed;

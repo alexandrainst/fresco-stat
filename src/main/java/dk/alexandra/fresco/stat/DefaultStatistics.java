@@ -126,8 +126,9 @@ public class DefaultStatistics implements Statistics {
   @Override
   public DRes<SFixed> chiSquare(List<DRes<SFixed>> data, double[] buckets, double[] expected) {
     // Using known buckets doesn't give any performance benefit, so we just use them as knowns and use the corresponding method with secret buckets.
-    return chiSquare(data, Arrays.stream(buckets).mapToObj(FixedNumeric.using(builder)::known).collect(
-        Collectors.toList()), expected);
+    return chiSquare(data,
+        Arrays.stream(buckets).mapToObj(FixedNumeric.using(builder)::known).collect(
+            Collectors.toList()), expected);
   }
 
   public DRes<LinearFunction> linearRegression(List<DRes<SFixed>> x, DRes<SFixed> meanX,
@@ -142,7 +143,8 @@ public class DefaultStatistics implements Statistics {
       DRes<SFixed> meanX = stat.sampleMean(x);
       DRes<SFixed> meanY = stat.sampleMean(y);
       return () -> new Pair<>(meanX, meanY);
-    }).seq((seq, means) -> new LinearRegression(x, means.getFirst(), y, means.getSecond()).buildComputation(seq));
+    }).seq((seq, means) -> new LinearRegression(x, means.getFirst(), y, means.getSecond())
+        .buildComputation(seq));
   }
 
   @Override
@@ -158,8 +160,9 @@ public class DefaultStatistics implements Statistics {
       DRes<SFixed> mean1 = stat.sampleMean(data1);
       DRes<SFixed> mean2 = stat.sampleMean(data2);
       return () -> new Pair<>(mean1, mean2);
-    }).seq((seq, means) -> new PearsonsCorrelation(data1, means.getFirst(), data2, means.getSecond())
-        .buildComputation(seq));
+    }).seq(
+        (seq, means) -> new PearsonsCorrelation(data1, means.getFirst(), data2, means.getSecond())
+            .buildComputation(seq));
   }
 
   @Override
@@ -181,7 +184,8 @@ public class DefaultStatistics implements Statistics {
   @Override
   public DRes<List<DRes<SInt>>> histogramReal(double[] buckets, List<DRes<SFixed>> data) {
     return histogramReal(
-        Arrays.stream(buckets).mapToObj(FixedNumeric.using(builder)::known).collect(Collectors.toList()),
+        Arrays.stream(buckets).mapToObj(FixedNumeric.using(builder)::known)
+            .collect(Collectors.toList()),
         data);
   }
 

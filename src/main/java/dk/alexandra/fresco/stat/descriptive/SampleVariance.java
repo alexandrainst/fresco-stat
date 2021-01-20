@@ -15,14 +15,11 @@ import java.util.List;
  */
 public class SampleVariance implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-  private List<DRes<SFixed>> observed;
-  private DRes<SFixed> mean;
+  private final List<DRes<SFixed>> observed;
+  private final DRes<SFixed> mean;
 
   /**
    * Create a new computation with a given computed sample mean.
-   *
-   * @param observed
-   * @param mean
    */
   public SampleVariance(List<DRes<SFixed>> observed, DRes<SFixed> mean) {
     this.observed = observed;

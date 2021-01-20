@@ -20,7 +20,7 @@ public class GramSchmidt implements Computation<List<List<DRes<SFixed>>>, Protoc
   public DRes<List<List<DRes<SFixed>>>> buildComputation(
       ProtocolBuilderNumeric builder) {
     return builder.seq(
-        seq -> () -> new State(vectors.stream().collect(Collectors.toCollection(ArrayList::new)),
+        seq -> () -> new State(new ArrayList<>(vectors),
             1))
         .whileLoop(state -> state.round < vectors.size(),
             (seq, state) -> seq.par(par -> {
@@ -32,13 +32,14 @@ public class GramSchmidt implements Computation<List<List<DRes<SFixed>>>, Protoc
             }).par((par, projections) -> {
               for (int i = state.round; i < vectors.size(); i++) {
                 state.result
-                    .set(i, VectorUtils.sub(state.result.get(i), projections.get(i - state.round).out(), par));
+                    .set(i, VectorUtils
+                        .sub(state.result.get(i), projections.get(i - state.round).out(), par));
               }
               return () -> new State(state.result, state.round + 1);
             })).seq((seq, state) -> () -> state.result);
   }
 
-  private class State {
+  private static class State {
 
     private final ArrayList<List<DRes<SFixed>>> result;
     private final int round;

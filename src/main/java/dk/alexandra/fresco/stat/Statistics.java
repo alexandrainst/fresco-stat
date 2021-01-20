@@ -27,7 +27,8 @@ public interface Statistics extends ComputationDirectory {
   DRes<SFixed> sampleMean(List<DRes<SFixed>> data);
 
   /**
-   * Compute the sample variance of the given data, assuming the sample mean has already been calculated.
+   * Compute the sample variance of the given data, assuming the sample mean has already been
+   * calculated.
    *
    * @param data
    * @param mean
@@ -44,7 +45,8 @@ public interface Statistics extends ComputationDirectory {
   DRes<SFixed> sampleVariance(List<DRes<SFixed>> data);
 
   /**
-   * Compute the sample standard deviation of the data given that the sample mean has already been calculated.
+   * Compute the sample standard deviation of the data given that the sample mean has already been
+   * calculated.
    *
    * @param data
    * @param mean
@@ -61,8 +63,9 @@ public interface Statistics extends ComputationDirectory {
   DRes<SFixed> sampleStandardDeviation(List<DRes<SFixed>> data);
 
   /**
-   * Compute the test statistics for a Student's t-test for the hypothesis that the mean of the sample is equal
-   * to <code>mu</code>.
+   * Compute the test statistics for a Student's t-test for the hypothesis that the mean of the
+   * sample is equal to <code>mu</code>.
+   *
    * @param data
    * @param mu
    * @return
@@ -70,8 +73,8 @@ public interface Statistics extends ComputationDirectory {
   DRes<SFixed> ttest(List<DRes<SFixed>> data, DRes<SFixed> mu);
 
   /**
-   * Compute the test statistics for a two-sample Student's t-test for the hypothesis that the mean of
-   * the two samples are equal. It is assumed that the two samples have the same variance.
+   * Compute the test statistics for a two-sample Student's t-test for the hypothesis that the mean
+   * of the two samples are equal. It is assumed that the two samples have the same variance.
    *
    * @param data1
    * @param data2
@@ -100,10 +103,10 @@ public interface Statistics extends ComputationDirectory {
   /**
    * Compute the test statistics for a &Chi;<sup>2</sup>-test on the given data.
    *
-   * @param data Data points
-   * @param buckets Upper bounds for the buckets to consider in the test.
-   * @param expected The expected number of elements to end up in each bucket. Note that there should
-   *                 be one more element in buckets than in expected.
+   * @param data     Data points
+   * @param buckets  Upper bounds for the buckets to consider in the test.
+   * @param expected The expected number of elements to end up in each bucket. Note that there
+   *                 should be one more element in buckets than in expected.
    * @return
    */
   DRes<SFixed> chiSquare(List<DRes<SFixed>> data, List<DRes<SFixed>> buckets,
@@ -112,10 +115,10 @@ public interface Statistics extends ComputationDirectory {
   /**
    * Compute the test statistics for a &Chi;<sup>2</sup>-test on the given data.
    *
-   * @param data Data points
-   * @param buckets Upper bounds for the buckets to consider in the test.
-   * @param expected The expected number of elements to end up in each bucket. Note that there should
-   *                 be one more element in buckets than in expected.
+   * @param data     Data points
+   * @param buckets  Upper bounds for the buckets to consider in the test.
+   * @param expected The expected number of elements to end up in each bucket. Note that there
+   *                 should be one more element in buckets than in expected.
    * @return
    */
   DRes<SFixed> chiSquare(List<DRes<SFixed>> data, List<DRes<SFixed>> buckets, double[] expected);
@@ -123,10 +126,10 @@ public interface Statistics extends ComputationDirectory {
   /**
    * Compute the test statistics for a &Chi;<sup>2</sup>-test on the given data.
    *
-   * @param data Data points
-   * @param buckets Upper bounds for the buckets to consider in the test.
-   * @param expected The expected number of elements to end up in each bucket. Note that there should
-   *                 be one more element in buckets than in expected.
+   * @param data     Data points
+   * @param buckets  Upper bounds for the buckets to consider in the test.
+   * @param expected The expected number of elements to end up in each bucket. Note that there
+   *                 should be one more element in buckets than in expected.
    * @return
    */
   DRes<SFixed> chiSquare(List<DRes<SFixed>> data, double[] buckets, double[] expected);
@@ -141,13 +144,15 @@ public interface Statistics extends ComputationDirectory {
   DRes<LinearFunction> linearRegression(List<DRes<SFixed>> x, List<DRes<SFixed>> y);
 
   /**
-   * Compute simple linear regression on two samples assuming that the means has already been calculated.
+   * Compute simple linear regression on two samples assuming that the means has already been
+   * calculated.
    *
    * @param x
    * @param y
    * @return
    */
-  DRes<LinearFunction> linearRegression(List<DRes<SFixed>> x, DRes<SFixed> meanX, List<DRes<SFixed>> y,
+  DRes<LinearFunction> linearRegression(List<DRes<SFixed>> x, DRes<SFixed> meanX,
+      List<DRes<SFixed>> y,
       DRes<SFixed> meanY);
 
   /**
@@ -176,7 +181,7 @@ public interface Statistics extends ComputationDirectory {
    * Compute the histogram for the given sample.
    *
    * @param buckets Upper bound for the buckets to use in the histogram.
-   * @param data The sample data.
+   * @param data    The sample data.
    * @return
    */
   DRes<List<DRes<SInt>>> histogramInt(List<DRes<SInt>> buckets, List<DRes<SInt>> data);
@@ -185,7 +190,7 @@ public interface Statistics extends ComputationDirectory {
    * Compute the histogram for the given sample.
    *
    * @param buckets Upper bound for the buckets to use in the histogram.
-   * @param data The sample data.
+   * @param data    The sample data.
    * @return
    */
   DRes<List<DRes<SInt>>> histogramReal(List<DRes<SFixed>> buckets, List<DRes<SFixed>> data);
@@ -194,7 +199,7 @@ public interface Statistics extends ComputationDirectory {
    * Compute the histogram for the given sample.
    *
    * @param buckets Upper bound for the buckets to use in the histogram.
-   * @param data The sample data.
+   * @param data    The sample data.
    * @return
    */
   DRes<List<DRes<SInt>>> histogramReal(double[] buckets, List<DRes<SFixed>> data);
@@ -203,7 +208,7 @@ public interface Statistics extends ComputationDirectory {
    * Compute the histogram for the given two-dimensional sample.
    *
    * @param buckets Upper bounds for the buckets to use in the histogram.
-   * @param data The sample data.
+   * @param data    The sample data.
    * @return
    */
   DRes<Matrix<DRes<SInt>>> twoDimensionalHistogramInt(
@@ -214,7 +219,7 @@ public interface Statistics extends ComputationDirectory {
    * Compute the histogram for the given two-dimensional sample.
    *
    * @param buckets Upper bounds for the buckets to use in the histogram.
-   * @param data The sample data.
+   * @param data    The sample data.
    * @return
    */
   DRes<Matrix<DRes<SInt>>> twoDimensionalHistogramReal(
@@ -240,8 +245,8 @@ public interface Statistics extends ComputationDirectory {
   DRes<SFixed> kruskallWallisTest(List<List<DRes<SFixed>>> observed);
 
   /**
-   * Compute a frequency table for the data. Note that the frequencies will be leaked even though the
-   * corresponding values will not.
+   * Compute a frequency table for the data. Note that the frequencies will be leaked even though
+   * the corresponding values will not.
    *
    * @param data
    * @return
@@ -250,8 +255,8 @@ public interface Statistics extends ComputationDirectory {
 
   /**
    * Estimate the parameters of a Cox model on the given data. Here it's assumed that each covariate
-   * only takes values in a (small) finite set, e.g. when they indicate group membership. If many different
-   * values are possible, use {@link #coxRegressionContinuous(List)} instead;
+   * only takes values in a (small) finite set, e.g. when they indicate group membership. If many
+   * different values are possible, use {@link #coxRegressionContinuous(List)} instead;
    *
    * @param data
    * @return
@@ -261,10 +266,10 @@ public interface Statistics extends ComputationDirectory {
   /**
    * Estimate the parameters of a Cox model on the given data.
    *
-   * @param data The data set.
+   * @param data       The data set.
    * @param iterations The number of iterations.
-   * @param alpha The learning rate.
-   * @param beta The initial coefficient guess.
+   * @param alpha      The learning rate.
+   * @param beta       The initial coefficient guess.
    * @return
    */
   DRes<List<DRes<SFixed>>> coxRegressionDiscrete(List<SurvivalInfoDiscrete> data,
@@ -281,10 +286,10 @@ public interface Statistics extends ComputationDirectory {
   /**
    * Estimate the parameters of a Cox model on the given data.
    *
-   * @param data The data set.
+   * @param data       The data set.
    * @param iterations The number of iterations.
-   * @param alpha The learning rate.
-   * @param beta The initial coefficient guess.
+   * @param alpha      The learning rate.
+   * @param beta       The initial coefficient guess.
    * @return
    */
   DRes<List<DRes<SFixed>>> coxRegressionContinuous(List<SurvivalInfoContinuous> data,

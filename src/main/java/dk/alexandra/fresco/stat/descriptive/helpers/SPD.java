@@ -16,10 +16,10 @@ import java.util.List;
  */
 public class SPD implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-  private List<DRes<SFixed>> x;
-  private DRes<SFixed> meanX;
-  private List<DRes<SFixed>> y;
-  private DRes<SFixed> meanY;
+  private final List<DRes<SFixed>> x;
+  private final DRes<SFixed> meanX;
+  private final List<DRes<SFixed>> y;
+  private final DRes<SFixed> meanY;
 
   public SPD(List<DRes<SFixed>> x, DRes<SFixed> meanX, List<DRes<SFixed>> y, DRes<SFixed> meanY) {
     assert (x.size() == y.size());
@@ -42,8 +42,8 @@ public class SPD implements Computation<SFixed, ProtocolBuilderNumeric> {
 
   private class ComputePD implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-    private DRes<SFixed> yi;
-    private DRes<SFixed> xi;
+    private final DRes<SFixed> yi;
+    private final DRes<SFixed> xi;
 
     private ComputePD(DRes<SFixed> xi, DRes<SFixed> yi) {
       this.xi = xi;

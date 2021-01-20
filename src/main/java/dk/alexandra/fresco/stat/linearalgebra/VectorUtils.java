@@ -41,7 +41,8 @@ public class VectorUtils {
       /* See dk.alexandra.fresco.lib.fixed.fixed.FixedNumeric.unscaled */
       List<BigInteger> bFixed =
           b.stream().map(x -> BigDecimal.valueOf(x).multiply(new BigDecimal(
-              BigInteger.valueOf(2).pow(builder.getBasicNumericContext().getDefaultFixedPointPrecision())))
+              BigInteger.valueOf(2)
+                  .pow(builder.getBasicNumericContext().getDefaultFixedPointPrecision())))
               .setScale(0, RoundingMode.HALF_UP)
               .toBigIntegerExact()).collect(Collectors.toList());
       DRes<SInt> innerProduct = AdvancedNumeric.using(seq).innerProductWithPublicPart(bFixed, a);

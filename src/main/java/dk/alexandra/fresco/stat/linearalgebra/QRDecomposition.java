@@ -27,13 +27,14 @@ public class QRDecomposition implements
       List<List<DRes<SFixed>>> columns = VectorUtils.listBuilder(a.getHeight(), a::getColumn);
       return new GramSchmidt(columns).buildComputation(seq);
     }).par((par, gs) -> {
-      List<DRes<List<DRes<SFixed>>>> normalized = gs.stream().map(v -> new NormalizeVector(v).buildComputation(par)).collect(
-          Collectors.toList());
+      List<DRes<List<DRes<SFixed>>>> normalized = gs.stream()
+          .map(v -> new NormalizeVector(v).buildComputation(par)).collect(
+              Collectors.toList());
       return () -> normalized.stream().map(DRes::out).collect(Collectors.toList());
     }).par((par, gs) -> {
       FixedNumeric numeric = FixedNumeric.using(par);
       AdvancedFixedNumeric advanced = AdvancedFixedNumeric.using(par);
-      Matrix<DRes<SFixed>> r = MatrixUtils.buildMatrix(a.getHeight(), a.getWidth(), (i,j) -> {
+      Matrix<DRes<SFixed>> r = MatrixUtils.buildMatrix(a.getHeight(), a.getWidth(), (i, j) -> {
         if (i > j) {
           return numeric.known(0);
         } else {
@@ -41,7 +42,8 @@ public class QRDecomposition implements
         }
       });
 
-      Matrix<DRes<SFixed>> q = MatrixUtils.buildMatrix(a.getWidth(), a.getHeight(), (i,j) -> gs.get(j).get(i));
+      Matrix<DRes<SFixed>> q = MatrixUtils
+          .buildMatrix(a.getWidth(), a.getHeight(), (i, j) -> gs.get(j).get(i));
       return Pair.lazy(q, r);
     });
   }

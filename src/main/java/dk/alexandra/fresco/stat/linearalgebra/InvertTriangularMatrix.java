@@ -28,7 +28,8 @@ public class InvertTriangularMatrix implements
   public DRes<Matrix<DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.par(par -> {
       AdvancedFixedNumeric advancedFixedNumeric = AdvancedFixedNumeric.using(par);
-      List<DRes<SFixed>> diagonalInverses = VectorUtils.listBuilder(l.getHeight(), i -> advancedFixedNumeric.reciprocal(l.getRow(i).get(i)));
+      List<DRes<SFixed>> diagonalInverses = VectorUtils
+          .listBuilder(l.getHeight(), i -> advancedFixedNumeric.reciprocal(l.getRow(i).get(i)));
       return () -> diagonalInverses;
       //TODO: Reciprocal is not adjusted for sign -- once this is done, the next two scopes should be removed
 //    }).par((par, diagonalInverses) -> {
@@ -69,7 +70,7 @@ public class InvertTriangularMatrix implements
   }
 
   /**
-   * Compute a forward substition computing a vector x such that Lx = e_k, where L is lower
+   * Use forward substitution to compute a vector x such that Lx = e_k, where L is lower
    * triangular, e_k is a vector with all zeros and 1 on the k'th coordinate. The list reciprocals
    * contains the reciprocals of alle the diagonal entries of L.
    */
@@ -97,8 +98,7 @@ public class InvertTriangularMatrix implements
             DRes<SFixed> sum = AdvancedFixedNumeric.using(b).innerProduct(
                 l.getRow(k + i).subList(k, k + i), x);
 
-            ArrayList<DRes<SFixed>> newX = new ArrayList<>();
-            newX.addAll(x);
+            ArrayList<DRes<SFixed>> newX = new ArrayList<>(x);
             newX.add(fixedNumeric.mult(fixedNumeric.sub(0, sum), reciprocals.get(k + i)));
 
             return () -> newX;

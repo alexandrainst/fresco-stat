@@ -8,7 +8,9 @@ import dk.alexandra.fresco.lib.fixed.FixedLinearAlgebra;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.util.List;
 
-/* Compute eigenvalues of a matrix using the iterative QR algorithm*/
+/**
+ * Compute eigenvalues of a matrix using the iterative QR algorithm.
+ */
 public class QRAlgorithm implements
     Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
@@ -16,7 +18,7 @@ public class QRAlgorithm implements
   private final int iterations;
 
   public QRAlgorithm(Matrix<DRes<SFixed>> l, int iterations) {
-    assert(l.getHeight() == l.getWidth());
+    assert (l.getHeight() == l.getWidth());
     this.l = l;
     this.iterations = iterations;
   }
@@ -24,7 +26,7 @@ public class QRAlgorithm implements
   @Override
   public DRes<List<DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.seq(seq ->
-          () -> new State(() -> l, 0))
+        () -> new State(() -> l, 0))
         .whileLoop(state -> state.k < iterations, (seq, state) -> {
           DRes<Matrix<DRes<SFixed>>> a = seq.seq(sub -> new QRDecomposition(
               state.a.out()).buildComputation(sub)).seq((sub, qr) -> {
@@ -32,8 +34,8 @@ public class QRAlgorithm implements
             return fixedLinearAlgebra.mult(qr::getSecond, qr::getFirst);
           });
           return () -> new State(a, state.k + 1);
-    }).seq((seq, state) -> () ->
-            VectorUtils.listBuilder(l.getHeight(),  i -> state.a.out().getRow(i).get(i)));
+        }).seq((seq, state) -> () ->
+            VectorUtils.listBuilder(l.getHeight(), i -> state.a.out().getRow(i).get(i)));
   }
 
   private static class State {

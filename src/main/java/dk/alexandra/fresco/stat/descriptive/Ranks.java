@@ -17,7 +17,8 @@ import java.util.stream.IntStream;
 /**
  * Output ranks and correction term for Kruskall-Wallis if ties have been averaged.
  */
-public class Ranks implements Computation<Pair<List<DRes<SFixed>>, Double>, ProtocolBuilderNumeric> {
+public class Ranks implements
+    Computation<Pair<List<DRes<SFixed>>, Double>, ProtocolBuilderNumeric> {
 
   private final List<List<DRes<SInt>>> samples;
   private final boolean averageTies;
@@ -54,7 +55,8 @@ public class Ranks implements Computation<Pair<List<DRes<SFixed>>, Double>, Prot
     int finalN = n;
     return builder.seq(seq ->
         // Sort data points
-        dk.alexandra.fresco.lib.common.collections.Collections.using(seq).sort(valuesWithClassIndictators)
+        dk.alexandra.fresco.lib.common.collections.Collections.using(seq)
+            .sort(valuesWithClassIndictators)
     ).seq((seq, sorted) -> {
 
       Collections.reverse(sorted);

@@ -4,7 +4,10 @@ import dk.alexandra.fresco.framework.builder.numeric.field.BigIntegerFieldDefini
 import dk.alexandra.fresco.framework.builder.numeric.field.MersennePrimeFieldDefinition;
 import dk.alexandra.fresco.framework.sce.evaluator.EvaluationStrategy;
 import dk.alexandra.fresco.framework.util.ModulusFinder;
+import dk.alexandra.fresco.stat.LATests.TestEigenvalues;
+import dk.alexandra.fresco.stat.LATests.TestForwardsubstitution;
 import dk.alexandra.fresco.stat.LATests.TestGramSchmidt;
+import dk.alexandra.fresco.stat.LATests.TestLinearInverseProblem;
 import dk.alexandra.fresco.stat.LATests.TestQR;
 import dk.alexandra.fresco.stat.LATests.TestTriangularInverse;
 import dk.alexandra.fresco.stat.LinRegTests.TestLinearRegression;
@@ -39,8 +42,7 @@ import org.junit.Test;
 public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTest {
 
   private static final TestParameters TEST_PARAMETERS = new TestParameters().maxBitLength(128)
-      .field(new MersennePrimeFieldDefinition(256, 587))
-//      .field(new BigIntegerFieldDefinition(ModulusFinder.findSuitableModulus(256)))
+      .field(MersennePrimeFieldDefinition.find(256))
       .fixedPointPrecesion(16).evaluationStrategy(EvaluationStrategy.SEQUENTIAL).numParties(2)
       .performanceLogging(false);
 
@@ -216,6 +218,21 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   @Test
   public void test_inverse_of_triangular_matrix() {
     runTest(new TestTriangularInverse<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_find_eigenvalues() {
+    runTest(new TestEigenvalues<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_forward_substitution() {
+    runTest(new TestForwardsubstitution<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_linear_inverse_problem() {
+    runTest(new TestLinearInverseProblem<>(), TEST_PARAMETERS);
   }
 
 }

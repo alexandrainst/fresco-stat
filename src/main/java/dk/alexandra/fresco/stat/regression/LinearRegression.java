@@ -18,10 +18,10 @@ import java.util.List;
  */
 public class LinearRegression implements Computation<LinearFunction, ProtocolBuilderNumeric> {
 
-  private List<DRes<SFixed>> x;
-  private List<DRes<SFixed>> y;
-  private DRes<SFixed> meanY;
-  private DRes<SFixed> meanX;
+  private final List<DRes<SFixed>> x;
+  private final List<DRes<SFixed>> y;
+  private final DRes<SFixed> meanY;
+  private final DRes<SFixed> meanX;
 
   public LinearRegression(List<DRes<SFixed>> x, DRes<SFixed> meanX, List<DRes<SFixed>> y,
       DRes<SFixed> meanY) {
@@ -44,7 +44,8 @@ public class LinearRegression implements Computation<LinearFunction, ProtocolBui
 
       FixedNumeric numeric = FixedNumeric.using(builder);
       DRes<SFixed> b = numeric
-          .mult(spdAndSsd.getFirst(), AdvancedFixedNumeric.using(builder).reciprocal(spdAndSsd.getSecond()));
+          .mult(spdAndSsd.getFirst(),
+              AdvancedFixedNumeric.using(builder).reciprocal(spdAndSsd.getSecond()));
       DRes<SFixed> a = numeric
           .sub(meanY, numeric.mult(b, meanX));
 
@@ -55,8 +56,8 @@ public class LinearRegression implements Computation<LinearFunction, ProtocolBui
 
   public static class LinearFunction {
 
-    private DRes<SFixed> b;
-    private DRes<SFixed> a;
+    private final DRes<SFixed> b;
+    private final DRes<SFixed> a;
 
     private LinearFunction(DRes<SFixed> a, DRes<SFixed> b) {
       this.a = a;

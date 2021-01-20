@@ -37,12 +37,12 @@ public class TestsTests {
         final double expectedMean = 75.0;
 
         @Override
-        public void test() throws Exception {
+        public void test() {
 
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
             FixedNumeric numeric = FixedNumeric.using(builder);
             List<DRes<SFixed>> input =
-                data.stream().map(x -> numeric.known(x)).collect(Collectors.toList());
+                data.stream().map(numeric::known).collect(Collectors.toList());
             DRes<SFixed> t = Statistics.using(builder)
                 .ttest(input, numeric.known(BigDecimal.valueOf(expectedMean)));
             return numeric.open(t);

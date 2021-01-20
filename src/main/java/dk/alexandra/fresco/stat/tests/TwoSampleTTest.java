@@ -14,8 +14,8 @@ import java.util.List;
 
 public class TwoSampleTTest implements Computation<SFixed, ProtocolBuilderNumeric> {
 
-  private List<DRes<SFixed>> data1;
-  private List<DRes<SFixed>> data2;
+  private final List<DRes<SFixed>> data1;
+  private final List<DRes<SFixed>> data2;
 
   /**
    * This implements the calculation of a t-test statistics for two samples where it can be assumed

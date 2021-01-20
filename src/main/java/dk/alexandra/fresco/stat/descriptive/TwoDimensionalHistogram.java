@@ -52,7 +52,8 @@ public class TwoDimensionalHistogram
           });
       return () -> counts;
     }).par((par, counts) -> {
-      MultiDimensionalArray<DRes<SInt>> sums = counts.project(r -> AdvancedNumeric.using(par).sum(r));
+      MultiDimensionalArray<DRes<SInt>> sums = counts
+          .project(r -> AdvancedNumeric.using(par).sum(r));
       return () -> sums;
     }).par((par, sums) -> {
       Matrix<DRes<SInt>> histogram = MatrixUtils.buildMatrix(h, w, (i, j) -> {
@@ -70,9 +71,12 @@ public class TwoDimensionalHistogram
     });
   }
 
-  private class LEQPair implements Computation<SInt, ProtocolBuilderNumeric> {
+  private static class LEQPair implements Computation<SInt, ProtocolBuilderNumeric> {
 
-    private DRes<SInt> a1, a2, b1, b2;
+    private final DRes<SInt> a1;
+    private final DRes<SInt> a2;
+    private final DRes<SInt> b1;
+    private final DRes<SInt> b2;
 
     private LEQPair(DRes<SInt> a1, DRes<SInt> a2, DRes<SInt> b1, DRes<SInt> b2) {
       this.a1 = a1;
