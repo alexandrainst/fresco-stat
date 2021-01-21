@@ -24,6 +24,7 @@ public class ForwardSubstitution implements
   public ForwardSubstitution(Matrix<DRes<SFixed>> a,
       ArrayList<DRes<SFixed>> b) {
     assert(a.getHeight() == a.getWidth());
+    assert(a.getWidth() == b.size());
     this.a = a;
     this.b = b;
   }

@@ -1,15 +1,16 @@
 package dk.alexandra.fresco.stat;
 
-import dk.alexandra.fresco.framework.builder.numeric.field.BigIntegerFieldDefinition;
 import dk.alexandra.fresco.framework.builder.numeric.field.MersennePrimeFieldDefinition;
 import dk.alexandra.fresco.framework.sce.evaluator.EvaluationStrategy;
-import dk.alexandra.fresco.framework.util.ModulusFinder;
 import dk.alexandra.fresco.stat.LATests.TestBackwardSubstitution;
 import dk.alexandra.fresco.stat.LATests.TestEigenvalues;
 import dk.alexandra.fresco.stat.LATests.TestForwardsubstitution;
 import dk.alexandra.fresco.stat.LATests.TestGramSchmidt;
 import dk.alexandra.fresco.stat.LATests.TestLinearInverseProblem;
+import dk.alexandra.fresco.stat.LATests.TestLinearInverseProblemOverdetermined;
+import dk.alexandra.fresco.stat.LATests.TestLinearInverseProblemUnderdetermined;
 import dk.alexandra.fresco.stat.LATests.TestQR;
+import dk.alexandra.fresco.stat.LATests.TestQRRectangular;
 import dk.alexandra.fresco.stat.LATests.TestTriangularInverse;
 import dk.alexandra.fresco.stat.LinRegTests.TestLinearRegression;
 import dk.alexandra.fresco.stat.LogRegTests.TestLogRegPrediction;
@@ -217,6 +218,11 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   }
 
   @Test
+  public void test_qr_decomposition_rectangular() {
+    runTest(new TestQRRectangular<>(), TEST_PARAMETERS);
+  }
+
+  @Test
   public void test_inverse_of_triangular_matrix() {
     runTest(new TestTriangularInverse<>(), TEST_PARAMETERS);
   }
@@ -241,4 +247,13 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
     runTest(new TestLinearInverseProblem<>(), TEST_PARAMETERS);
   }
 
+  @Test
+  public void test_linear_inverse_problem_underdetermined() {
+    runTest(new TestLinearInverseProblemUnderdetermined<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_linear_inverse_problem_overdetermined() {
+    runTest(new TestLinearInverseProblemOverdetermined<>(), TEST_PARAMETERS);
+  }
 }

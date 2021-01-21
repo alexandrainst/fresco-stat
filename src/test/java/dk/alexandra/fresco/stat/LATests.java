@@ -165,6 +165,79 @@ public class LATests {
     }
   }
 
+
+  public static class TestQRRectangular<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        @Override
+        public void test() {
+
+          ArrayList<BigDecimal> rowOne = new ArrayList<>();
+          rowOne.add(BigDecimal.valueOf(12));
+          rowOne.add(BigDecimal.valueOf(-51));
+          rowOne.add(BigDecimal.valueOf(4));
+          ArrayList<BigDecimal> rowTwo = new ArrayList<>();
+          rowTwo.add(BigDecimal.valueOf(6));
+          rowTwo.add(BigDecimal.valueOf(167));
+          rowTwo.add(BigDecimal.valueOf(-68));
+          ArrayList<BigDecimal> rowThree = new ArrayList<>();
+          rowThree.add(BigDecimal.valueOf(-4));
+          rowThree.add(BigDecimal.valueOf(24));
+          rowThree.add(BigDecimal.valueOf(-41));
+          ArrayList<BigDecimal> rowFour = new ArrayList<>();
+          rowThree.add(BigDecimal.valueOf(-2));
+          rowThree.add(BigDecimal.valueOf(-1));
+          rowThree.add(BigDecimal.valueOf(11));
+
+          ArrayList<ArrayList<BigDecimal>> mat = new ArrayList<>();
+          mat.add(rowOne);
+          mat.add(rowTwo);
+          mat.add(rowThree);
+          mat.add(rowFour);
+          Matrix<BigDecimal> input = new Matrix<>(4, 3, mat);
+
+          Application<Pair<Matrix<BigDecimal>, Matrix<BigDecimal>>, ProtocolBuilderNumeric> testApplication = builder ->
+              builder.seq(seq -> FixedLinearAlgebra.using(seq).input(input, 1))
+                  .seq((seq, a) -> new QRDecomposition(
+                      a).buildComputation(seq)).seq((seq, qr) -> {
+                Matrix<DRes<BigDecimal>> qOut = MatrixUtils
+                    .map(qr.getFirst(), FixedNumeric.using(seq)::open);
+                Matrix<DRes<BigDecimal>> rOut = MatrixUtils
+                    .map(qr.getSecond(), FixedNumeric.using(seq)::open);
+                return Pair.lazy(qOut, rOut);
+              }).seq((seq, qr) -> {
+                Matrix<BigDecimal> qOut = MatrixUtils.map(qr.getFirst(), DRes::out);
+                Matrix<BigDecimal> rOut = MatrixUtils.map(qr.getSecond(), DRes::out);
+                return Pair.lazy(qOut, rOut);
+              });
+
+          Pair<Matrix<BigDecimal>, Matrix<BigDecimal>> out = runApplication(testApplication);
+
+          // Assert q is ortonormal
+          Matrix<BigDecimal> q = out.getFirst();
+          for (int i = 0; i < q.getWidth(); i++) {
+            assertEquals(1.0, innerProduct(q.getColumn(i), q.getColumn(i)).doubleValue(), 0.01);
+            for (int j = i + 1; j < q.getWidth(); j++) {
+              assertEquals(0.0, innerProduct(q.getColumn(i), q.getColumn(j)).doubleValue(), 0.01);
+            }
+          }
+
+          // Assert r is upper-triangular
+          Matrix<BigDecimal> r = out.getSecond();
+          for (int i = 0; i < r.getWidth(); i++) {
+            for (int j = i + 1; j < r.getHeight(); j++) {
+              assertEquals(0.0, r.getColumn(i).get(j).doubleValue(), 0.01);
+            }
+          }
+        }
+      };
+    }
+  }
+
   public static class TestTriangularInverse<ResourcePoolT extends ResourcePool>
       extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
 
@@ -382,6 +455,117 @@ public class LATests {
     }
   }
 
+  public static class TestLinearInverseProblemUnderdetermined<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        @Override
+        public void test() {
+
+          ArrayList<BigDecimal> rowOne = new ArrayList<>();
+          rowOne.add(BigDecimal.valueOf(1));
+          rowOne.add(BigDecimal.valueOf(1));
+          rowOne.add(BigDecimal.valueOf(1));
+          ArrayList<BigDecimal> rowTwo = new ArrayList<>();
+          rowTwo.add(BigDecimal.valueOf(1));
+          rowTwo.add(BigDecimal.valueOf(1));
+          rowTwo.add(BigDecimal.valueOf(2));
+
+          ArrayList<ArrayList<BigDecimal>> mat = new ArrayList<>();
+          mat.add(rowOne);
+          mat.add(rowTwo);
+          Matrix<BigDecimal> inputA = new Matrix<>(2, 3, mat);
+
+          ArrayList<BigDecimal> inputB = new ArrayList<>(
+              Arrays.asList(BigDecimal.valueOf(1), BigDecimal.valueOf(3)));
+
+          Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication = builder ->
+              builder.seq(seq -> {
+                Pair<DRes<Matrix<DRes<SFixed>>>, DRes<ArrayList<DRes<SFixed>>>> inputs = new Pair<>(
+                    FixedLinearAlgebra.using(seq).input(inputA, 1),
+                    FixedLinearAlgebra.using(seq).input(inputB, 1));
+                return () -> inputs;
+              }).seq((seq, inputs) -> new LinearInverseProblem(
+                  inputs.getFirst().out(), inputs.getSecond().out()).buildComputation(seq))
+                  .seq((seq, x) -> {
+                    List<DRes<BigDecimal>> open = x.stream()
+                        .map(FixedNumeric.using(seq)::open).collect(
+                            Collectors.toList());
+                    return () -> open;
+                  }).seq((seq, open) -> {
+                List<BigDecimal> out = open.stream().map(DRes::out).collect(Collectors.toList());
+                return () -> out;
+              });
+
+          List<BigDecimal> out = runApplication(testApplication);
+          double[] product = multiply(inputA, out).stream().mapToDouble(BigDecimal::doubleValue)
+              .toArray();
+          Assert.assertArrayEquals(inputB.stream().mapToDouble(BigDecimal::doubleValue).toArray(),
+              product, 0.001);
+        }
+      };
+    }
+  }
+
+  public static class TestLinearInverseProblemOverdetermined<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        @Override
+        public void test() {
+
+          ArrayList<BigDecimal> rowOne = new ArrayList<>();
+          rowOne.add(BigDecimal.valueOf(2));
+          rowOne.add(BigDecimal.valueOf(-3));
+          ArrayList<BigDecimal> rowTwo = new ArrayList<>();
+          rowTwo.add(BigDecimal.valueOf(3));
+          rowTwo.add(BigDecimal.valueOf(-2));
+          ArrayList<BigDecimal> rowThree = new ArrayList<>();
+          rowThree.add(BigDecimal.valueOf(1));
+          rowThree.add(BigDecimal.valueOf(-1));
+
+          ArrayList<ArrayList<BigDecimal>> mat = new ArrayList<>();
+          mat.add(rowOne);
+          mat.add(rowTwo);
+          mat.add(rowThree);
+          Matrix<BigDecimal> inputA = new Matrix<>(3, 2, mat);
+
+          ArrayList<BigDecimal> inputB = new ArrayList<>(
+              Arrays.asList(BigDecimal.valueOf(1), BigDecimal.valueOf(4), BigDecimal.valueOf(1)));
+
+          Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication = builder ->
+              builder.seq(seq -> {
+                Pair<DRes<Matrix<DRes<SFixed>>>, DRes<ArrayList<DRes<SFixed>>>> inputs = new Pair<>(
+                    FixedLinearAlgebra.using(seq).input(inputA, 1),
+                    FixedLinearAlgebra.using(seq).input(inputB, 1));
+                return () -> inputs;
+              }).seq((seq, inputs) -> new LinearInverseProblem(
+                  inputs.getFirst().out(), inputs.getSecond().out()).buildComputation(seq))
+                  .seq((seq, x) -> {
+                    List<DRes<BigDecimal>> open = x.stream()
+                        .map(FixedNumeric.using(seq)::open).collect(
+                            Collectors.toList());
+                    return () -> open;
+                  }).seq((seq, open) -> {
+                List<BigDecimal> out = open.stream().map(DRes::out).collect(Collectors.toList());
+                return () -> out;
+              });
+
+          List<BigDecimal> out = runApplication(testApplication);
+          double[] product = multiply(inputA, out).stream().mapToDouble(BigDecimal::doubleValue)
+              .toArray();
+          Assert.assertArrayEquals(inputB.stream().mapToDouble(BigDecimal::doubleValue).toArray(),
+              product, 0.001);
+        }
+      };
+    }
+  }
 
   public static class TestBackwardSubstitution<ResourcePoolT extends ResourcePool>
       extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {

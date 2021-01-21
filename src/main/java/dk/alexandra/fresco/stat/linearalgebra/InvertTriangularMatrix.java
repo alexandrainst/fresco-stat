@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/* Invert upper triangular matrix. */
+/** Invert upper triangular matrix. */
 public class InvertTriangularMatrix implements
     Computation<Matrix<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
@@ -31,21 +31,6 @@ public class InvertTriangularMatrix implements
       List<DRes<SFixed>> diagonalInverses = VectorUtils
           .listBuilder(l.getHeight(), i -> advancedFixedNumeric.reciprocal(l.getRow(i).get(i)));
       return () -> diagonalInverses;
-      //TODO: Reciprocal is not adjusted for sign -- once this is done, the next two scopes should be removed
-//    }).par((par, diagonalInverses) -> {
-//      AdvancedFixedNumeric advancedFixedNumeric = AdvancedFixedNumeric.using(par);
-//      List<DRes<SInt>> signs = VectorUtils.listBuilder(l.getHeight(),
-//          i -> advancedFixedNumeric.sign(diagonalInverses.get(i)));
-//      return Pair.lazy(diagonalInverses, signs);
-//    }).par((par, inversesAndSigns) -> {
-//      FixedNumeric fixedNumeric = FixedNumeric.using(par);
-//      List<DRes<SFixed>> asFixed = VectorUtils.listBuilder(l.getHeight(), i -> fixedNumeric.fromSInt(inversesAndSigns.getSecond().get(i)));
-//      return Pair.lazy(inversesAndSigns.getFirst(), asFixed);
-//    }).par((par, inversesAndSigns) -> {
-//      FixedNumeric fixedNumeric = FixedNumeric.using(par);
-//      List<DRes<SFixed>> diagonalInverses = VectorUtils.listBuilder(l.getHeight(), i -> fixedNumeric.mult(inversesAndSigns.getFirst().get(i),
-//            inversesAndSigns.getSecond().get(i)));
-//      return () -> diagonalInverses;
     }).par((par, diagonalInverses) -> {
       List<DRes<List<DRes<SFixed>>>> inverse = new ArrayList<>();
       for (int i = 0; i < l.getHeight(); i++) {
@@ -65,6 +50,9 @@ public class InvertTriangularMatrix implements
         unfolded.add(row);
       }
       Matrix<DRes<SFixed>> out = new Matrix<>(l.getHeight(), l.getWidth(), unfolded);
+
+      // We have constructed the matrix from columns but the representation here is in rows, so we need
+      // to transpose the result.
       return FixedLinearAlgebra.using(seq).transpose(() -> out);
     });
   }

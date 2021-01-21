@@ -18,9 +18,12 @@ public class MatrixUtils {
         (i, j) -> function.apply(matrix.getRow(i).get(j)));
   }
 
+  public static <E> Matrix<E> transpose(Matrix<E> a) {
+    return buildMatrix(a.getWidth(), a.getHeight(), (i, j) -> a.getRow(j).get(i));
+  }
+
   @FunctionalInterface
   public interface MatrixPopulator<E> {
-
     E apply(int i, int j);
   }
 

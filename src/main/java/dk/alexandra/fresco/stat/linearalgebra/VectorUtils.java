@@ -161,9 +161,9 @@ public class VectorUtils {
    * @param builder The builder to use.
    * @return
    */
-  public static List<DRes<SFixed>> div(List<DRes<SFixed>> vector, DRes<SFixed> scalar,
+  public static ArrayList<DRes<SFixed>> div(List<DRes<SFixed>> vector, DRes<SFixed> scalar,
       ProtocolBuilderNumeric builder) {
-    List<DRes<SFixed>> result = new ArrayList<>();
+    ArrayList<DRes<SFixed>> result = new ArrayList<>();
     builder.par(par -> {
       for (int i = 0; i < vector.size(); i++) {
         result.add(FixedNumeric.using(par).div(vector.get(i), scalar));

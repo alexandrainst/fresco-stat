@@ -9,48 +9,58 @@ import dk.alexandra.fresco.lib.fixed.FixedLinearAlgebra;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.util.ArrayList;
-import java.util.List;
 
 /**
- * Solve a linear inverse problem, eg. find x such that Ax = b where A is a matrix and b is a vector.
+ * Solve a linear inverse problem, eg. find an x such that Ax = b where A is an <i>mxn</i>-matrix
+ * and <i>b</i> is an <i>n</i>-dimensional vector.
  */
 public class LinearInverseProblem implements
     Computation<ArrayList<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
   private final Matrix<DRes<SFixed>> a;
   private final ArrayList<DRes<SFixed>> b;
+  private final boolean underDetermined;
 
   public LinearInverseProblem(Matrix<DRes<SFixed>> a, ArrayList<DRes<SFixed>> b) {
-    // TODO for now we can only handle square matrices, but when QR decomposition is generalized to
-    // rectangular matrices, we may allow a.getHeight() <= a.getWidth().
-    assert (a.getHeight() == a.getWidth());
+    underDetermined = a.getWidth() < a.getHeight();
     this.a = a;
     this.b = b;
   }
 
   @Override
   public DRes<ArrayList<DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric builder) {
-    return builder.seq(seq -> {
-      FixedLinearAlgebra linearAlgebra = FixedLinearAlgebra.using(seq);
-      return linearAlgebra.transpose(() -> a);
-    }).seq((seq, at) -> new QRDecomposition(at).buildComputation(seq))
-        .seq((seq, qr) -> {
-          FixedLinearAlgebra linearAlgebra = FixedLinearAlgebra.using(seq);
-          DRes<Matrix<DRes<SFixed>>> rt = linearAlgebra.transpose(qr::getSecond);
-          return Pair.lazy(qr.getFirst(), rt);
-        }).seq((seq, qrt) -> {
-          DRes<ArrayList<DRes<SFixed>>> rtb = new ForwardSubstitution(qrt.getSecond().out(), b)
-              .buildComputation(seq);
-          return Pair.lazy(qrt.getFirst(), rtb);
-        }).seq((seq, qrtb) -> {
-          FixedLinearAlgebra linearAlgebra = FixedLinearAlgebra.using(seq);
-          FixedNumeric numeric = FixedNumeric.using(seq);
+    Matrix<DRes<SFixed>> at = underDetermined ? a : MatrixUtils.transpose(a);
 
-          ArrayList<DRes<SFixed>> padded = qrtb.getSecond().out();
-          for (int i = a.getHeight(); i < a.getWidth(); i++) {
-            padded.add(numeric.known(0));
+    return builder.seq(seq -> new QRDecomposition(at).buildComputation(seq))
+        .seq((seq, qr) -> {
+          Matrix<DRes<SFixed>> r1 =
+              underDetermined ? qr.getSecond() : MatrixUtils.transpose(qr.getSecond());
+          return Pair.lazy(qr.getFirst(), r1);
+        }).seq((seq, qr1) -> {
+          Matrix<DRes<SFixed>> q = qr1.getFirst();
+          DRes<ArrayList<DRes<SFixed>>> x;
+          if (underDetermined) {
+            x = seq.seq(sub -> {
+
+              // The transpose of the first n columns of q
+              Matrix<DRes<SFixed>> q1 = MatrixUtils
+                  .buildMatrix(a.getWidth(), q.getHeight(), (i, j) -> q.getRow(j).get(i));
+
+              return FixedLinearAlgebra.using(sub).vectorMult(DRes.of(q1), DRes.of(b));
+            }).seq(
+                (sub, b1) -> new BackwardSubstitution(qr1.getSecond(), b1).buildComputation(sub));
+
+          } else {
+            x = seq.seq(sub -> new ForwardSubstitution(qr1.getSecond(), b)
+                .buildComputation(sub)).seq((sub, rtb) -> {
+              FixedNumeric numeric = FixedNumeric.using(sub);
+              for (int i = a.getWidth(); i < a.getHeight(); i++) {
+                rtb.add(numeric.known(0));
+              }
+              return FixedLinearAlgebra.using(sub).vectorMult(DRes.of(q), DRes.of(rtb));
+            });
           }
-          return linearAlgebra.vectorMult(() -> qrtb.getFirst(), () -> padded);
+          return x;
         });
   }
 }
