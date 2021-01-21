@@ -4,6 +4,7 @@ import dk.alexandra.fresco.framework.builder.numeric.field.BigIntegerFieldDefini
 import dk.alexandra.fresco.framework.builder.numeric.field.MersennePrimeFieldDefinition;
 import dk.alexandra.fresco.framework.sce.evaluator.EvaluationStrategy;
 import dk.alexandra.fresco.framework.util.ModulusFinder;
+import dk.alexandra.fresco.stat.LATests.TestBackwardSubstitution;
 import dk.alexandra.fresco.stat.LATests.TestEigenvalues;
 import dk.alexandra.fresco.stat.LATests.TestForwardsubstitution;
 import dk.alexandra.fresco.stat.LATests.TestGramSchmidt;
@@ -228,6 +229,11 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   @Test
   public void test_forward_substitution() {
     runTest(new TestForwardsubstitution<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_backward_substitution() {
+    runTest(new TestBackwardSubstitution<>(), TEST_PARAMETERS);
   }
 
   @Test

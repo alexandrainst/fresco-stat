@@ -13,6 +13,7 @@ import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.FixedLinearAlgebra;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.linearalgebra.BackwardSubstitution;
 import dk.alexandra.fresco.stat.linearalgebra.ForwardSubstitution;
 import dk.alexandra.fresco.stat.linearalgebra.GramSchmidt;
 import dk.alexandra.fresco.stat.linearalgebra.InvertTriangularMatrix;
@@ -372,6 +373,68 @@ public class LATests {
               });
 
           List<BigDecimal> out = runApplication(testApplication);
+          double[] product = multiply(inputA, out).stream().mapToDouble(BigDecimal::doubleValue)
+              .toArray();
+          Assert.assertArrayEquals(inputB.stream().mapToDouble(BigDecimal::doubleValue).toArray(),
+              product, 0.001);
+        }
+      };
+    }
+  }
+
+
+  public static class TestBackwardSubstitution<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        @Override
+        public void test() {
+
+          ArrayList<BigDecimal> rowOne = new ArrayList<>();
+          rowOne.add(BigDecimal.valueOf(1));
+          rowOne.add(BigDecimal.valueOf(-2));
+          rowOne.add(BigDecimal.valueOf(1));
+          ArrayList<BigDecimal> rowTwo = new ArrayList<>();
+          rowTwo.add(BigDecimal.valueOf(0));
+          rowTwo.add(BigDecimal.valueOf(1));
+          rowTwo.add(BigDecimal.valueOf(6));
+          ArrayList<BigDecimal> rowThree = new ArrayList<>();
+          rowThree.add(BigDecimal.valueOf(0));
+          rowThree.add(BigDecimal.valueOf(0));
+          rowThree.add(BigDecimal.valueOf(1));
+
+          ArrayList<ArrayList<BigDecimal>> mat = new ArrayList<>();
+          mat.add(rowOne);
+          mat.add(rowTwo);
+          mat.add(rowThree);
+          Matrix<BigDecimal> inputA = new Matrix<>(3, 3, mat);
+
+          ArrayList<BigDecimal> inputB = new ArrayList<>(
+              Arrays.asList(BigDecimal.valueOf(4), BigDecimal.valueOf(-1), BigDecimal.valueOf(2)));
+
+          Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication = builder ->
+              builder.seq(seq -> {
+                Pair<DRes<Matrix<DRes<SFixed>>>, DRes<ArrayList<DRes<SFixed>>>> inputs = new Pair<>(
+                    FixedLinearAlgebra.using(seq).input(inputA, 1),
+                    FixedLinearAlgebra.using(seq).input(inputB, 1));
+                return () -> inputs;
+              }).seq((seq, inputs) -> new BackwardSubstitution(
+                  inputs.getFirst().out(), inputs.getSecond().out()).buildComputation(seq))
+                  .seq((seq, x) -> {
+                    List<DRes<BigDecimal>> open = x.stream()
+                        .map(FixedNumeric.using(seq)::open).collect(
+                            Collectors.toList());
+                    return () -> open;
+                  }).seq((seq, open) -> {
+                List<BigDecimal> out = open.stream().map(DRes::out).collect(Collectors.toList());
+                return () -> out;
+              });
+
+          List<BigDecimal> out = runApplication(testApplication);
+          System.out.println(out);
           double[] product = multiply(inputA, out).stream().mapToDouble(BigDecimal::doubleValue)
               .toArray();
           Assert.assertArrayEquals(inputB.stream().mapToDouble(BigDecimal::doubleValue).toArray(),

@@ -18,9 +18,9 @@ public class LinearInverseProblem implements
     Computation<ArrayList<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
   private final Matrix<DRes<SFixed>> a;
-  private final List<DRes<SFixed>> b;
+  private final ArrayList<DRes<SFixed>> b;
 
-  public LinearInverseProblem(Matrix<DRes<SFixed>> a, List<DRes<SFixed>> b) {
+  public LinearInverseProblem(Matrix<DRes<SFixed>> a, ArrayList<DRes<SFixed>> b) {
     // TODO for now we can only handle square matrices, but when QR decomposition is generalized to
     // rectangular matrices, we may allow a.getHeight() <= a.getWidth().
     assert (a.getHeight() == a.getWidth());
@@ -39,14 +39,14 @@ public class LinearInverseProblem implements
           DRes<Matrix<DRes<SFixed>>> rt = linearAlgebra.transpose(qr::getSecond);
           return Pair.lazy(qr.getFirst(), rt);
         }).seq((seq, qrt) -> {
-          DRes<List<DRes<SFixed>>> rtb = new ForwardSubstitution(qrt.getSecond().out(), b)
+          DRes<ArrayList<DRes<SFixed>>> rtb = new ForwardSubstitution(qrt.getSecond().out(), b)
               .buildComputation(seq);
           return Pair.lazy(qrt.getFirst(), rtb);
         }).seq((seq, qrtb) -> {
           FixedLinearAlgebra linearAlgebra = FixedLinearAlgebra.using(seq);
           FixedNumeric numeric = FixedNumeric.using(seq);
 
-          ArrayList<DRes<SFixed>> padded = new ArrayList<>(qrtb.getSecond().out());
+          ArrayList<DRes<SFixed>> padded = qrtb.getSecond().out();
           for (int i = a.getHeight(); i < a.getWidth(); i++) {
             padded.add(numeric.known(0));
           }
