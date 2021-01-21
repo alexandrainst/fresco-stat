@@ -3,6 +3,7 @@ package dk.alexandra.fresco.stat.linearalgebra;
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
+import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
@@ -11,8 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Use forward substitution to compute a vector x such that ax = b, where a is lower
- * triangular.
+ * Use forward substitution to compute a vector x such that ax = b, where a is lower triangular.
  */
 public class ForwardSubstitution implements
     Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
@@ -28,22 +28,28 @@ public class ForwardSubstitution implements
 
   @Override
   public DRes<List<DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric builder) {
-    return builder.seq(seq -> {
-      // TODO: Precompute reciprocals in parallel instead of division
-      FixedNumeric fixedNumeric = FixedNumeric.using(seq);
-      DRes<SFixed> x0 = fixedNumeric.div(b.get(0), a.getRow(0).get(0));
-      return () -> new ArrayList<>(List.of(x0));
-    }).whileLoop(x -> x.size() < a.getHeight(), (seq, x) -> {
-      FixedNumeric fixedNumeric = FixedNumeric.using(seq);
-      int i = x.size();
+    return builder.par(par -> {
+      AdvancedFixedNumeric advancedFixedNumeric = AdvancedFixedNumeric.using(par);
+      List<DRes<SFixed>> reciprocals = new ArrayList<>();
+      for (int i = 0; i < a.getHeight(); i++) {
+        reciprocals.add(advancedFixedNumeric.reciprocal(a.getRow(i).get(i)));
+      }
+      return () -> reciprocals;
+    }).seq(
+        (seq, reciprocals) -> Pair.lazy(reciprocals, new ArrayList<>(List.of(reciprocals.get(0)))))
+        .whileLoop(pair -> pair.getSecond().size() < a.getHeight(), (seq, pair) -> {
+          FixedNumeric fixedNumeric = FixedNumeric.using(seq);
+          List<DRes<SFixed>> x = pair.getSecond();
+          List<DRes<SFixed>> reciprocals = pair.getFirst();
+          int i = x.size();
 
-      DRes<SFixed> sum = AdvancedFixedNumeric.using(seq).innerProduct(
-          a.getRow(i).subList(0, i), x);
+          DRes<SFixed> sum = AdvancedFixedNumeric.using(seq).innerProduct(
+              a.getRow(i).subList(0, i), pair.getSecond());
 
-      ArrayList<DRes<SFixed>> newX = new ArrayList<>(x);
-      newX.add(fixedNumeric.div(fixedNumeric.sub(b.get(i), sum), a.getRow(i).get(i)));
+          ArrayList<DRes<SFixed>> newX = new ArrayList<>(x);
+          newX.add(fixedNumeric.mult(fixedNumeric.sub(b.get(i), sum), reciprocals.get(i)));
 
-      return () -> newX;
-    }).seq((seq, x) -> () -> x);
+          return Pair.lazy(reciprocals, newX);
+        }).seq((seq, pair) -> pair::getSecond);
   }
 }
