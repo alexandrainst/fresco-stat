@@ -7,7 +7,7 @@ import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.SFixed;
-import dk.alexandra.fresco.stat.regression.LinearRegression.LinearFunction;
+import dk.alexandra.fresco.stat.regression.SimpleLinearRegression.LinearFunction;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoContinuous;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoDiscrete;
 import java.util.List;

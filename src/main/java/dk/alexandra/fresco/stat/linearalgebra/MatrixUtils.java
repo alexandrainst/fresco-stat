@@ -3,6 +3,7 @@ package dk.alexandra.fresco.stat.linearalgebra;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
 import java.util.ArrayList;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -11,6 +12,10 @@ public class MatrixUtils {
   public static <E> Matrix<E> buildMatrix(int h, int w, MatrixPopulator<E> populator) {
     return new Matrix<>(h, w, i -> IntStream.range(0, w).mapToObj(j -> populator.apply(i, j))
         .collect(Collectors.toCollection(ArrayList::new)));
+  }
+
+  public static <E> Matrix<E> buildColumnMatrix(int h, int w, IntFunction<ArrayList<E>> columnBuilder) {
+    return transpose(new Matrix<>(w, h, columnBuilder));
   }
 
   public static <E, F> Matrix<E> map(Matrix<F> matrix, Function<F, E> function) {

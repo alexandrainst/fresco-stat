@@ -11,8 +11,9 @@ import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.util.ArrayList;
 
 /**
- * Solve a linear inverse problem, eg. find an x such that Ax = b where A is an <i>mxn</i>-matrix
- * and <i>b</i> is an <i>n</i>-dimensional vector.
+ * Solve a linear inverse problem, eg. find an <i>x</i> such that Ax = b where A is an <i>mxn</i>-matrix
+ * and <i>b</i> is an <i>n</i>-dimensional vector. If a system is overdetermined (m &ge; n), the
+ * computation will find the <i>x</i> minimising &#x7c;&#x7c;<i>Ax - b</i>&#x7c;&#x7c;.
  */
 public class LinearInverseProblem implements
     Computation<ArrayList<DRes<SFixed>>, ProtocolBuilderNumeric> {

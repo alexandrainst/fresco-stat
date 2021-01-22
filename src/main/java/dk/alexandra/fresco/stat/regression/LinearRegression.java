@@ -3,74 +3,56 @@ package dk.alexandra.fresco.stat.regression;
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
-import dk.alexandra.fresco.framework.util.Pair;
-import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
+import dk.alexandra.fresco.lib.common.collections.Matrix;
+import dk.alexandra.fresco.lib.fixed.FixedLinearAlgebra;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
-import dk.alexandra.fresco.stat.descriptive.helpers.SPD;
-import dk.alexandra.fresco.stat.descriptive.helpers.SSD;
-import dk.alexandra.fresco.stat.regression.LinearRegression.LinearFunction;
+import dk.alexandra.fresco.stat.linearalgebra.LinearInverseProblem;
+import dk.alexandra.fresco.stat.linearalgebra.MoorePenrosePseudoInverse;
+import java.util.ArrayList;
 import java.util.List;
 
-/**
- * This computation returns coefficients a and b based on a simple linear regression of the observed
- * x and y values.
- */
-public class LinearRegression implements Computation<LinearFunction, ProtocolBuilderNumeric> {
+public class LinearRegression implements
+    Computation<ArrayList<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
-  private final List<DRes<SFixed>> x;
-  private final List<DRes<SFixed>> y;
-  private final DRes<SFixed> meanY;
-  private final DRes<SFixed> meanX;
+  private final List<ArrayList<DRes<SFixed>>> observations;
+  private final int n;
+  private final int p;
+  private final ArrayList<DRes<SFixed>> y;
 
-  public LinearRegression(List<DRes<SFixed>> x, DRes<SFixed> meanX, List<DRes<SFixed>> y,
-      DRes<SFixed> meanY) {
-    this.x = x;
-    this.meanX = meanX;
+  public LinearRegression(List<ArrayList<DRes<SFixed>>> observations, ArrayList<DRes<SFixed>> y) {
+    if (observations.stream().mapToInt(ArrayList::size).distinct().count() != 1) {
+      throw new IllegalArgumentException("Each observation must contain the same number of entries");
+    }
+
+    if (observations.size() != y.size()) {
+      throw new IllegalArgumentException("There must be the same number of observations and observed response variables");
+    }
+
+    this.observations = observations;
+    this.n = observations.size();
+    this.p = observations.get(0).size();
     this.y = y;
-    this.meanY = meanY;
   }
 
   @Override
-  public DRes<LinearFunction> buildComputation(ProtocolBuilderNumeric root) {
-    return root.par(builder -> {
+  public DRes<ArrayList<DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric builder) {
+    ArrayList<ArrayList<DRes<SFixed>>> rows = new ArrayList<>();
+    FixedNumeric fixedNumeric = FixedNumeric.using(builder);
+    for (ArrayList<DRes<SFixed>> observation : observations) {
+      ArrayList<DRes<SFixed>> row = new ArrayList<>();
+      row.add(fixedNumeric.known(1));
+      row.addAll(observation);
+      rows.add(row);
+    }
+    Matrix<DRes<SFixed>> x = new Matrix<>(n, p+1, rows);
 
-      DRes<SFixed> spd = new SPD(x, meanX, y, meanY).buildComputation(builder);
-      DRes<SFixed> ssd = new SSD(x, meanX).buildComputation(builder);
-
-      return () -> new Pair<>(spd, ssd);
-
-    }).seq((builder, spdAndSsd) -> {
-
-      FixedNumeric numeric = FixedNumeric.using(builder);
-      DRes<SFixed> b = numeric
-          .mult(spdAndSsd.getFirst(),
-              AdvancedFixedNumeric.using(builder).reciprocal(spdAndSsd.getSecond()));
-      DRes<SFixed> a = numeric
-          .sub(meanY, numeric.mult(b, meanX));
-
-      return () -> new LinearFunction(a, b);
-
+    return builder.seq(seq -> {
+      return new LinearInverseProblem(x, y).buildComputation(seq);
+//      return new MoorePenrosePseudoInverse(x).buildComputation(seq);
+//    }).seq((seq, inv) -> {
+//      return FixedLinearAlgebra.using(seq)
+//          .vectorMult(DRes.of(inv), DRes.of(y));
     });
   }
-
-  public static class LinearFunction {
-
-    private final DRes<SFixed> b;
-    private final DRes<SFixed> a;
-
-    private LinearFunction(DRes<SFixed> a, DRes<SFixed> b) {
-      this.a = a;
-      this.b = b;
-    }
-
-    public DRes<SFixed> getA() {
-      return a;
-    }
-
-    public DRes<SFixed> getB() {
-      return b;
-    }
-  }
-
 }

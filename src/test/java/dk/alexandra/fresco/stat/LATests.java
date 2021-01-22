@@ -19,8 +19,10 @@ import dk.alexandra.fresco.stat.linearalgebra.GramSchmidt;
 import dk.alexandra.fresco.stat.linearalgebra.InvertTriangularMatrix;
 import dk.alexandra.fresco.stat.linearalgebra.LinearInverseProblem;
 import dk.alexandra.fresco.stat.linearalgebra.MatrixUtils;
+import dk.alexandra.fresco.stat.linearalgebra.MoorePenrosePseudoInverse;
 import dk.alexandra.fresco.stat.linearalgebra.QRAlgorithm;
 import dk.alexandra.fresco.stat.linearalgebra.QRDecomposition;
+import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.ArrayList;
@@ -51,6 +53,23 @@ public class LATests {
       result.add(res);
     }
     return result;
+  }
+
+  private static Matrix<BigDecimal> multiply(Matrix<BigDecimal> a, Matrix<BigDecimal> b) {
+    assert a.getWidth() == b.getHeight();
+    ArrayList<ArrayList<BigDecimal>> rows = new ArrayList<>();
+    for (int i = 0; i < a.getHeight(); i++) {
+      ArrayList<BigDecimal> row = new ArrayList<>();
+      for (int j = 0; j < b.getWidth(); j++) {
+        BigDecimal aij = BigDecimal.ZERO;
+        for (int k = 0; k < a.getWidth(); k++) {
+          aij = aij.add(a.getRow(i).get(k).multiply(b.getRow(k).get(j)));
+        }
+        row.add(aij);
+      }
+      rows.add(row);
+    }
+    return new Matrix<>(a.getHeight(), b.getWidth(), rows);
   }
 
   public static class TestGramSchmidt<ResourcePoolT extends ResourcePool>
@@ -510,6 +529,65 @@ public class LATests {
     }
   }
 
+  public static class TestLinearInverseProblemNoSolution<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        @Override
+        public void test() {
+
+          ArrayList<BigDecimal> rowOne = new ArrayList<>();
+          rowOne.add(BigDecimal.valueOf(1));
+          rowOne.add(BigDecimal.valueOf(1));
+          ArrayList<BigDecimal> rowTwo = new ArrayList<>();
+          rowTwo.add(BigDecimal.valueOf(2));
+          rowTwo.add(BigDecimal.valueOf(1));
+          ArrayList<BigDecimal> rowThree = new ArrayList<>();
+          rowThree.add(BigDecimal.valueOf(3));
+          rowThree.add(BigDecimal.valueOf(2));
+
+          ArrayList<ArrayList<BigDecimal>> mat = new ArrayList<>();
+          mat.add(rowOne);
+          mat.add(rowTwo);
+          mat.add(rowThree);
+          Matrix<BigDecimal> inputA = new Matrix<>(3, 2, mat);
+
+          ArrayList<BigDecimal> inputB = new ArrayList<>(
+              Arrays.asList(BigDecimal.valueOf(1), BigDecimal.valueOf(1), BigDecimal.valueOf(3)));
+
+          Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication = builder ->
+              builder.seq(seq -> {
+                Pair<DRes<Matrix<DRes<SFixed>>>, DRes<ArrayList<DRes<SFixed>>>> inputs = new Pair<>(
+                    FixedLinearAlgebra.using(seq).input(inputA, 1),
+                    FixedLinearAlgebra.using(seq).input(inputB, 1));
+                return () -> inputs;
+              }).seq((seq, inputs) -> new LinearInverseProblem(
+                  inputs.getFirst().out(), inputs.getSecond().out()).buildComputation(seq))
+                  .seq((seq, x) -> {
+                    List<DRes<BigDecimal>> open = x.stream()
+                        .map(FixedNumeric.using(seq)::open).collect(
+                            Collectors.toList());
+                    return () -> open;
+                  }).seq((seq, open) -> {
+                List<BigDecimal> out = open.stream().map(DRes::out).collect(Collectors.toList());
+                return () -> out;
+              });
+
+          List<BigDecimal> out = runApplication(testApplication);
+          System.out.println(out);
+//          double[] product = multiply(inputA, out).stream().mapToDouble(BigDecimal::doubleValue)
+//              .toArray();
+//          Assert.assertArrayEquals(inputB.stream().mapToDouble(BigDecimal::doubleValue).toArray(),
+//              product, 0.001);
+        }
+      };
+    }
+  }
+
+
   public static class TestLinearInverseProblemOverdetermined<ResourcePoolT extends ResourcePool>
       extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
 
@@ -627,5 +705,65 @@ public class LATests {
       };
     }
   }
+
+  public static class TestMoorePenrosePseudoInverse<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        @Override
+        public void test() {
+
+          ArrayList<BigDecimal> rowOne = new ArrayList<>();
+          rowOne.add(BigDecimal.valueOf(1));
+          rowOne.add(BigDecimal.valueOf(-1));
+          rowOne.add(BigDecimal.valueOf(4));
+          ArrayList<BigDecimal> rowTwo = new ArrayList<>();
+          rowTwo.add(BigDecimal.valueOf(1));
+          rowTwo.add(BigDecimal.valueOf(4));
+          rowTwo.add(BigDecimal.valueOf(-2));
+          ArrayList<BigDecimal> rowThree = new ArrayList<>();
+          rowThree.add(BigDecimal.valueOf(1));
+          rowThree.add(BigDecimal.valueOf(4));
+          rowThree.add(BigDecimal.valueOf(2));
+          ArrayList<BigDecimal> rowFour = new ArrayList<>();
+          rowFour.add(BigDecimal.valueOf(1));
+          rowFour.add(BigDecimal.valueOf(-1));
+          rowFour.add(BigDecimal.valueOf(0));
+          ArrayList<ArrayList<BigDecimal>> mat = new ArrayList<>();
+          mat.add(rowOne);
+          mat.add(rowTwo);
+          mat.add(rowThree);
+          mat.add(rowFour);
+          Matrix<BigDecimal> input = new Matrix<>(4, 3, mat);
+
+          Application<Matrix<BigDecimal>, ProtocolBuilderNumeric> testApplication = builder ->
+              builder.seq(seq -> FixedLinearAlgebra.using(seq).input(input, 1))
+                  .seq((seq, a) -> new MoorePenrosePseudoInverse(
+                      a).buildComputation(seq)).seq((seq, inverse) -> {
+                Matrix<DRes<BigDecimal>> open = MatrixUtils
+                    .map(inverse, FixedNumeric.using(seq)::open);
+                return () -> open;
+              }).seq((seq, open) -> {
+                Matrix<BigDecimal> out = MatrixUtils.map(open, DRes::out);
+                return () -> out;
+              });
+
+          Matrix<BigDecimal> out = runApplication(testApplication);
+
+          // We expect the product of the pseudo-inverse and the input to be the identity matrix
+          Matrix<BigDecimal> product = multiply(out, input);
+          for (int i = 0; i < product.getHeight(); i++) {
+            for (int j = 0; j < product.getWidth(); j++) {
+              Assert.assertEquals(i == j ? 1.0 : 0.0, product.getRow(i).get(j).doubleValue(), 0.001);
+            }
+          }
+        }
+      };
+    }
+  }
+
 
 }

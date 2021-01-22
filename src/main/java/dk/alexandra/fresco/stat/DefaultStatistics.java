@@ -14,8 +14,8 @@ import dk.alexandra.fresco.stat.descriptive.SampleMean;
 import dk.alexandra.fresco.stat.descriptive.SampleStandardDeviation;
 import dk.alexandra.fresco.stat.descriptive.SampleVariance;
 import dk.alexandra.fresco.stat.descriptive.TwoDimensionalHistogram;
-import dk.alexandra.fresco.stat.regression.LinearRegression;
-import dk.alexandra.fresco.stat.regression.LinearRegression.LinearFunction;
+import dk.alexandra.fresco.stat.regression.SimpleLinearRegression;
+import dk.alexandra.fresco.stat.regression.SimpleLinearRegression.LinearFunction;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoContinuous;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoDiscrete;
 import dk.alexandra.fresco.stat.survival.cox.CoxRegressionContinuous;
@@ -133,7 +133,7 @@ public class DefaultStatistics implements Statistics {
 
   public DRes<LinearFunction> linearRegression(List<DRes<SFixed>> x, DRes<SFixed> meanX,
       List<DRes<SFixed>> y, DRes<SFixed> meanY) {
-    return new LinearRegression(x, meanX, y, meanY).buildComputation(builder);
+    return new SimpleLinearRegression(x, meanX, y, meanY).buildComputation(builder);
   }
 
   @Override
@@ -143,7 +143,7 @@ public class DefaultStatistics implements Statistics {
       DRes<SFixed> meanX = stat.sampleMean(x);
       DRes<SFixed> meanY = stat.sampleMean(y);
       return () -> new Pair<>(meanX, meanY);
-    }).seq((seq, means) -> new LinearRegression(x, means.getFirst(), y, means.getSecond())
+    }).seq((seq, means) -> new SimpleLinearRegression(x, means.getFirst(), y, means.getSecond())
         .buildComputation(seq));
   }
 

@@ -7,12 +7,15 @@ import dk.alexandra.fresco.stat.LATests.TestEigenvalues;
 import dk.alexandra.fresco.stat.LATests.TestForwardsubstitution;
 import dk.alexandra.fresco.stat.LATests.TestGramSchmidt;
 import dk.alexandra.fresco.stat.LATests.TestLinearInverseProblem;
+import dk.alexandra.fresco.stat.LATests.TestLinearInverseProblemNoSolution;
 import dk.alexandra.fresco.stat.LATests.TestLinearInverseProblemOverdetermined;
 import dk.alexandra.fresco.stat.LATests.TestLinearInverseProblemUnderdetermined;
+import dk.alexandra.fresco.stat.LATests.TestMoorePenrosePseudoInverse;
 import dk.alexandra.fresco.stat.LATests.TestQR;
 import dk.alexandra.fresco.stat.LATests.TestQRRectangular;
 import dk.alexandra.fresco.stat.LATests.TestTriangularInverse;
 import dk.alexandra.fresco.stat.LinRegTests.TestLinearRegression;
+import dk.alexandra.fresco.stat.LinRegTests.TestSimpleLinearRegression;
 import dk.alexandra.fresco.stat.LogRegTests.TestLogRegPrediction;
 import dk.alexandra.fresco.stat.LogRegTests.TestLogRegSGDSingleEpoch;
 import dk.alexandra.fresco.stat.LogRegTests.TestLogisticRegression;
@@ -71,6 +74,11 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   @Test
   public void test_chi_square_test_known_buckets() throws Exception {
     runTest(new TestChiSquareTestWithKnownBuckets<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_simple_linear_regression() throws Exception {
+    runTest(new TestSimpleLinearRegression<>(), TEST_PARAMETERS);
   }
 
   @Test
@@ -253,7 +261,18 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   }
 
   @Test
+  public void test_linear_inverse_problem_no_solution() {
+    runTest(new TestLinearInverseProblemNoSolution<>(), TEST_PARAMETERS);
+  }
+
+  @Test
   public void test_linear_inverse_problem_overdetermined() {
     runTest(new TestLinearInverseProblemOverdetermined<>(), TEST_PARAMETERS);
   }
+
+  @Test
+  public void test_moore_penrose_pseudo_inverse() {
+    runTest(new TestMoorePenrosePseudoInverse<>(), TEST_PARAMETERS);
+  }
+
 }
