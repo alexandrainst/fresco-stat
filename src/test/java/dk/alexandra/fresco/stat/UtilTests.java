@@ -15,11 +15,14 @@ import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.sce.resources.ResourcePool;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.utils.MultiDimensionalArray;
 import dk.alexandra.fresco.stat.utils.RealUtils;
 import dk.alexandra.fresco.stat.utils.VectorUtils;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import org.junit.Assert;
 import org.junit.Test;
 
 public class UtilTests {
@@ -96,6 +99,33 @@ public class UtilTests {
         }
       };
     }
+  }
+
+  @Test
+  public void testCreateMultidimensionalArray() {
+    MultiDimensionalArray<Integer> array = MultiDimensionalArray.build(List.of(2, 2, 3), i -> {
+      if (i.get(0) == 1 && i.get(1) == 0 && i.get(2) == 1) {
+        return 1;
+      }
+      return 0;
+    });
+    Assert.assertEquals(array.get(1, 0, 1).intValue(), 1);
+    Assert.assertEquals(array.get(1, 1, 2).intValue(), 0);
+    array.set(List.of(1, 0, 1), 0);
+    array.set(List.of(1, 1, 2), 1);
+    Assert.assertEquals(array.get(1, 0, 1).intValue(), 0);
+    Assert.assertEquals(array.get(1, 1, 2).intValue(), 1);
+  }
+
+  @Test
+  public void testMultidimensionalArrayIterator() {
+    MultiDimensionalArray<Integer> array = MultiDimensionalArray.build(List.of(2, 2, 3), i ->
+        i.get(0) * 2 * 3 + i.get(1) * 3 + i.get(2));
+    int n = 2 * 2 * 3;
+    Assert.assertEquals(n, array.size());
+    Assert.assertEquals(n, array.stream().count());
+    Assert.assertArrayEquals(IntStream.range(0, n).toArray(),
+        array.stream().mapToInt(Integer::intValue).toArray());
   }
 
 }

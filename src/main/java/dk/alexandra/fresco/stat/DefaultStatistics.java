@@ -5,12 +5,15 @@ import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.descriptive.Histogram;
 import dk.alexandra.fresco.stat.descriptive.LeakyFrequencyTable;
 import dk.alexandra.fresco.stat.descriptive.PearsonCorrelation;
 import dk.alexandra.fresco.stat.descriptive.SampleMean;
 import dk.alexandra.fresco.stat.descriptive.SampleStandardDeviation;
 import dk.alexandra.fresco.stat.descriptive.SampleVariance;
+import dk.alexandra.fresco.stat.descriptive.TwoDimensionalHistogram;
 import dk.alexandra.fresco.stat.regression.linear.LinearRegression;
 import dk.alexandra.fresco.stat.regression.linear.SimpleLinearRegression;
 import dk.alexandra.fresco.stat.regression.logistic.LogisticRegression;
@@ -24,8 +27,10 @@ import dk.alexandra.fresco.stat.tests.KruskallWallisTest;
 import dk.alexandra.fresco.stat.tests.OneSampleTTest;
 import dk.alexandra.fresco.stat.tests.TwoSampleTTest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.IntToDoubleFunction;
+import java.util.stream.Collectors;
 
 public class DefaultStatistics implements Statistics {
 
@@ -159,6 +164,61 @@ public class DefaultStatistics implements Statistics {
   public DRes<ArrayList<DRes<SFixed>>> logisticRegression(Matrix<DRes<SFixed>> data,
       ArrayList<DRes<SFixed>> expected, double[] beta, IntToDoubleFunction rate, int epochs) {
     return new LogisticRegression(data, expected, beta, rate, epochs).buildComputation(builder);
+  }
+
+  @Override
+  public DRes<List<DRes<SInt>>> histogramDiscrete(int[] buckets, List<DRes<SInt>> data) {
+    return histogramDiscrete(
+        Arrays.stream(buckets).mapToObj(builder.numeric()::known)
+            .collect(Collectors.toList()),
+        data);
+  }
+
+  @Override
+  public DRes<List<DRes<SInt>>> histogramDiscrete(List<DRes<SInt>> buckets, List<DRes<SInt>> data) {
+    return new Histogram(buckets, data).buildComputation(builder);
+  }
+
+  @Override
+  public DRes<List<DRes<SInt>>> histogramContinuous(List<DRes<SFixed>> buckets, List<DRes<SFixed>> data) {
+    return builder.seq(seq -> {
+      List<DRes<SInt>> intBuckets =
+          buckets.stream().map(bi -> bi.out().getSInt()).collect(Collectors.toList());
+      List<DRes<SInt>> intData =
+          data.stream().map(xi -> xi.out().getSInt()).collect(Collectors.toList());
+      return new DefaultStatistics(seq).histogramDiscrete(intBuckets, intData);
+    });
+  }
+
+  @Override
+  public DRes<List<DRes<SInt>>> histogramContinuous(double[] buckets, List<DRes<SFixed>> data) {
+    return histogramContinuous(
+        Arrays.stream(buckets).mapToObj(FixedNumeric.using(builder)::known)
+            .collect(Collectors.toList()),
+        data);
+  }
+
+  @Override
+  public DRes<Matrix<DRes<SInt>>> twoDimensionalHistogramDiscrete(
+      Pair<List<DRes<SInt>>, List<DRes<SInt>>> buckets, List<Pair<DRes<SInt>, DRes<SInt>>> data) {
+    return new TwoDimensionalHistogram(buckets, data).buildComputation(builder);
+  }
+
+  @Override
+  public DRes<Matrix<DRes<SInt>>> twoDimensionalHistogramContinuous(
+      Pair<List<DRes<SFixed>>, List<DRes<SFixed>>> buckets,
+      List<Pair<DRes<SFixed>, DRes<SFixed>>> data) {
+    return builder.seq(seq -> {
+      Pair<List<DRes<SInt>>, List<DRes<SInt>>> intBuckets = new Pair<>(
+          buckets.getFirst().stream().map(bi -> bi.out().getSInt())
+              .collect(Collectors.toList()),
+          buckets.getSecond().stream().map(bi -> bi.out().getSInt())
+              .collect(Collectors.toList()));
+      List<Pair<DRes<SInt>, DRes<SInt>>> intData =
+          data.stream().map(p -> new Pair<>(p.getFirst().out().getSInt(),
+              p.getSecond().out().getSInt())).collect(Collectors.toList());
+      return new DefaultStatistics(seq).twoDimensionalHistogramDiscrete(intBuckets, intData);
+    });
   }
 
 }

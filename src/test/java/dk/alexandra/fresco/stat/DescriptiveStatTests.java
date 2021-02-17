@@ -13,11 +13,13 @@ import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.sce.resources.ResourcePool;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
+import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.descriptive.LeakyBreakTies;
 import dk.alexandra.fresco.stat.descriptive.Ranks;
 import dk.alexandra.fresco.stat.descriptive.sort.FindTiedGroups;
+import dk.alexandra.fresco.stat.utils.MatrixUtils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -25,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
@@ -326,5 +329,117 @@ public class DescriptiveStatTests {
       };
     }
   }
+
+  public static class TestHistogramDiscrete<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        final List<Integer> x = Arrays.asList(1, 5, 7, 3, 9, 5, 34, 5, -1, -3);
+        final List<Integer> buckets = Arrays.asList(0, 5, 10);
+        final List<Integer> expected = Arrays.asList(2, 5, 2, 1);
+
+        @Override
+        public void test() {
+
+          Application<List<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder.seq(seq -> {
+            List<DRes<SInt>> xSecret =
+                x.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList());
+            List<DRes<SInt>> bSecret =
+                buckets.stream().map(b -> seq.numeric().input(b, 2)).collect(Collectors.toList());
+            return Statistics.using(seq).histogramDiscrete(bSecret, xSecret);
+          }).seq((seq, h) -> {
+            List<DRes<BigInteger>> out =
+                h.stream().map(seq.numeric()::open).collect(Collectors.toList());
+            return () -> out.stream().map(DRes::out).collect(Collectors.toList());
+          });
+
+          List<BigInteger> output = runApplication(testApplication);
+          for (int i = 0; i < output.size(); i++) {
+            assertEquals(expected.get(i).intValue(), output.get(i).intValue());
+          }
+        }
+      };
+    }
+  }
+
+  public static class TestHistogramContinuous<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        final List<Double> x = Arrays.asList(.1, .5, .7, .3, .9, .5, 3.4, .5, -.1, -.3);
+        final List<Double> buckets = Arrays.asList(.0, .5, 1.0);
+        final List<Integer> expected = Arrays.asList(2, 5, 2, 1);
+
+        @Override
+        public void test() {
+
+          Application<List<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder.seq(seq -> {
+            List<DRes<SFixed>> xSecret =
+                x.stream().map(x -> FixedNumeric.using(seq).input(x, 1)).collect(Collectors.toList());
+            List<DRes<SFixed>> bSecret = buckets.stream().map(b -> FixedNumeric.using(seq).input(b, 2))
+                .collect(Collectors.toList());
+            return Statistics.using(seq).histogramContinuous(bSecret, xSecret);
+          }).seq((seq, h) -> {
+            List<DRes<BigInteger>> out =
+                h.stream().map(seq.numeric()::open).collect(Collectors.toList());
+            return () -> out.stream().map(DRes::out).collect(Collectors.toList());
+          });
+
+          List<BigInteger> output = runApplication(testApplication);
+          for (int i = 0; i < output.size(); i++) {
+            assertEquals(expected.get(i).intValue(), output.get(i).intValue());
+          }
+        }
+      };
+    }
+  }
+
+  public static class TestTwoDimHistogram<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        final List<Integer> x = Arrays.asList(1, 3, 5, 6, 7, 8);
+        final List<Integer> y = Arrays.asList(2, 4, 5, 8, 9, 10);
+        final List<Integer> bucketsX = Arrays.asList(1, 4, 9);
+        final List<Integer> bucketsY = Arrays.asList(1, 4, 9);
+
+        @Override
+        public void test() {
+
+          Application<Matrix<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder.seq(seq -> {
+            Pair<List<DRes<SInt>>, List<DRes<SInt>>> buckets = new Pair<>(
+                bucketsX.stream().map(x -> seq.numeric().input(x, 1))
+                    .collect(Collectors.toList()),
+                bucketsY.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList())
+            );
+            List<Pair<DRes<SInt>, DRes<SInt>>> data = IntStream.range(0, x.size()).mapToObj(
+                i -> new Pair<>(seq.numeric().input(x.get(i), 1),
+                    seq.numeric().input(y.get(i), 1))).collect(Collectors.toList());
+
+            return Statistics.using(seq)
+                .twoDimensionalHistogramDiscrete(buckets, data);
+          }).seq((seq, histogram) -> {
+            Matrix<DRes<BigInteger>> opened = MatrixUtils.map(histogram, seq.numeric()::open);
+            return () -> MatrixUtils.map(opened, DRes::out);
+          });
+
+          Matrix<BigInteger> output = runApplication(testApplication);
+          assertEquals(BigInteger.valueOf(0), output.getRow(0).get(0));
+          assertEquals(BigInteger.valueOf(1), output.getRow(1).get(1));
+          assertEquals(BigInteger.valueOf(3), output.getRow(2).get(2));
+        }
+      };
+    }
+  }
+
 
 }

@@ -5,6 +5,7 @@ import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
+import dk.alexandra.fresco.lib.common.collections.Collections;
 import dk.alexandra.fresco.lib.mimc.MiMCDecryption;
 import dk.alexandra.fresco.lib.mimc.MiMCEncryption;
 import java.math.BigInteger;
@@ -32,7 +33,7 @@ public class LeakyFrequencyTable implements
   public DRes<List<Pair<DRes<SInt>, Integer>>> buildComputation(
       ProtocolBuilderNumeric builder) {
     // We assume the data is obliviously shuffled before running this computation
-    //DRes<List<DRes<SInt>>> shuffled = builder.collections().shuffle().shuffle(data);
+    //DRes<List<DRes<SInt>>> shuffled = Collections.using(builder).shuffle().shuffle(data);
 
     // Generate encryption key
     DRes<SInt> mimcKey = builder.numeric().randomElement();

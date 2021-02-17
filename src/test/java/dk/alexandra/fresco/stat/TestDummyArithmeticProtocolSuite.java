@@ -5,8 +5,11 @@ import dk.alexandra.fresco.framework.builder.numeric.field.MersennePrimeFieldDef
 import dk.alexandra.fresco.framework.sce.evaluator.EvaluationStrategy;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.DescriptiveStatTests.TestHistogramContinuous;
+import dk.alexandra.fresco.stat.DescriptiveStatTests.TestHistogramDiscrete;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMean;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestStandardDeviation;
+import dk.alexandra.fresco.stat.DescriptiveStatTests.TestTwoDimHistogram;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestVariance;
 import dk.alexandra.fresco.stat.LATests.TestBackSubstitution;
 import dk.alexandra.fresco.stat.LATests.TestEigenvalues;
@@ -363,6 +366,21 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   @Test
   public void test_product() {
     runTest(new TestProduct<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_histogram_discrete() {
+    runTest(new TestHistogramDiscrete<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_histogram_continuous() {
+    runTest(new TestHistogramContinuous<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_histogram_continuous_two_dimensions() {
+    runTest(new TestTwoDimHistogram<>(), TEST_PARAMETERS);
   }
 
 }

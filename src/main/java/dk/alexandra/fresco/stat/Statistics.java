@@ -214,4 +214,62 @@ public interface Statistics extends ComputationDirectory {
       ArrayList<DRes<SFixed>> expected, double[] beta,
       IntToDoubleFunction rate, int epochs);
 
+  /**
+   * Compute the histogram for the given sample.
+   *
+   * @param buckets Upper bound for the buckets to use in the histogram.
+   * @param data    The sample data.
+   * @return
+   */
+  DRes<List<DRes<SInt>>> histogramDiscrete(int[] buckets, List<DRes<SInt>> data);
+
+  /**
+   * Compute the histogram for the given sample.
+   *
+   * @param buckets Upper bound for the buckets to use in the histogram.
+   * @param data    The sample data.
+   * @return
+   */
+  DRes<List<DRes<SInt>>> histogramContinuous(double[] buckets, List<DRes<SFixed>> data);
+
+  /**
+   * Compute the histogram for the given sample.
+   *
+   * @param buckets Upper bound for the buckets to use in the histogram.
+   * @param data    The sample data.
+   * @return
+   */
+  DRes<List<DRes<SInt>>> histogramDiscrete(List<DRes<SInt>> buckets, List<DRes<SInt>> data);
+
+  /**
+   * Compute the histogram for the given sample.
+   *
+   * @param buckets Upper bound for the buckets to use in the histogram.
+   * @param data    The sample data.
+   * @return
+   */
+  DRes<List<DRes<SInt>>> histogramContinuous(List<DRes<SFixed>>  buckets, List<DRes<SFixed>> data);
+
+  /**
+   * Compute the histogram for the given two-dimensional sample.
+   *
+   * @param buckets Upper bounds for the buckets to use in the histogram.
+   * @param data    The sample data.
+   * @return
+   */
+  DRes<Matrix<DRes<SInt>>> twoDimensionalHistogramDiscrete(
+      Pair<List<DRes<SInt>>, List<DRes<SInt>>> buckets,
+      List<Pair<DRes<SInt>, DRes<SInt>>> data);
+
+  /**
+   * Compute the histogram for the given two-dimensional sample.
+   *
+   * @param buckets Upper bounds for the buckets to use in the histogram.
+   * @param data    The sample data.
+   * @return
+   */
+  DRes<Matrix<DRes<SInt>>> twoDimensionalHistogramContinuous(
+      Pair<List<DRes<SFixed>>, List<DRes<SFixed>>> buckets,
+      List<Pair<DRes<SFixed>, DRes<SFixed>>> data);
+
 }
