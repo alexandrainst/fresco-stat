@@ -8,11 +8,14 @@ import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedLinearAlgebra;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.utils.VectorUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-/** Invert upper triangular matrix. */
+/**
+ * Invert lower triangular matrix.
+ */
 public class InvertTriangularMatrix implements
     Computation<Matrix<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
@@ -30,7 +33,7 @@ public class InvertTriangularMatrix implements
       AdvancedFixedNumeric advancedFixedNumeric = AdvancedFixedNumeric.using(par);
       List<DRes<SFixed>> diagonalInverses = VectorUtils
           .listBuilder(l.getHeight(), i -> advancedFixedNumeric.reciprocal(l.getRow(i).get(i)));
-      return () -> diagonalInverses;
+      return DRes.of(diagonalInverses);
     }).par((par, diagonalInverses) -> {
       List<DRes<List<DRes<SFixed>>>> inverse = new ArrayList<>();
       for (int i = 0; i < l.getHeight(); i++) {
@@ -38,7 +41,7 @@ public class InvertTriangularMatrix implements
             .buildComputation(par);
         inverse.add(column);
       }
-      return () -> inverse;
+      return DRes.of(inverse);
     }).seq((seq, inverse) -> {
       ArrayList<ArrayList<DRes<SFixed>>> unfolded = new ArrayList<>();
       for (int i = 0; i < l.getHeight(); i++) {
@@ -53,14 +56,14 @@ public class InvertTriangularMatrix implements
 
       // We have constructed the matrix from columns but the representation here is in rows, so we need
       // to transpose the result.
-      return FixedLinearAlgebra.using(seq).transpose(() -> out);
+      return FixedLinearAlgebra.using(seq).transpose(DRes.of(out));
     });
   }
 
   /**
-   * Use forward substitution to compute a vector x such that Lx = e_k, where L is lower
-   * triangular, e_k is a vector with all zeros and 1 on the k'th coordinate. The list reciprocals
-   * contains the reciprocals of alle the diagonal entries of L.
+   * Use forward substitution to compute a vector x such that Lx = e_k, where L is lower triangular,
+   * e_k is a vector with all zeros and 1 on the k'th coordinate. The list reciprocals contains the
+   * reciprocals of all the diagonal entries of L.
    */
   private static class ForwardSubstitution implements
       Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
@@ -78,7 +81,7 @@ public class InvertTriangularMatrix implements
 
     @Override
     public DRes<List<DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric builder) {
-      return builder.seq(seq -> () -> new ArrayList<>(List.of(reciprocals.get(k))))
+      return builder.seq(seq -> DRes.of(new ArrayList<>(List.of(reciprocals.get(k)))))
           .whileLoop(x -> x.size() < l.getHeight() - k, (b, x) -> {
             FixedNumeric fixedNumeric = FixedNumeric.using(b);
 
@@ -89,8 +92,8 @@ public class InvertTriangularMatrix implements
             ArrayList<DRes<SFixed>> newX = new ArrayList<>(x);
             newX.add(fixedNumeric.mult(fixedNumeric.sub(0, sum), reciprocals.get(k + i)));
 
-            return () -> newX;
-          }).seq((seq, x) -> () -> x);
+            return DRes.of(newX);
+          }).seq((seq, x) -> DRes.of(x));
     }
   }
 }

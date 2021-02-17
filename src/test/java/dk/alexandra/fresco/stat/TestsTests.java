@@ -12,10 +12,8 @@ import dk.alexandra.fresco.framework.sce.resources.ResourcePool;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
-import dk.alexandra.fresco.stat.tests.FTest;
 import dk.alexandra.fresco.stat.tests.KruskallWallisTest;
 import java.math.BigDecimal;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.math3.stat.inference.ChiSquareTest;
@@ -65,18 +63,22 @@ public class TestsTests {
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
       return new TestThread<>() {
 
-        final List<BigDecimal> data1 = List.of(42.1, 41.3, 42.4, 43.2, 41.8, 41.0, 41.8, 42.8, 42.3, 42.7)
+        final List<BigDecimal> data1 = List
+            .of(42.1, 41.3, 42.4, 43.2, 41.8, 41.0, 41.8, 42.8, 42.3, 42.7)
             .stream().map(BigDecimal::valueOf).collect(Collectors.toList());
-        final List<BigDecimal> data2 = List.of(42.7, 43.8, 42.5, 43.1, 44.0, 43.6, 43.3, 43.5, 41.7, 44.1)
+        final List<BigDecimal> data2 = List
+            .of(42.7, 43.8, 42.5, 43.1, 44.0, 43.6, 43.3, 43.5, 41.7, 44.1)
             .stream().map(BigDecimal::valueOf).collect(Collectors.toList());
 
         @Override
         public void test() throws Exception {
 
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
-            List<DRes<SFixed>> input1 = data1.stream().map(x -> FixedNumeric.using(builder).input(x, 1))
+            List<DRes<SFixed>> input1 = data1.stream()
+                .map(x -> FixedNumeric.using(builder).input(x, 1))
                 .collect(Collectors.toList());
-            List<DRes<SFixed>> input2 = data2.stream().map(x -> FixedNumeric.using(builder).input(x, 2))
+            List<DRes<SFixed>> input2 = data2.stream()
+                .map(x -> FixedNumeric.using(builder).input(x, 2))
                 .collect(Collectors.toList());
             DRes<SFixed> t = Statistics.using(builder).ttest(input1, input2);
             return FixedNumeric.using(builder).open(t);
@@ -85,8 +87,9 @@ public class TestsTests {
           BigDecimal output = runApplication(testApplication);
 
           double clearT =
-              new TTest().t(data1.stream().mapToDouble(BigDecimal::doubleValue).toArray(),
-                  data2.stream().mapToDouble(BigDecimal::doubleValue).toArray());
+              new TTest()
+                  .homoscedasticT(data1.stream().mapToDouble(BigDecimal::doubleValue).toArray(),
+                      data2.stream().mapToDouble(BigDecimal::doubleValue).toArray());
 
           assertTrue(Math.abs(clearT - output.doubleValue()) < 0.01);
 
@@ -94,6 +97,48 @@ public class TestsTests {
       };
     }
   }
+
+  public static class TestTwoSampleTTestDifferentSizes<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        final List<BigDecimal> data1 = List
+            .of(42.1, 41.3, 42.4, 43.2, 41.8, 41.0, 41.8, 42.8, 42.3)
+            .stream().map(BigDecimal::valueOf).collect(Collectors.toList());
+        final List<BigDecimal> data2 = List
+            .of(42.7, 43.8, 42.5, 43.1, 44.0, 43.6, 43.3, 43.5)
+            .stream().map(BigDecimal::valueOf).collect(Collectors.toList());
+
+        @Override
+        public void test() throws Exception {
+
+          Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
+            List<DRes<SFixed>> input1 = data1.stream()
+                .map(x -> FixedNumeric.using(builder).input(x, 1))
+                .collect(Collectors.toList());
+            List<DRes<SFixed>> input2 = data2.stream()
+                .map(x -> FixedNumeric.using(builder).input(x, 2))
+                .collect(Collectors.toList());
+            DRes<SFixed> t = Statistics.using(builder).ttest(input1, input2);
+            return FixedNumeric.using(builder).open(t);
+          };
+
+          BigDecimal output = runApplication(testApplication);
+
+          double clearT =
+              new TTest()
+                  .homoscedasticT(data1.stream().mapToDouble(BigDecimal::doubleValue).toArray(),
+                      data2.stream().mapToDouble(BigDecimal::doubleValue).toArray());
+
+          assertTrue(Math.abs(clearT - output.doubleValue()) < 0.01);
+        }
+      };
+    }
+  }
+
 
   public static class TestChiSquareTest<ResourcePoolT extends ResourcePool>
       extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
@@ -109,7 +154,8 @@ public class TestsTests {
         public void test() throws Exception {
 
           Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
-            List<DRes<SFixed>> e = expected.stream().map(x -> FixedNumeric.using(builder).input(x, 1))
+            List<DRes<SFixed>> e = expected.stream()
+                .map(x -> FixedNumeric.using(builder).input(x, 1))
                 .collect(Collectors.toList());
             List<DRes<SInt>> o = observed.stream().map(x -> builder.numeric().input(x, 2))
                 .collect(Collectors.toList());
@@ -125,39 +171,6 @@ public class TestsTests {
 
           assertEquals(output.doubleValue(), clearQ, 0.01);
 
-        }
-      };
-    }
-  }
-
-  public static class TestChiSquareTestWithKnownBuckets<ResourcePoolT extends ResourcePool>
-      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
-
-    @Override
-    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
-      return new TestThread<>() {
-
-        final double[] data = new double[]{.1, .5, .7, .3, .9, .5, 3.4, .5, -.1, -.3};
-        final double[] buckets = new double[]{.0, .5, 1.0};
-        final double[] expected = new double[]{2.1, 4.9, 2.1, 0.9};
-
-        @Override
-        public void test() {
-
-          Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
-            List<DRes<SFixed>> secretData = Arrays.stream(data)
-                .mapToObj(FixedNumeric.using(builder)::known)
-                .collect(Collectors.toList());
-            DRes<SFixed> x = Statistics.using(builder).chiSquare(secretData, buckets, expected);
-            return FixedNumeric.using(builder).open(x);
-          };
-
-          BigDecimal output = runApplication(testApplication);
-
-          long[] o = new long[]{2, 5, 2, 1};
-          double clearQ = new ChiSquareTest().chiSquare(expected, o);
-
-          assertEquals(output.doubleValue(), clearQ, 0.01);
         }
       };
     }
@@ -222,8 +235,8 @@ public class TestsTests {
                 .map(x -> FixedNumeric.using(builder).input(x, 2))
                 .collect(Collectors.toList());
 
-            DRes<SFixed> f = new FTest(List.of(input1, input2, input3, input4))
-                .buildComputation(builder);
+            Statistics statistics = Statistics.using(builder);
+            DRes<SFixed> f = statistics.ffest(List.of(input1, input2, input3, input4));
             return FixedNumeric.using(builder).open(f);
           };
 
@@ -258,7 +271,7 @@ public class TestsTests {
             List<List<DRes<SInt>>> input = data.stream().map(
                 sample -> sample.stream().map(x -> builder.numeric().input(x, 1))
                     .collect(Collectors.toList())).collect(Collectors.toList());
-            DRes<SFixed> h = new KruskallWallisTest(input, true).buildComputation(builder);
+            DRes<SFixed> h = new KruskallWallisTest(input).buildComputation(builder);
             return FixedNumeric.using(builder).open(h);
           };
 
@@ -270,4 +283,37 @@ public class TestsTests {
       };
     }
   }
+
+  public static class TestKruskallWallisFixedPoint<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        final List<List<Integer>> data = DescriptiveStatTests.ranksDataset();
+
+        @Override
+        public void test() {
+          Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> builder
+              .seq(seq -> {
+                List<List<DRes<SFixed>>> input = data.stream().map(
+                    sample -> sample.stream().map(x -> FixedNumeric.using(seq).input(x, 1))
+                        .collect(Collectors.toList())).collect(Collectors.toList());
+                return DRes.of(input);
+              }).seq((seq, input) -> {
+                Statistics statistics = Statistics.using(seq);
+                DRes<SFixed> h = statistics.kruskallWallisTest(input);
+                return FixedNumeric.using(seq).open(h);
+              });
+
+          // Data and expected values from example 12.3 in Blæsild & Granfeldt: "Statistics with
+          // applications in biology and geology".
+          BigDecimal output = runApplication(testApplication);
+          assertEquals(29.4203, output.doubleValue(), 0.01);
+        }
+      };
+    }
+  }
+
 }

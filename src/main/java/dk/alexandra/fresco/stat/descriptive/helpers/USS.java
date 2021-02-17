@@ -25,10 +25,8 @@ public class USS implements Computation<SFixed, ProtocolBuilderNumeric> {
     return root.par(par -> {
       List<DRes<SFixed>> squaredTerms =
           data.stream().map(x -> FixedNumeric.using(par).mult(x, x)).collect(Collectors.toList());
-      return () -> squaredTerms;
-    }).seq((seq, terms) -> {
-      return AdvancedFixedNumeric.using(seq).sum(terms);
-    });
+      return DRes.of(squaredTerms);
+    }).seq((seq, terms) -> AdvancedFixedNumeric.using(seq).sum(terms));
   }
 
 }

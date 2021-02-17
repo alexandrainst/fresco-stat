@@ -9,12 +9,9 @@ import dk.alexandra.fresco.framework.TestThreadRunner.TestThreadFactory;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.sce.resources.ResourcePool;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
-import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoContinuous;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoDiscrete;
 import dk.alexandra.fresco.stat.survival.cox.CoxGradientDiscrete;
-import dk.alexandra.fresco.stat.survival.cox.CoxRegressionContinuous;
-import dk.alexandra.fresco.stat.survival.cox.CoxRegressionDiscrete;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,17 +25,20 @@ public class SurvivalAnalysisTests {
     return survivalAnalysisDataset(builder, false);
   }
 
-  public static List<SurvivalInfoContinuous> survivalAnalysisDatasetContinuous(ProtocolBuilderNumeric builder) {
+  public static List<SurvivalInfoContinuous> survivalAnalysisDatasetContinuous(
+      ProtocolBuilderNumeric builder) {
     List<SurvivalInfoDiscrete> data = survivalAnalysisDataset(builder);
 
-    return data.stream().map(d -> new SurvivalInfoContinuous(d.getCovariates().stream().map(e -> FixedNumeric
-        .using(builder).fromSInt(e.get(1))).collect(
-        Collectors.toList()), d.getTime(), d.getCensored())).collect(Collectors.toList());
+    return data.stream()
+        .map(d -> new SurvivalInfoContinuous(d.getCovariates().stream().map(e -> FixedNumeric
+            .using(builder).fromSInt(e.get(1))).collect(
+            Collectors.toList()), d.getTime(), d.getCensored())).collect(Collectors.toList());
   }
 
   public static List<SurvivalInfoDiscrete> survivalAnalysisDataset(ProtocolBuilderNumeric builder,
       boolean sorted) {
 
+    // The following data represent the survival in days since entry to the trial of patients with diffuse histiocytic lymphoma. Two different groups of patients, those with stage III and those with stage IV disease, are compared.
     // Dataset from https://www.statsdirect.com/help/survival_analysis/cox_regression.htm
     int[] group1 = new int[]{6, 19, 32, 42, 42, 43, 94, 126, 169, 207, 211, 227, 253, 255, 270,
         310, 316, 335, 346};
@@ -127,8 +127,7 @@ public class SurvivalAnalysisTests {
               .seq(seq -> {
 
                 List<SurvivalInfoDiscrete> input = survivalAnalysisDataset(seq);
-                return new CoxRegressionDiscrete(input, 5, 0.1,
-                    new double[]{1}).buildComputation(seq);
+                return Statistics.using(seq).coxRegressionDiscrete(input, 5, .1, new double[]{1.0});
               }).seq((seq, beta) -> {
                 List<DRes<BigDecimal>> openBeta =
                     beta.stream().map(FixedNumeric.using(seq)::open)
@@ -158,8 +157,8 @@ public class SurvivalAnalysisTests {
               .seq(seq -> {
 
                 List<SurvivalInfoContinuous> input = survivalAnalysisDatasetContinuous(seq);
-                return new CoxRegressionContinuous(input, 5, 0.1,
-                    new double[]{1}).buildComputation(seq);
+                return Statistics.using(seq).coxRegressionContinuous(input, 5, 0.1,
+                    new double[]{1});
               }).seq((seq, beta) -> {
                 List<DRes<BigDecimal>> openBeta =
                     beta.stream().map(FixedNumeric.using(seq)::open)

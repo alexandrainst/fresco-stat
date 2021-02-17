@@ -13,8 +13,6 @@ import java.util.Objects;
 
 /**
  * Compute the &Chi;<sup>2</sup>-test for goodness of fit of the given observatinos.
- *
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
 public class ChiSquareTest implements Computation<SFixed, ProtocolBuilderNumeric> {
 
@@ -45,7 +43,7 @@ public class ChiSquareTest implements Computation<SFixed, ProtocolBuilderNumeric
           terms.add(par.seq(calculateTerm(observed.get(i), expected.get(i))));
         }
       }
-      return () -> terms;
+      return DRes.of(terms);
     }).seq((seq, terms) -> AdvancedFixedNumeric.using(seq).sum(terms));
   }
 

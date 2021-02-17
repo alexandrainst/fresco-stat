@@ -34,7 +34,7 @@ public class LeakyFrequencyTable implements
     // We assume the data is obliviously shuffled before running this computation
     //DRes<List<DRes<SInt>>> shuffled = builder.collections().shuffle().shuffle(data);
 
-    // generate encryption key
+    // Generate encryption key
     DRes<SInt> mimcKey = builder.numeric().randomElement();
 
     return builder.par(par -> {
@@ -43,13 +43,12 @@ public class LeakyFrequencyTable implements
         DRes<BigInteger> openedCipher =
             par.seq(
                 (seq -> {
-                  // TODO: encryption should be on a directory
-                  DRes<SInt> cipherText = seq.seq(new MiMCEncryption(entry, mimcKey));
+                  DRes<SInt> cipherText = new MiMCEncryption(entry, mimcKey).buildComputation(seq);
                   return seq.numeric().open(cipherText);
                 }));
         ciphers.add(openedCipher);
       }
-      return () -> ciphers;
+      return DRes.of(ciphers);
     }).par((par, ciphers) -> {
       // use cipher texts to perform aggregation "in-the-clear"
       Map<BigInteger, Integer> groupedByCipher = new HashMap<>();
@@ -64,7 +63,7 @@ public class LeakyFrequencyTable implements
               new MiMCDecryption(par.numeric().known(v), mimcKey).buildComputation(par),
               groupedByCipher.get(v)))
           .collect(Collectors.toList());
-      return () -> frequencies;
+      return DRes.of(frequencies);
     });
   }
 }

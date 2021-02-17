@@ -17,7 +17,7 @@ public class RealUtils {
    * @return
    */
   public static DRes<SFixed> product(List<DRes<SFixed>> input, ProtocolBuilderNumeric builder) {
-    return builder.seq(seq -> () -> input)
+    return builder.seq(seq -> DRes.of(input))
         .whileLoop((inputs) -> inputs.size() > 1, (seq, inputs) -> seq.par(parallel -> {
           List<DRes<SFixed>> out = new ArrayList<>();
           DRes<SFixed> left = null;
@@ -32,7 +32,7 @@ public class RealUtils {
           if (left != null) {
             out.add(left);
           }
-          return () -> out;
+          return DRes.of(out);
         })).seq((r3, currentInput) -> currentInput.get(0));
   }
 

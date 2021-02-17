@@ -9,9 +9,9 @@ import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.lib.fixed.math.Exponential;
-import dk.alexandra.fresco.stat.linearalgebra.VectorUtils;
+import dk.alexandra.fresco.stat.descriptive.sort.FindTiedGroups;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoContinuous;
-import dk.alexandra.fresco.stat.utils.sort.FindTiedGroups;
+import dk.alexandra.fresco.stat.utils.VectorUtils;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -48,26 +48,26 @@ public class CoxGradientContinuous implements
         state.innerProductTerms.add(row);
       }
 
-      return () -> state;
+      return DRes.of(state);
     }).par((par, state) -> {
       for (int j = 0; j < data.size(); j++) {
         state.innerProducts
             .add(AdvancedFixedNumeric.using(par).sum(state.innerProductTerms.get(j)));
       }
-      return () -> state;
+      return DRes.of(state);
     }).par((par, state) -> {
       // compute theta_j = exp(x_j . beta) for all data points j
       for (int j = 0; j < data.size(); j++) {
         state.thetas.add(new Exponential(state.innerProducts.get(j)).buildComputation(par));
       }
-      return () -> state;
+      return DRes.of(state);
     }).par((par, state) -> {
       // Compute theta_j * x_j
       for (int j = 0; j < data.size(); j++) {
         state.sum1terms
             .add(VectorUtils.scale(data.get(j).getCovariates(), state.thetas.get(j), par));
       }
-      return () -> state;
+      return DRes.of(state);
     }).seq((seq, state) -> {
 
       // Find ties
@@ -99,13 +99,13 @@ public class CoxGradientContinuous implements
         }
       }
 
-      return () -> state;
+      return DRes.of(state);
     }).par((par, state) -> {
       // Compute ratios of sum1 and sum2
       for (int j = 0; j < data.size(); j++) {
         state.ratios.add(VectorUtils.div(state.sum1.get(j), state.sum2.get(j), par));
       }
-      return () -> state;
+      return DRes.of(state);
     }).par((par, state) -> {
       // The terms in the final sum are x_j - ratio_j
       List<List<DRes<SFixed>>> terms = new ArrayList<>();
@@ -113,7 +113,7 @@ public class CoxGradientContinuous implements
         terms.add(VectorUtils.sub(data.get(j).getCovariates(), state.ratios.get(j), par));
       }
       state.terms = terms;
-      return () -> state;
+      return DRes.of(state);
     }).par((par, state) -> {
       // Only include terms with status = 1
       List<DRes<SInt>> censored = VectorUtils
@@ -124,7 +124,7 @@ public class CoxGradientContinuous implements
               // The i'th entries in the terms
               VectorUtils.listBuilder(data.size(), j -> state.terms.get(j).get(i)),
               par));
-      return () -> result;
+      return DRes.of(result);
     });
   }
 

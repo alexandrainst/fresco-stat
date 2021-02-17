@@ -6,7 +6,7 @@ import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.fixed.SFixed;
-import java.math.BigDecimal;
+import dk.alexandra.fresco.stat.Sampler;
 import java.util.Objects;
 
 /**
@@ -15,34 +15,30 @@ import java.util.Objects;
 public class SampleLaplaceDistribution implements Computation<SFixed, ProtocolBuilderNumeric> {
 
   private DRes<SFixed> b;
-  private BigDecimal bKnown;
+  private double bKnown;
 
   public SampleLaplaceDistribution(DRes<SFixed> b) {
     this.b = b;
   }
 
-  public SampleLaplaceDistribution(BigDecimal b) {
-    this.bKnown = b;
-  }
 
   public SampleLaplaceDistribution(double b) {
-    this(BigDecimal.valueOf(b));
+    this.bKnown = b;
   }
 
   @Override
   public DRes<SFixed> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.par(par -> {
 
+      Sampler sampler = Sampler.using(par);
       DRes<SFixed> exponential;
-      if (Objects.nonNull(bKnown)) {
-        exponential = new SampleExponentialDistribution(bKnown).buildComputation(par);
-      } else {
+      if (Objects.nonNull(b)) {
         exponential = new SampleExponentialDistribution(b).buildComputation(par);
+      } else {
+        exponential = sampler.sampleExponentialDistribution(bKnown);
       }
-
-      DRes<SInt> rademacher = new SampleRademacherDistribution().buildComputation(par);
-
-      return () -> new Pair<>(exponential, rademacher);
+      DRes<SInt> rademacher = sampler.sampleRademacherDistribution();
+      return Pair.lazy(exponential, rademacher);
     }).seq((seq, p) -> {
       SFixed exp = p.getFirst().out();
       DRes<SInt> product = seq.numeric().mult(exp.getSInt(), p.getSecond());

@@ -11,8 +11,6 @@ import java.util.stream.Collectors;
 
 /**
  * Compute the sum of squared deviations
- *
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
 public class SSD implements Computation<SFixed, ProtocolBuilderNumeric> {
 
@@ -29,14 +27,12 @@ public class SSD implements Computation<SFixed, ProtocolBuilderNumeric> {
     return root.par(par -> {
       List<DRes<SFixed>> terms = data.stream().map(x -> FixedNumeric.using(par).sub(x, mean))
           .collect(Collectors.toList());
-      return () -> terms;
+      return DRes.of(terms);
     }).par((par, terms) -> {
       List<DRes<SFixed>> squaredTerms =
           terms.stream().map(x -> FixedNumeric.using(par).mult(x, x)).collect(Collectors.toList());
-      return () -> squaredTerms;
-    }).seq((seq, terms) -> {
-      return AdvancedFixedNumeric.using(seq).sum(terms);
-    });
+      return DRes.of(squaredTerms);
+    }).seq((seq, terms) -> AdvancedFixedNumeric.using(seq).sum(terms));
   }
 
 }

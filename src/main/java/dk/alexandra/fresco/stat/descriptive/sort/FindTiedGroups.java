@@ -1,4 +1,4 @@
-package dk.alexandra.fresco.stat.utils.sort;
+package dk.alexandra.fresco.stat.descriptive.sort;
 
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
@@ -16,9 +16,7 @@ public class FindTiedGroups implements Computation<List<BigInteger>, ProtocolBui
 
   /**
    * Returns a list of integers. If the i'th and j'th elements are the same in the result, it
-   * indicates that the i'th and j'th elements are equal in the given data.
-   *
-   * @param data
+   * indicates that the i'th and j'th elements are equal in the input data.
    */
   public FindTiedGroups(List<DRes<SInt>> data) {
     this.data = data;
@@ -39,7 +37,7 @@ public class FindTiedGroups implements Computation<List<BigInteger>, ProtocolBui
                 }));
         ciphers.add(openedCipher);
       }
-      return () -> ciphers;
+      return DRes.of(ciphers);
     }).seq((seq, ciphers) -> () -> ciphers.stream().map(DRes::out).collect(Collectors.toList()));
   }
 }

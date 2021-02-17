@@ -1,4 +1,4 @@
-package dk.alexandra.fresco.stat.linearalgebra;
+package dk.alexandra.fresco.stat.utils;
 
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
@@ -9,7 +9,6 @@ import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntFunction;
@@ -92,25 +91,13 @@ public class VectorUtils {
    * @param <T>
    * @return A list containg the created elements.
    */
-  public static <T> List<T> listBuilder(int size, IntFunction<T> generator) {
+  public static <T> ArrayList<T> listBuilder(int size, IntFunction<T> generator) {
 
-    List<T> list = new ArrayList<>();
+    ArrayList<T> list = new ArrayList<>();
     for (int i = 0; i < size; i++) {
       list.add(generator.apply(i));
     }
-
-    return new AbstractList<T>() {
-
-      @Override
-      public T get(int index) {
-        return list.get(index);
-      }
-
-      @Override
-      public int size() {
-        return size;
-      }
-    };
+    return list;
   }
 
   /**
@@ -121,14 +108,14 @@ public class VectorUtils {
    * @param builder The builder to use.
    * @return A scaled vector.
    */
-  public static List<DRes<SFixed>> scale(List<DRes<SFixed>> vector, DRes<SFixed> scalar,
+  public static ArrayList<DRes<SFixed>> scale(List<DRes<SFixed>> vector, DRes<SFixed> scalar,
       ProtocolBuilderNumeric builder) {
-    List<DRes<SFixed>> result = new ArrayList<>();
+    ArrayList<DRes<SFixed>> result = new ArrayList<>();
     builder.par(par -> {
       for (int i = 0; i < vector.size(); i++) {
         result.add(FixedNumeric.using(par).mult(vector.get(i), scalar));
       }
-      return () -> result;
+      return DRes.of(result);
     });
     return result;
   }
@@ -141,14 +128,14 @@ public class VectorUtils {
    * @param builder The builder to use.
    * @return A scaled vector.
    */
-  public static List<DRes<SFixed>> scale(List<DRes<SFixed>> vector, double scalar,
+  public static ArrayList<DRes<SFixed>> scale(List<DRes<SFixed>> vector, double scalar,
       ProtocolBuilderNumeric builder) {
-    List<DRes<SFixed>> result = new ArrayList<>();
+    ArrayList<DRes<SFixed>> result = new ArrayList<>();
     builder.par(par -> {
       for (int i = 0; i < vector.size(); i++) {
         result.add(FixedNumeric.using(par).mult(scalar, vector.get(i)));
       }
-      return () -> result;
+      return DRes.of(result);
     });
     return result;
   }
@@ -168,7 +155,7 @@ public class VectorUtils {
       for (int i = 0; i < vector.size(); i++) {
         result.add(FixedNumeric.using(par).div(vector.get(i), scalar));
       }
-      return () -> result;
+      return DRes.of(result);
     });
     return result;
   }
@@ -204,9 +191,9 @@ public class VectorUtils {
    * @param builder The builder to use.
    * @return a-b
    */
-  public static List<DRes<SFixed>> sub(List<DRes<SFixed>> a, List<DRes<SFixed>> b,
+  public static ArrayList<DRes<SFixed>> sub(List<DRes<SFixed>> a, List<DRes<SFixed>> b,
       ProtocolBuilderNumeric builder) {
-    List<DRes<SFixed>> result = new ArrayList<>();
+    ArrayList<DRes<SFixed>> result = new ArrayList<>();
     builder.par(par -> {
       if (a.size() != b.size()) {
         throw new IllegalArgumentException("Vector size mismatch");

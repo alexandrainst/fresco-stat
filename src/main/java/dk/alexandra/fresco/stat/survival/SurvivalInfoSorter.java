@@ -5,7 +5,6 @@ import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,17 +33,12 @@ public abstract class SurvivalInfoSorter<T> implements
       ProtocolBuilderNumeric builder) {
 
     return builder.seq(seq -> {
-
-      List<Pair<DRes<SInt>, List<DRes<SInt>>>> values = new ArrayList<>();
-
-      for (T subject : data) {
-        values.add(encode(subject));
-      }
-
+      List<Pair<DRes<SInt>, List<DRes<SInt>>>> values =
+          data.stream().map(this::encode).collect(Collectors.toList());
       return dk.alexandra.fresco.lib.common.collections.Collections.using(seq).sort(values);
     }).seq((seq, sorted) -> {
       List<T> sortedData = sorted.stream().map(this::decode).collect(Collectors.toList());
-      return () -> sortedData;
+      return DRes.of(sortedData);
     });
   }
 }

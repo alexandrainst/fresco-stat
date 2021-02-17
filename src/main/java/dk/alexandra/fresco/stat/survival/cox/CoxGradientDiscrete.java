@@ -10,10 +10,10 @@ import dk.alexandra.fresco.lib.common.math.AdvancedNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.lib.fixed.math.Exponential;
-import dk.alexandra.fresco.stat.linearalgebra.VectorUtils;
+import dk.alexandra.fresco.stat.descriptive.sort.FindTiedGroups;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoDiscrete;
 import dk.alexandra.fresco.stat.utils.RealUtils;
-import dk.alexandra.fresco.stat.utils.sort.FindTiedGroups;
+import dk.alexandra.fresco.stat.utils.VectorUtils;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +45,7 @@ public class CoxGradientDiscrete implements
       for (int i = 0; i < beta.size(); i++) {
         state.expBeta.add(new Exponential(beta.get(i)).buildComputation(par));
       }
-      return () -> state;
+      return DRes.of(state);
     }).seq((par, state) -> {
       // Compute exp(k * beta_i) for k = 1...k_i (number of different values for covariate i)
       for (int i = 0; i < beta.size(); i++) {
@@ -56,7 +56,7 @@ public class CoxGradientDiscrete implements
               state.expBeta.get(i)));
         }
       }
-      return () -> state;
+      return DRes.of(state);
     }).par((par, state) -> {
       // Compute exp(x_ji beta_i) for all i and j
       for (int j = 0; j < data.size(); j++) {
@@ -67,13 +67,13 @@ public class CoxGradientDiscrete implements
                   state.expPipe.get(i), par));
         }
       }
-      return () -> state;
+      return DRes.of(state);
     }).par((par, state) -> {
       // compute theta_j = exp(x_j . beta) for all data points j
       for (int j = 0; j < data.size(); j++) {
         state.thetas.add(RealUtils.product(state.partialThetas.get(j), par));
       }
-      return () -> state;
+      return DRes.of(state);
     }).par((par, state) -> {
       // Convert x_ji's to fixed point
       for (int i = 0; i < data.get(0).getCovariates().size(); i++) {
@@ -86,20 +86,20 @@ public class CoxGradientDiscrete implements
               .innerProductWithPublicPart(twoPowers, data.get(j).getCovariates().get(i)));
         }
       }
-      return () -> state;
+      return DRes.of(state);
     }).par((par, state) -> {
       for (int j = 0; j < data.size(); j++) {
         int finalJ = j;
         state.x.add(VectorUtils.listBuilder(beta.size(),
             i -> FixedNumeric.using(par).fromSInt(state.xi.get(i).get(finalJ))));
       }
-      return () -> state;
+      return DRes.of(state);
     }).par((par, state) -> {
       // Compute theta_j * x_j
       for (int j = 0; j < data.size(); j++) {
         state.sum1terms.add(VectorUtils.scale(state.x.get(j), state.thetas.get(j), par));
       }
-      return () -> state;
+      return DRes.of(state);
     }).seq((seq, state) -> {
 
       // Find ties
@@ -131,13 +131,13 @@ public class CoxGradientDiscrete implements
         }
       }
 
-      return () -> state;
+      return DRes.of(state);
     }).par((par, state) -> {
       // Compute ratios of sum1 and sum2
       for (int j = 0; j < data.size(); j++) {
         state.ratios.add(VectorUtils.div(state.sum1.get(j), state.sum2.get(j), par));
       }
-      return () -> state;
+      return DRes.of(state);
     }).par((par, state) -> {
       // The terms in the final sum are x_j - ratio_j
       List<List<DRes<SFixed>>> terms = new ArrayList<>();
@@ -145,7 +145,7 @@ public class CoxGradientDiscrete implements
         terms.add(VectorUtils.sub(state.x.get(j), state.ratios.get(j), par));
       }
       state.terms = terms;
-      return () -> state;
+      return DRes.of(state);
     }).par((par, state) -> {
       // Only include terms with status = 1
       List<DRes<SInt>> censored = VectorUtils
@@ -156,11 +156,11 @@ public class CoxGradientDiscrete implements
               // The i'th entries in the terms
               VectorUtils.listBuilder(data.size(), j -> state.terms.get(j).get(i)),
               par));
-      return () -> result;
+      return DRes.of(result);
     });
   }
 
-  private class State {
+  private static class State {
 
     List<DRes<SFixed>> expBeta = new ArrayList<>();
     List<List<DRes<SFixed>>> expPipe = new ArrayList<>();

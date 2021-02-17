@@ -38,7 +38,7 @@ public class LeakyBreakTies implements Computation<List<Double>, ProtocolBuilder
                 }));
         ciphers.add(openedCipher);
       }
-      return () -> ciphers;
+      return DRes.of(ciphers);
     }).seq((seq, ciphers) -> {
 
       List<Double> ranks = new ArrayList<>();
@@ -60,7 +60,7 @@ public class LeakyBreakTies implements Computation<List<Double>, ProtocolBuilder
         i += k;
       }
 
-      return () -> ranks;
+      return DRes.of(ranks);
     });
   }
 }

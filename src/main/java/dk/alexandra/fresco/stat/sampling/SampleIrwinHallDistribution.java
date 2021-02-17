@@ -30,7 +30,7 @@ public class SampleIrwinHallDistribution implements Computation<SFixed, Protocol
       for (int i = 0; i < n; i++) {
         uniforms.add(new SampleUniformDistribution().buildComputation(par));
       }
-      return () -> uniforms;
+      return DRes.of(uniforms);
     }).seq((seq, uniforms) -> AdvancedFixedNumeric.using(seq).sum(uniforms));
   }
 

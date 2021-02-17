@@ -36,7 +36,7 @@ public class FTest implements Computation<SFixed, ProtocolBuilderNumeric> {
         state.uss.add(new USS(sample).buildComputation(par));
       }
 
-      return () -> state;
+      return DRes.of(state);
     }).par((par, state) -> {
 
       for (int i = 0; i < observed.size(); i++) {
@@ -56,7 +56,7 @@ public class FTest implements Computation<SFixed, ProtocolBuilderNumeric> {
         });
       }
 
-      return () -> state;
+      return DRes.of(state);
     }).par((par, state) -> {
       // Some values are no longer needed
       state.uss = null;
@@ -65,7 +65,7 @@ public class FTest implements Computation<SFixed, ProtocolBuilderNumeric> {
       state.sumOfRatios = AdvancedFixedNumeric.using(par).sum(state.ratios);
       state.sum = AdvancedFixedNumeric.using(par).sum(state.sums);
 
-      return () -> state;
+      return DRes.of(state);
     }).par((par, state) -> {
       // Some values are no longer needed
       state.ssds = null;
@@ -80,7 +80,7 @@ public class FTest implements Computation<SFixed, ProtocolBuilderNumeric> {
       });
       state.s1 = par.seq(subSeq -> FixedNumeric.using(subSeq).div(state.ssd1, f1));
 
-      return () -> state;
+      return DRes.of(state);
     }).seq((seq, state) -> FixedNumeric.using(seq).div(state.s2, state.s1));
   }
 

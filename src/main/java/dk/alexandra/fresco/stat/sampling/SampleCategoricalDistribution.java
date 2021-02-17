@@ -12,41 +12,33 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Sample an element from a catagorical distribution.
  *
  * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
-public class SampleCatagoricalDistribution implements Computation<SInt, ProtocolBuilderNumeric> {
+public class SampleCategoricalDistribution implements Computation<SInt, ProtocolBuilderNumeric> {
 
-  private List<DRes<SFixed>> probabilities;
   private final boolean normalized;
+  private List<DRes<SFixed>> probabilities;
   private double[] knownProbabilities;
 
   /**
-   * @param propabilities The i'th element of this list is the propabily of drawing i from this
+   * @param probabilities The i'th element of this list is the propabily of drawing i from this
    *                      distribution.
    * @param normalized    Does the propabilities sum to 1?
    */
-  public SampleCatagoricalDistribution(List<DRes<SFixed>> propabilities, boolean normalized) {
-    this.probabilities = propabilities;
+  public SampleCategoricalDistribution(List<DRes<SFixed>> probabilities, boolean normalized) {
+    this.probabilities = probabilities;
     this.normalized = normalized;
   }
 
-  public SampleCatagoricalDistribution(double[] propabilities) {
-    double sum = Arrays.stream(propabilities).sum();
-    this.knownProbabilities = Arrays.stream(propabilities).map(p -> p / sum).toArray();
+  public SampleCategoricalDistribution(double[] probabilities) {
+    double sum = Arrays.stream(probabilities).sum();
+    this.knownProbabilities = Arrays.stream(probabilities).map(p -> p / sum).toArray();
     this.normalized = true;
-  }
-
-  /**
-   * @param probabilities The i'th element of this list is the propabily of drawing i from this
-   *                      distribution. The probabilities should have been normalized such that they
-   *                      sum to 1.
-   */
-  public SampleCatagoricalDistribution(List<DRes<SFixed>> probabilities) {
-    this(probabilities, true);
   }
 
   @Override
@@ -63,14 +55,9 @@ public class SampleCatagoricalDistribution implements Computation<SInt, Protocol
        */
 
       DRes<SFixed> r = new SampleUniformDistribution().buildComputation(builder);
-
       FixedNumeric numeric = FixedNumeric.using(builder);
-      if (!normalized) {
-        DRes<SFixed> sum = AdvancedFixedNumeric.using(builder).sum(probabilities);
-        r = numeric.mult(sum, r);
-      }
 
-      if (knownProbabilities != null) {
+      if (Objects.nonNull(knownProbabilities)) {
 
         double c = knownProbabilities[0];
         List<DRes<SInt>> terms = new ArrayList<>();
@@ -85,6 +72,11 @@ public class SampleCatagoricalDistribution implements Computation<SInt, Protocol
         return AdvancedNumeric.using(builder).sum(terms);
 
       } else {
+
+        if (!normalized) {
+          DRes<SFixed> sum = AdvancedFixedNumeric.using(builder).sum(probabilities);
+          r = numeric.mult(sum, r);
+        }
 
         DRes<SFixed> c = probabilities.get(0);
         List<DRes<SInt>> terms = new ArrayList<>();

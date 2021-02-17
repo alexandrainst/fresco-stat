@@ -1,10 +1,16 @@
 package dk.alexandra.fresco.stat;
 
+import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.numeric.field.MersennePrimeFieldDefinition;
 import dk.alexandra.fresco.framework.sce.evaluator.EvaluationStrategy;
-import dk.alexandra.fresco.stat.LATests.TestBackwardSubstitution;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
+import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMean;
+import dk.alexandra.fresco.stat.DescriptiveStatTests.TestStandardDeviation;
+import dk.alexandra.fresco.stat.DescriptiveStatTests.TestVariance;
+import dk.alexandra.fresco.stat.LATests.TestBackSubstitution;
 import dk.alexandra.fresco.stat.LATests.TestEigenvalues;
-import dk.alexandra.fresco.stat.LATests.TestForwardsubstitution;
+import dk.alexandra.fresco.stat.LATests.TestForwardSubstitution;
 import dk.alexandra.fresco.stat.LATests.TestGramSchmidt;
 import dk.alexandra.fresco.stat.LATests.TestLinearInverseProblem;
 import dk.alexandra.fresco.stat.LATests.TestLinearInverseProblemNoSolution;
@@ -15,6 +21,7 @@ import dk.alexandra.fresco.stat.LATests.TestQR;
 import dk.alexandra.fresco.stat.LATests.TestQRRectangular;
 import dk.alexandra.fresco.stat.LATests.TestTriangularInverse;
 import dk.alexandra.fresco.stat.LinRegTests.TestLinearRegression;
+import dk.alexandra.fresco.stat.LinRegTests.TestLinearRegressionLarge;
 import dk.alexandra.fresco.stat.LinRegTests.TestSimpleLinearRegression;
 import dk.alexandra.fresco.stat.LogRegTests.TestLogRegPrediction;
 import dk.alexandra.fresco.stat.LogRegTests.TestLogRegSGDSingleEpoch;
@@ -24,24 +31,22 @@ import dk.alexandra.fresco.stat.SurvivalAnalysisTests.TestCoxRegressionContinuou
 import dk.alexandra.fresco.stat.SurvivalAnalysisTests.TestCoxRegressionDiscrete;
 import dk.alexandra.fresco.stat.TestsTests.TestChiSquareTest;
 import dk.alexandra.fresco.stat.TestsTests.TestChiSquareTestKnown;
-import dk.alexandra.fresco.stat.TestsTests.TestChiSquareTestWithKnownBuckets;
 import dk.alexandra.fresco.stat.TestsTests.TestFTest;
 import dk.alexandra.fresco.stat.TestsTests.TestKruskallWallis;
+import dk.alexandra.fresco.stat.TestsTests.TestKruskallWallisFixedPoint;
 import dk.alexandra.fresco.stat.TestsTests.TestTTest;
 import dk.alexandra.fresco.stat.TestsTests.TestTwoSampleTTest;
-import dk.alexandra.fresco.stat.sampling.SampleBernoulliDistribution;
-import dk.alexandra.fresco.stat.sampling.SampleCatagoricalDistribution;
-import dk.alexandra.fresco.stat.sampling.SampleExponentialDistribution;
-import dk.alexandra.fresco.stat.sampling.SampleGammaDistribution;
-import dk.alexandra.fresco.stat.sampling.SampleLaplaceDistribution;
-import dk.alexandra.fresco.stat.sampling.SampleNormalDistribution;
-import dk.alexandra.fresco.stat.sampling.SampleUniformDistribution;
+import dk.alexandra.fresco.stat.TestsTests.TestTwoSampleTTestDifferentSizes;
+import dk.alexandra.fresco.stat.UtilTests.TestProduct;
+import dk.alexandra.fresco.stat.utils.VectorUtils;
 import dk.alexandra.fresco.suite.dummy.arithmetic.AbstractDummyArithmeticTest;
+import java.util.ArrayList;
+import java.util.Arrays;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
-import org.apache.commons.math3.distribution.GammaDistribution;
 import org.apache.commons.math3.distribution.LaplaceDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTest {
@@ -52,106 +57,181 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
       .performanceLogging(false);
 
   @Test
-  public void test_T_Test() throws Exception {
+  public void test_mean() {
+    runTest(new TestMean<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_variance() {
+    runTest(new TestVariance<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_standard_deviation() {
+    runTest(new TestStandardDeviation<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_T_Test() {
     runTest(new TestTTest<>(), TEST_PARAMETERS);
   }
 
   @Test
-  public void test_two_sample_T_Test() throws Exception {
+  public void test_two_sample_T_Test() {
     runTest(new TestTwoSampleTTest<>(), TEST_PARAMETERS);
   }
 
   @Test
-  public void test_chi_square_test() throws Exception {
+  public void test_two_sample_T_Test_different_sizes() {
+    runTest(new TestTwoSampleTTestDifferentSizes<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_chi_square_test() {
     runTest(new TestChiSquareTest<>(), TEST_PARAMETERS);
   }
 
   @Test
-  public void test_chi_square_test_known() throws Exception {
+  public void test_chi_square_test_known() {
     runTest(new TestChiSquareTestKnown<>(), TEST_PARAMETERS);
   }
 
   @Test
-  public void test_chi_square_test_known_buckets() throws Exception {
-    runTest(new TestChiSquareTestWithKnownBuckets<>(), TEST_PARAMETERS);
-  }
-
-  @Test
-  public void test_simple_linear_regression() throws Exception {
+  public void test_simple_linear_regression() {
     runTest(new TestSimpleLinearRegression<>(), TEST_PARAMETERS);
   }
 
   @Test
-  public void test_linear_regression() throws Exception {
+  public void test_linear_regression() {
     runTest(new TestLinearRegression<>(), TEST_PARAMETERS);
   }
 
+  @Ignore
   @Test
-  public void test_correlation() throws Exception {
+  public void test_large_linear_regression() {
+    runTest(new TestLinearRegressionLarge<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_correlation() {
     runTest(new DescriptiveStatTests.TestCorrelation<>(), TEST_PARAMETERS);
   }
 
   @Test
-  public void test_catagorical_distribution_sampling() throws Exception {
-    double[] p = new double[]{0.1, 0.2, 0.1, 0.6};
+  public void test_categorical_distribution_sampling() {
+    double[] p = new double[]{0.1, 0.2, 0.5, 0.2};
 
     runTest(
-        new TestDiscreteDistribution<>(100, () -> new SampleCatagoricalDistribution(p), p, 0.05),
+        new TestDiscreteDistribution<>(200,
+            seq -> Sampler.using(seq).sampleCategoricalDistribution(p), p, 0.1),
         TEST_PARAMETERS);
   }
 
   @Test
-  public void test_bernoulli_distribution_sampling() throws Exception {
+  public void test_categorical_distribution_sampling_secret_probabilities() {
+    double[] p = new double[]{0.1, 0.2, 0.5, 0.2};
+
+    runTest(
+        new TestDiscreteDistribution<>(200, seq -> {
+          ArrayList<DRes<SFixed>> secretP = VectorUtils
+              .listBuilder(p.length, i -> FixedNumeric.using(seq).input(p[i], 1));
+          return Sampler.using(seq).sampleCategoricalDistribution(secretP);
+        }, p, 0.1),
+        TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_categorical_distribution_sampling_non_normalized_secret_probabilities() {
+    double[] p = new double[]{0.1, 0.2, 0.7, 0.9};
+
+    double sum = Arrays.stream(p).sum();
+    double[] normalizedP = Arrays.stream(p).map(pi -> pi / sum).toArray();
+
+    runTest(
+        new TestDiscreteDistribution<>(200, seq -> {
+          ArrayList<DRes<SFixed>> secretP = VectorUtils
+              .listBuilder(p.length, i -> FixedNumeric.using(seq).input(p[i], 1));
+          return Sampler.using(seq).sampleCategoricalDistribution(secretP, false);
+        }, normalizedP, 0.1),
+        TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_bernoulli_distribution_sampling() {
     double[] p = new double[]{0.6, 0.4};
 
     runTest(
-        new TestDiscreteDistribution<>(100, () -> new SampleBernoulliDistribution(0.7), p, 0.05),
+        new TestDiscreteDistribution<>(200,
+            seq -> Sampler.using(seq).sampleBernoulliDistribution(0.6), p, 0.05),
         TEST_PARAMETERS);
   }
 
   @Test
-  public void test_laplace_distribution_sampling() throws Exception {
-    runTest(new TestContinuousDistribution<>(100, () -> new SampleLaplaceDistribution(10),
-        new LaplaceDistribution(0.0, 10), 0.05), TEST_PARAMETERS);
+  public void test_bernoulli_distribution_sampling_secret_param() {
+    double[] p = new double[]{0.6, 0.4};
+
+    runTest(
+        new TestDiscreteDistribution<>(200,
+            seq -> Sampler.using(seq)
+                .sampleBernoulliDistribution(FixedNumeric.using(seq).known(0.6)),
+            p, 0.05),
+        TEST_PARAMETERS);
   }
 
   @Test
-  public void test_uniform_distribution_sampling() throws Exception {
-    runTest(new TestContinuousDistribution<>(100, () -> new SampleUniformDistribution(),
-        new UniformRealDistribution(0.0, 1.0), 0.05), EvaluationStrategy.SEQUENTIAL, 2);
+  public void test_laplace_distribution_sampling() {
+    runTest(new TestContinuousDistribution<>(1000,
+        seq -> Sampler.using(seq).sampleLaplaceDistribution(1.5),
+        new LaplaceDistribution(0, 1.5), 0.05), TEST_PARAMETERS);
   }
 
   @Test
-  public void test_normal_distribution_sampling() throws Exception {
-    runTest(new TestContinuousDistribution<>(100, () -> new SampleNormalDistribution(),
-        new NormalDistribution(0.0, 1.0), 0.05), TEST_PARAMETERS);
+  public void test_laplace_distribution_sampling_secret_param() {
+    runTest(new TestContinuousDistribution<>(1000,
+        seq -> Sampler.using(seq).sampleLaplaceDistribution(FixedNumeric.using(seq).known(1.5)),
+        new LaplaceDistribution(0, 1.5), 0.05), TEST_PARAMETERS);
   }
 
   @Test
-  public void test_gamma_distribution_sampling() throws Exception {
-    runTest(new TestContinuousDistribution<>(100, () -> new SampleGammaDistribution(9, 0.5),
-        new GammaDistribution(9.0, 0.5), 0.05), TEST_PARAMETERS);
+  public void test_uniform_distribution_sampling() {
+    runTest(new TestContinuousDistribution<>(1000,
+        seq -> Sampler.using(seq).sampleUniformDistribution(),
+        new UniformRealDistribution(0, 1), 0.05), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
-  public void test_exponential_distribution_sampling() throws Exception {
-    runTest(new TestContinuousDistribution<>(100, () -> new SampleExponentialDistribution(0.5),
-        new ExponentialDistribution(2.0), 0.05), TEST_PARAMETERS);
+  public void test_uniform_distribution_mean() {
+    runTest(new TestContinuousDistributionMean<>(1000,
+        seq -> Sampler.using(seq).sampleUniformDistribution(),
+        0.5, 0.05), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
-  public void test_histogram_int() throws Exception {
-    runTest(new DescriptiveStatTests.TestHistogramInt<>(), TEST_PARAMETERS);
+  public void test_normal_distribution_sampling() {
+    runTest(
+        new TestContinuousDistribution<>(1000, seq -> Sampler.using(seq).sampleNormalDistribution(),
+            new NormalDistribution(0, 1), 0.05), TEST_PARAMETERS);
   }
 
   @Test
-  public void test_histogram_fixed() throws Exception {
-    runTest(new DescriptiveStatTests.TestHistogramFixed<>(), TEST_PARAMETERS);
+  public void test_exponential_distribution_sampling() {
+    runTest(new TestContinuousDistribution<>(1000,
+        seq -> Sampler.using(seq).sampleExponentialDistribution(0.5),
+        new ExponentialDistribution(0.5), 0.05), TEST_PARAMETERS);
   }
 
   @Test
-  public void test_two_dim_histogram() throws Exception {
-    runTest(new DescriptiveStatTests.TestTwoDimHistogram<>(), TEST_PARAMETERS);
+  public void test_exponential_distribution_sampling_secret_param() {
+    runTest(new TestContinuousDistribution<>(1000,
+        seq -> Sampler.using(seq).sampleExponentialDistribution(FixedNumeric.using(seq).known(0.5)),
+        new ExponentialDistribution(0.5), 0.05), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_exponential_distribution_mean() {
+    runTest(new TestContinuousDistributionMean<>(1000,
+        seq -> Sampler.using(seq).sampleExponentialDistribution(0.5),
+        0.5, 0.05), TEST_PARAMETERS);
   }
 
   @Test
@@ -180,6 +260,11 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   }
 
   @Test
+  public void test_kruskall_wallis_fixed_point() {
+    runTest(new TestKruskallWallisFixedPoint<>(), TEST_PARAMETERS);
+  }
+
+  @Test
   public void test_cox_gradient() {
     runTest(new TestCoxGradient<>(), TEST_PARAMETERS);
   }
@@ -200,18 +285,18 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   }
 
   @Test
-  public void test_logistic_regression_prediction() throws Exception {
+  public void test_logistic_regression_prediction() {
     runTest(new TestLogRegPrediction<>(), TEST_PARAMETERS);
   }
 
   @Test
-  public void test_logistic_regression_sgd_single_epoch() throws Exception {
+  public void test_logistic_regression_sgd_single_epoch() {
     runTest(new TestLogRegSGDSingleEpoch<>(), TEST_PARAMETERS);
   }
 
-  // Slow test
   @Test
-  public void test_logistic_regression() throws Exception {
+  //@Ignore
+  public void test_logistic_regression() {
     runTest(new TestLogisticRegression<>(), TEST_PARAMETERS);
   }
 
@@ -242,12 +327,12 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
 
   @Test
   public void test_forward_substitution() {
-    runTest(new TestForwardsubstitution<>(), TEST_PARAMETERS);
+    runTest(new TestForwardSubstitution<>(), TEST_PARAMETERS);
   }
 
   @Test
   public void test_backward_substitution() {
-    runTest(new TestBackwardSubstitution<>(), TEST_PARAMETERS);
+    runTest(new TestBackSubstitution<>(), TEST_PARAMETERS);
   }
 
   @Test
@@ -273,6 +358,11 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   @Test
   public void test_moore_penrose_pseudo_inverse() {
     runTest(new TestMoorePenrosePseudoInverse<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_product() {
+    runTest(new TestProduct<>(), TEST_PARAMETERS);
   }
 
 }

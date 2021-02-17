@@ -6,6 +6,7 @@ import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.IntToDoubleFunction;
@@ -17,7 +18,8 @@ import java.util.stream.Collectors;
  * computation performs a linear regression on the data and the expected outcome as log-odds. See
  * also <a href= "https://en.wikipedia.org/wiki/Logistic_regression">https://en.wikipedia.org/wiki/Logistic_regression</a>.
  */
-public class LogisticRegression implements Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
+public class LogisticRegression implements
+    Computation<ArrayList<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
   private final double[] guess;
   private final Matrix<DRes<SFixed>> data;
@@ -25,7 +27,8 @@ public class LogisticRegression implements Computation<List<DRes<SFixed>>, Proto
   private final IntToDoubleFunction rate;
   private final int epochs;
 
-  public LogisticRegression(Matrix<DRes<SFixed>> data, List<DRes<SFixed>> expected, double[] beta,
+  public LogisticRegression(Matrix<DRes<SFixed>> data, ArrayList<DRes<SFixed>> expected,
+      double[] beta,
       IntToDoubleFunction rate,
       int epochs) {
     this.data = data;
@@ -35,24 +38,20 @@ public class LogisticRegression implements Computation<List<DRes<SFixed>>, Proto
     this.epochs = epochs;
   }
 
-  public LogisticRegression(Matrix<DRes<SFixed>> data, List<DRes<SFixed>> expected, double[] beta,
-      double rate, int epochs) {
-    this(data, expected, beta, i -> rate, epochs);
-  }
-
   @Override
-  public DRes<List<DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric builder) {
+  public DRes<ArrayList<DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.seq(seq -> {
       int round = 0;
-      List<DRes<SFixed>> b = Arrays.stream(guess).mapToObj(FixedNumeric.using(seq)::known).collect(
-          Collectors.toList());
-      return new IterationState(round, () -> b);
+      ArrayList<DRes<SFixed>> b = Arrays.stream(guess).mapToObj(FixedNumeric.using(seq)::known)
+          .collect(
+              Collectors.toCollection(ArrayList::new));
+      return new IterationState(round, DRes.of(b));
     }).whileLoop((state) -> state.round < epochs, (seq, state) -> {
 //            for (int i = 0; i < guess.length; i++) {
 //              new OpenAndPrintSFixed("beta_" + i, state.b.out().get(i)).buildComputation(seq);
 //            }
 //            seq.debug().marker("Round " + state.round, System.out);
-      DRes<List<DRes<SFixed>>> newB =
+      DRes<ArrayList<DRes<SFixed>>> newB =
           new LogisticRegressionGD(data, expected, rate.applyAsDouble(state.round), state.b.out())
               .buildComputation(seq);
       return new IterationState(state.round + 1, newB);
@@ -61,10 +60,10 @@ public class LogisticRegression implements Computation<List<DRes<SFixed>>, Proto
 
   private static final class IterationState implements DRes<IterationState> {
 
-    private final DRes<List<DRes<SFixed>>> b;
+    private final DRes<ArrayList<DRes<SFixed>>> b;
     private final int round;
 
-    private IterationState(int round, DRes<List<DRes<SFixed>>> value) {
+    private IterationState(int round, DRes<ArrayList<DRes<SFixed>>> value) {
       this.round = round;
       this.b = value;
     }

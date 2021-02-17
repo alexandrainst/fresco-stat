@@ -6,13 +6,12 @@ import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
  * Compute the sum of products of deviations of two samples.
- *
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
 public class SPD implements Computation<SFixed, ProtocolBuilderNumeric> {
 
@@ -32,30 +31,12 @@ public class SPD implements Computation<SFixed, ProtocolBuilderNumeric> {
   @Override
   public DRes<SFixed> buildComputation(ProtocolBuilderNumeric root) {
     return root.par(builder -> {
-      List<DRes<SFixed>> terms = new ArrayList<>(x.size());
-      for (int i = 0; i < x.size(); i++) {
-        terms.add(new ComputePD(x.get(i), y.get(i)).buildComputation(builder));
-      }
-      return () -> terms;
+      FixedNumeric fixedNumeric = FixedNumeric.using(builder);
+      List<DRes<SFixed>> terms = IntStream.range(0, x.size()).mapToObj(i ->
+          fixedNumeric.mult(fixedNumeric.sub(x.get(i), meanX),
+              fixedNumeric.sub(y.get(i), meanY))).collect(Collectors.toList());
+      return DRes.of(terms);
     }).seq((builder, terms) -> AdvancedFixedNumeric.using(builder).sum(terms));
-  }
-
-  private class ComputePD implements Computation<SFixed, ProtocolBuilderNumeric> {
-
-    private final DRes<SFixed> yi;
-    private final DRes<SFixed> xi;
-
-    private ComputePD(DRes<SFixed> xi, DRes<SFixed> yi) {
-      this.xi = xi;
-      this.yi = yi;
-    }
-
-    @Override
-    public DRes<SFixed> buildComputation(ProtocolBuilderNumeric builder) {
-      return builder.seq(seq -> FixedNumeric.using(seq).mult(FixedNumeric.using(seq).sub(xi, meanX),
-          FixedNumeric.using(seq).sub(yi, meanY)));
-    }
-
   }
 
 }

@@ -12,7 +12,6 @@ import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
-import dk.alexandra.fresco.stat.regression.logistic.LogisticRegression;
 import dk.alexandra.fresco.stat.regression.logistic.LogisticRegressionGD;
 import dk.alexandra.fresco.stat.regression.logistic.LogisticRegressionPrediction;
 import java.math.BigDecimal;
@@ -25,7 +24,7 @@ import org.junit.Assert;
 
 public class LogRegTests {
 
-  public static Pair<Matrix<DRes<SFixed>>, List<DRes<SFixed>>> logisticRegressionDataset(
+  public static Pair<Matrix<DRes<SFixed>>, ArrayList<DRes<SFixed>>> logisticRegressionDataset(
       ProtocolBuilderNumeric builder) {
 
     // Data from https://en.wikipedia.org/wiki/Logistic_regression
@@ -41,9 +40,9 @@ public class LogRegTests {
         i -> data.get(i).stream().map(BigDecimal::valueOf).map(FixedNumeric.using(builder)::known)
             .collect(Collectors.toCollection(ArrayList::new)));
 
-    List<DRes<SFixed>> secretE =
+    ArrayList<DRes<SFixed>> secretE =
         e.stream().map(BigDecimal::valueOf).map(FixedNumeric.using(builder)::known)
-            .collect(Collectors.toList());
+            .collect(Collectors.toCollection(ArrayList::new));
 
     return new Pair<>(secretData, secretE);
   }
@@ -96,11 +95,12 @@ public class LogRegTests {
 
           Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication =
               root -> root.seq(seq -> {
-                Pair<Matrix<DRes<SFixed>>, List<DRes<SFixed>>> data = logisticRegressionDataset(
+                Pair<Matrix<DRes<SFixed>>, ArrayList<DRes<SFixed>>> data = logisticRegressionDataset(
                     seq);
 
-                List<DRes<SFixed>> initB = List.of(FixedNumeric.using(seq).known(-3.0),
-                    FixedNumeric.using(seq).known(2.0));
+                ArrayList<DRes<SFixed>> initB = new ArrayList<>(
+                    List.of(FixedNumeric.using(seq).known(-3.0),
+                        FixedNumeric.using(seq).known(2.0)));
 
                 return new LogisticRegressionGD(data.getFirst(), data.getSecond(), 0.1, initB)
                     .buildComputation(seq);
@@ -150,13 +150,14 @@ public class LogRegTests {
           Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication =
               root -> root.seq(seq -> {
 
-                Pair<Matrix<DRes<SFixed>>, List<DRes<SFixed>>> data = logisticRegressionDataset(
+                Pair<Matrix<DRes<SFixed>>, ArrayList<DRes<SFixed>>> data = logisticRegressionDataset(
                     seq);
 
                 double[] guess = new double[]{0, 0};
 
-                return new LogisticRegression(data.getFirst(), data.getSecond(), guess,
-                    i -> 5.0 / (i + 35.0), 50).buildComputation(seq);
+                return Statistics.using(seq)
+                    .logisticRegression(data.getFirst(), data.getSecond(), guess,
+                        i -> 5.0 / (i + 35.0), 50);
               }).seq((seq, b) -> {
 
                 List<DRes<BigDecimal>> openB =

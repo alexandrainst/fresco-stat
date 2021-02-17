@@ -30,7 +30,7 @@ public class LogisticRegressionPrediction implements Computation<SFixed, Protoco
       for (int i = 0; i < row.size(); i++) {
         terms.add(FixedNumeric.using(par).mult(b.get(i + 1), row.get(i)));
       }
-      return () -> terms;
+      return DRes.of(terms);
     }).seq((seq, terms) -> {
       DRes<SFixed> sum = AdvancedFixedNumeric.using(seq).sum(terms);
       return new Reciprocal(

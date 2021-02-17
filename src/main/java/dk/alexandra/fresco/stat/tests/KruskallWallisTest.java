@@ -27,15 +27,9 @@ import java.util.stream.Collectors;
 public class KruskallWallisTest implements Computation<SFixed, ProtocolBuilderNumeric> {
 
   private final List<List<DRes<SInt>>> observed;
-  private final boolean averageTies;
 
   public KruskallWallisTest(List<List<DRes<SInt>>> observed) {
-    this(observed, false);
-  }
-
-  public KruskallWallisTest(List<List<DRes<SInt>>> observed, boolean averageTies) {
     this.observed = observed;
-    this.averageTies = averageTies;
   }
 
   /**
@@ -47,7 +41,7 @@ public class KruskallWallisTest implements Computation<SFixed, ProtocolBuilderNu
    */
   public static List<List<DRes<SInt>>> fromSFixed(List<List<DRes<SFixed>>> observed) {
     return observed.stream().map(
-        sample -> sample.stream().map(x -> ((SFixed) x).getSInt()).collect(Collectors.toList()))
+        sample -> sample.stream().map(x -> x.out().getSInt()).collect(Collectors.toList()))
         .collect(
             Collectors.toList());
   }
@@ -57,7 +51,7 @@ public class KruskallWallisTest implements Computation<SFixed, ProtocolBuilderNu
     int groups = observed.size();
     int N = observed.stream().mapToInt(List::size).sum();
 
-    return builder.seq(seq -> new Ranks(observed, averageTies)
+    return builder.seq(seq -> new Ranks(observed)
         .buildComputation(seq)).par((par, ranks) -> {
       List<DRes<SFixed>> squared = ranks.getFirst().stream()
           .map(rank -> FixedNumeric.using(par).mult(rank, rank))
@@ -78,11 +72,7 @@ public class KruskallWallisTest implements Computation<SFixed, ProtocolBuilderNu
       h = numeric.mult(12.0, h);
       h = numeric.div(h, N * (N + 1));
       h = numeric.sub(h, 3 * (N + 1));
-
-      if (averageTies) {
-        h = numeric.mult(squaredAverages.getSecond(), h);
-      }
-
+      h = numeric.mult(squaredAverages.getSecond(), h);
       return h;
     });
   }

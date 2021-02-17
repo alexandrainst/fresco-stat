@@ -1,4 +1,4 @@
-package dk.alexandra.fresco.stat.regression;
+package dk.alexandra.fresco.stat.regression.linear;
 
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
@@ -9,14 +9,14 @@ import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.descriptive.helpers.SPD;
 import dk.alexandra.fresco.stat.descriptive.helpers.SSD;
-import dk.alexandra.fresco.stat.regression.SimpleLinearRegression.LinearFunction;
 import java.util.List;
 
 /**
  * This computation returns coefficients a and b based on a simple linear regression of the observed
  * x and y values.
  */
-public class SimpleLinearRegression implements Computation<LinearFunction, ProtocolBuilderNumeric> {
+public class SimpleLinearRegression implements
+    Computation<Pair<DRes<SFixed>, DRes<SFixed>>, ProtocolBuilderNumeric> {
 
   private final List<DRes<SFixed>> x;
   private final List<DRes<SFixed>> y;
@@ -32,13 +32,13 @@ public class SimpleLinearRegression implements Computation<LinearFunction, Proto
   }
 
   @Override
-  public DRes<LinearFunction> buildComputation(ProtocolBuilderNumeric root) {
+  public DRes<Pair<DRes<SFixed>, DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric root) {
     return root.par(builder -> {
 
       DRes<SFixed> spd = new SPD(x, meanX, y, meanY).buildComputation(builder);
       DRes<SFixed> ssd = new SSD(x, meanX).buildComputation(builder);
 
-      return () -> new Pair<>(spd, ssd);
+      return Pair.lazy(spd, ssd);
 
     }).seq((builder, spdAndSsd) -> {
 
@@ -49,28 +49,9 @@ public class SimpleLinearRegression implements Computation<LinearFunction, Proto
       DRes<SFixed> a = numeric
           .sub(meanY, numeric.mult(b, meanX));
 
-      return () -> new LinearFunction(a, b);
+      return Pair.lazy(a, b);
 
     });
-  }
-
-  public static class LinearFunction {
-
-    private final DRes<SFixed> b;
-    private final DRes<SFixed> a;
-
-    private LinearFunction(DRes<SFixed> a, DRes<SFixed> b) {
-      this.a = a;
-      this.b = b;
-    }
-
-    public DRes<SFixed> getA() {
-      return a;
-    }
-
-    public DRes<SFixed> getB() {
-      return b;
-    }
   }
 
 }

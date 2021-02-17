@@ -5,25 +5,29 @@ import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.utils.VectorUtils;
 import java.util.ArrayList;
-import java.util.List;
 
+/**
+ * Normalize a vector.
+ */
 public class NormalizeVector implements
-    Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
+    Computation<ArrayList<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
-  private final List<DRes<SFixed>> u;
+  private final ArrayList<DRes<SFixed>> u;
 
-  public NormalizeVector(List<DRes<SFixed>> u) {
+  public NormalizeVector(ArrayList<DRes<SFixed>> u) {
     this.u = u;
   }
 
   @Override
-  public DRes<List<DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric builder) {
+  public DRes<ArrayList<DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.seq(seq -> {
-      DRes<SFixed> scale = AdvancedFixedNumeric.using(seq)
-          .sqrt(AdvancedFixedNumeric.using(seq).innerProduct(u, u));
-      List<DRes<SFixed>> result = VectorUtils.div(u, scale, seq);
-      return () -> result;
+      AdvancedFixedNumeric advancedFixedNumeric = AdvancedFixedNumeric.using(seq);
+      DRes<SFixed> scale = advancedFixedNumeric
+          .sqrt(advancedFixedNumeric.innerProduct(u, u));
+      ArrayList<DRes<SFixed>> result = VectorUtils.div(u, scale, seq);
+      return DRes.of(result);
     });
   }
 }

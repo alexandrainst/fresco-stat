@@ -8,6 +8,10 @@ import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.AdvancedLinearAlgebra;
+import dk.alexandra.fresco.stat.utils.MatrixUtils;
+import dk.alexandra.fresco.stat.utils.VectorUtils;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,13 +35,14 @@ public class QRDecomposition implements
   public DRes<Pair<Matrix<DRes<SFixed>>, Matrix<DRes<SFixed>>>> buildComputation(
       ProtocolBuilderNumeric builder) {
     return builder.seq(seq -> {
-      List<List<DRes<SFixed>>> columns = VectorUtils.listBuilder(a.getWidth(), a::getColumn);
+      List<ArrayList<DRes<SFixed>>> columns = VectorUtils.listBuilder(a.getWidth(), a::getColumn);
       return new GramSchmidt(columns).buildComputation(seq);
     }).par((par, gs) -> {
-      List<DRes<List<DRes<SFixed>>>> normalized = gs.stream()
-          .map(v -> new NormalizeVector(v).buildComputation(par)).collect(
+      AdvancedLinearAlgebra linearAlgebra = AdvancedLinearAlgebra.using(par);
+      List<DRes<ArrayList<DRes<SFixed>>>> normalized = gs.stream()
+          .map(linearAlgebra::normalizeVector).collect(
               Collectors.toList());
-      return () -> normalized;
+      return DRes.of(normalized);
     }).par((par, gs) -> {
       FixedNumeric numeric = FixedNumeric.using(par);
       AdvancedFixedNumeric advanced = AdvancedFixedNumeric.using(par);

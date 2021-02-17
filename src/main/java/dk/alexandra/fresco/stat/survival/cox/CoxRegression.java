@@ -5,8 +5,8 @@ import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
-import dk.alexandra.fresco.stat.linearalgebra.VectorUtils;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoSorter;
+import dk.alexandra.fresco.stat.utils.VectorUtils;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -55,14 +55,14 @@ class CoxRegression<T> implements Computation<List<DRes<SFixed>>, ProtocolBuilde
       List<DRes<SFixed>> initialBeta = Arrays.stream(beta).mapToObj(numeric::known)
           .collect(
               Collectors.toList());
-      return () -> new State(sorted, 0, initialBeta);
-    }).whileLoop((state) -> state.iteration < iterations, (seq, state) -> seq.seq(sub -> {
-      return this.gradient.apply(state.data, state.beta).apply(sub);
-    }).seq((sub, gradient) -> {
-      List<DRes<SFixed>> delta = VectorUtils.scale(gradient, alpha, sub);
-      List<DRes<SFixed>> newBeta = VectorUtils.add(delta, state.beta, sub);
-      return () -> new State(state.data, state.iteration + 1, newBeta);
-    })).seq((set, state) -> () -> state.beta);
+      return DRes.of(new State(sorted, 0, initialBeta));
+    }).whileLoop((state) -> state.iteration < iterations,
+        (seq, state) -> seq.seq(sub -> this.gradient.apply(state.data, state.beta).apply(sub))
+            .seq((sub, gradient) -> {
+              List<DRes<SFixed>> delta = VectorUtils.scale(gradient, alpha, sub);
+              List<DRes<SFixed>> newBeta = VectorUtils.add(delta, state.beta, sub);
+              return DRes.of(new State(state.data, state.iteration + 1, newBeta));
+            })).seq((set, state) -> DRes.of(state.beta));
   }
 
   private class State {
