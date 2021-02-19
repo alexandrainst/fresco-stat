@@ -510,8 +510,6 @@ public class DescriptiveStatTests {
               }
             }
           }
-
-          System.out.println(output);
         }
       };
     }
@@ -528,9 +526,9 @@ public class DescriptiveStatTests {
         final List<Integer> y = Arrays.asList(0, 2, 1, 1, 1, 1, 0, 2, 4, 5, 8, 9, 10, 11);
         final List<Integer> z = Arrays.asList(0, 0, 0, 1, 5, 3, 4, 1, 7, 2, 3, 4, 2, 11);
         final List<Integer> s = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
-        final List<Integer> bucketsX = Arrays.asList(2);
-        final List<Integer> bucketsY = Arrays.asList(2);
-        final List<Integer> bucketsZ = Arrays.asList(2);
+        final List<Integer> bucketsX = java.util.Collections.singletonList(2);
+        final List<Integer> bucketsY = java.util.Collections.singletonList(2);
+        final List<Integer> bucketsZ = java.util.Collections.singletonList(3);
 
         @Override
         public void test() {
@@ -562,7 +560,34 @@ public class DescriptiveStatTests {
           });
 
           MultiDimensionalArray<List<BigInteger>> output = runApplication(testApplication);
-          System.out.println(output);
+
+          for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 2; j++) {
+              for (int k = 0; k < 2; k++) {
+                for (int n = 0; n < s.size(); n++) {
+                    if (output.get(i, j, k).get(n).intValue() > 0) {
+                      Assert.assertEquals(s.get(n).intValue(), output.get(i, j, k).get(n).intValue());
+
+                      boolean a = x.get(n) <= bucketsX.get(0);
+                      boolean b = y.get(n) <= bucketsY.get(0);
+                      boolean c = z.get(n) <= bucketsZ.get(0);
+
+                      if (i == 0) {
+                        Assert.assertTrue(a);
+                      }
+
+                      if (j == 0) {
+                        Assert.assertTrue(b);
+                      }
+
+                      if (k == 0) {
+                        Assert.assertTrue(c);
+                      }
+                    }
+                }
+              }
+            }
+          }
         }
       };
     }
