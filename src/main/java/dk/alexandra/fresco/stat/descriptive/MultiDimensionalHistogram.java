@@ -26,6 +26,9 @@ public class MultiDimensionalHistogram
 
   public MultiDimensionalHistogram(List<List<DRes<SInt>>> buckets,
       Matrix<DRes<SInt>> data) {
+    if (data.getWidth() != buckets.size()) {
+      throw new IllegalArgumentException("There should be a list of buckets per dimension");
+    }
     this.buckets = buckets;
     this.dimensions = buckets.size();
     this.data = data;

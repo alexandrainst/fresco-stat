@@ -35,8 +35,8 @@ public class KAnonymity implements
    * of size data.getHeight() with a non-zero entry <i>x</i> at index <i>i</i> indicating that the data
    * point at row <i>i</i> is in this bucket and that the corresponding sensitive attribute was <i>x</i>.
    * <p>
-   * If the corresponding indices should not be leaked, the output should be shuffled or sorted
-   * before opening the result.
+   * Note that this leaks the corresponding indices of the individuals in each bucket. To avoid this the
+   * data could be shuffled before running the computation.
    */
   public KAnonymity(Matrix<DRes<SInt>> data, List<DRes<SInt>> sensitive,
       List<List<DRes<SInt>>> buckets, int k) {

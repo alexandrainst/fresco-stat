@@ -7,8 +7,10 @@ import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.anonymisation.KAnonymity;
 import dk.alexandra.fresco.stat.descriptive.Histogram;
 import dk.alexandra.fresco.stat.descriptive.LeakyFrequencyTable;
+import dk.alexandra.fresco.stat.descriptive.MultiDimensionalHistogram;
 import dk.alexandra.fresco.stat.descriptive.PearsonCorrelation;
 import dk.alexandra.fresco.stat.descriptive.SampleMean;
 import dk.alexandra.fresco.stat.descriptive.SampleStandardDeviation;
@@ -26,6 +28,7 @@ import dk.alexandra.fresco.stat.tests.FTest;
 import dk.alexandra.fresco.stat.tests.KruskallWallisTest;
 import dk.alexandra.fresco.stat.tests.OneSampleTTest;
 import dk.alexandra.fresco.stat.tests.TwoSampleTTest;
+import dk.alexandra.fresco.stat.utils.MultiDimensionalArray;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -47,7 +50,6 @@ public class DefaultStatistics implements Statistics {
 
   public DRes<SFixed> sampleVariance(List<DRes<SFixed>> data, DRes<SFixed> mean) {
     return new SampleVariance(data, mean).buildComputation(builder);
-
   }
 
   @Override
@@ -219,6 +221,18 @@ public class DefaultStatistics implements Statistics {
               p.getSecond().out().getSInt())).collect(Collectors.toList());
       return new DefaultStatistics(seq).twoDimensionalHistogramDiscrete(intBuckets, intData);
     });
+  }
+
+  @Override
+  public DRes<MultiDimensionalArray<DRes<SInt>>> multiDimensionalHistogramDiscrete(
+      List<List<DRes<SInt>>> buckets, Matrix<DRes<SInt>> data) {
+    return new MultiDimensionalHistogram(buckets, data).buildComputation(builder);
+  }
+
+  @Override
+  public DRes<MultiDimensionalArray<List<DRes<SInt>>>> kAnonymity(Matrix<DRes<SInt>> data,
+      List<DRes<SInt>> sensitiveAttributes, List<List<DRes<SInt>>> buckets, int k) {
+    return new KAnonymity(data, sensitiveAttributes, buckets, k).buildComputation(builder);
   }
 
 }
