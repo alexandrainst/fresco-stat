@@ -7,7 +7,9 @@ import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestHistogramContinuous;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestHistogramDiscrete;
+import dk.alexandra.fresco.stat.DescriptiveStatTests.TestKAnonymity;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMean;
+import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMultiDimHistogram;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestStandardDeviation;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestTwoDimHistogram;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestVariance;
@@ -383,4 +385,13 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
     runTest(new TestTwoDimHistogram<>(), TEST_PARAMETERS);
   }
 
+  @Test
+  public void test_multidimensional_histogram() {
+    runTest(new TestMultiDimHistogram<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_k_anonymity() {
+    runTest(new TestKAnonymity<>(), TEST_PARAMETERS);
+  }
 }

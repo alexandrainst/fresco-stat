@@ -11,6 +11,7 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
@@ -110,14 +111,7 @@ public class VectorUtils {
    */
   public static ArrayList<DRes<SFixed>> scale(List<DRes<SFixed>> vector, DRes<SFixed> scalar,
       ProtocolBuilderNumeric builder) {
-    ArrayList<DRes<SFixed>> result = new ArrayList<>();
-    builder.par(par -> {
-      for (int i = 0; i < vector.size(); i++) {
-        result.add(FixedNumeric.using(par).mult(vector.get(i), scalar));
-      }
-      return DRes.of(result);
-    });
-    return result;
+    return entrywiseUnaryOp(vector, (x,bld) -> FixedNumeric.using(bld).mult(scalar, x), builder);
   }
 
   /**
@@ -130,15 +124,22 @@ public class VectorUtils {
    */
   public static ArrayList<DRes<SFixed>> scale(List<DRes<SFixed>> vector, double scalar,
       ProtocolBuilderNumeric builder) {
-    ArrayList<DRes<SFixed>> result = new ArrayList<>();
-    builder.par(par -> {
-      for (int i = 0; i < vector.size(); i++) {
-        result.add(FixedNumeric.using(par).mult(scalar, vector.get(i)));
-      }
-      return DRes.of(result);
-    });
-    return result;
+    return entrywiseUnaryOp(vector, (x, b) -> FixedNumeric.using(b).mult(scalar, x), builder);
   }
+
+  /**
+   * Scale all values in the given vector by the scalar.
+   *
+   * @param vector  A secret vector.
+   * @param scalar  A public scalar.
+   * @param builder The builder to use.
+   * @return A scaled vector.
+   */
+  public static ArrayList<DRes<SInt>> scaleInt(List<DRes<SInt>> vector, DRes<SInt> scalar,
+      ProtocolBuilderNumeric builder) {
+    return entrywiseUnaryOp(vector, (x, b) -> b.numeric().mult(scalar, x), builder);
+  }
+
 
   /**
    * Divide all values in the given vector by the scalar.
@@ -150,14 +151,7 @@ public class VectorUtils {
    */
   public static ArrayList<DRes<SFixed>> div(List<DRes<SFixed>> vector, DRes<SFixed> scalar,
       ProtocolBuilderNumeric builder) {
-    ArrayList<DRes<SFixed>> result = new ArrayList<>();
-    builder.par(par -> {
-      for (int i = 0; i < vector.size(); i++) {
-        result.add(FixedNumeric.using(par).div(vector.get(i), scalar));
-      }
-      return DRes.of(result);
-    });
-    return result;
+    return entrywiseUnaryOp(vector, (x, b) -> FixedNumeric.using(b).div(x, scalar), builder);
   }
 
   /**
@@ -170,17 +164,7 @@ public class VectorUtils {
    */
   public static List<DRes<SFixed>> add(List<DRes<SFixed>> a, List<DRes<SFixed>> b,
       ProtocolBuilderNumeric builder) {
-    List<DRes<SFixed>> result = new ArrayList<>();
-    builder.par(par -> {
-      if (a.size() != b.size()) {
-        throw new IllegalArgumentException("Vector size mismatch");
-      }
-      for (int i = 0; i < a.size(); i++) {
-        result.add(FixedNumeric.using(par).add(a.get(i), b.get(i)));
-      }
-      return null;
-    });
-    return result;
+    return entrywiseBinaryOp(a, b, (x,y,bld) -> FixedNumeric.using(bld).add(x, y), builder);
   }
 
   /**
@@ -193,16 +177,67 @@ public class VectorUtils {
    */
   public static ArrayList<DRes<SFixed>> sub(List<DRes<SFixed>> a, List<DRes<SFixed>> b,
       ProtocolBuilderNumeric builder) {
-    ArrayList<DRes<SFixed>> result = new ArrayList<>();
+    return entrywiseBinaryOp(a, b, (x,y,bld) -> FixedNumeric.using(bld).sub(x, y), builder);
+  }
+
+  /**
+   * Compute the entry-wise binary negation of a secret vector
+   *
+   * @param a       A secret 0-1-vector.
+   * @param builder The builder to use.
+   * @return not a
+   */
+  public static ArrayList<DRes<SInt>> negate(List<DRes<SInt>> a,
+      ProtocolBuilderNumeric builder) {
+    return entrywiseUnaryOp(a, (x, b) -> b.numeric().sub(1, x), builder);
+  }
+
+  /**
+   * Subtract two secret vectors.
+   *
+   * @param a       A secret vector.
+   * @param b       A secret scalar.
+   * @param protocolBuilderNumeric The builder to use.
+   * @return a.*b
+   */
+  public static List<DRes<SInt>> mult(List<DRes<SInt>> a, List<DRes<SInt>> b,
+      ProtocolBuilderNumeric protocolBuilderNumeric) {
+    return entrywiseBinaryOp(a, b, (x,y,builder) -> builder.numeric().mult(x, y), protocolBuilderNumeric);
+  }
+
+  private static <A, B ,C> ArrayList<C> entrywiseBinaryOp(List<A> a, List<B> b, EntrywiseBinaryOp<A, B, C> op, ProtocolBuilderNumeric builder) {
+    ArrayList<C> result = new ArrayList<>();
     builder.par(par -> {
       if (a.size() != b.size()) {
         throw new IllegalArgumentException("Vector size mismatch");
       }
       for (int i = 0; i < a.size(); i++) {
-        result.add(FixedNumeric.using(par).sub(a.get(i), b.get(i)));
+        result.add(op.apply(a.get(i), b.get(i), par));
       }
       return null;
     });
     return result;
+  }
+
+  private static <A ,C> ArrayList<C> entrywiseUnaryOp(List<A> a, EntrywiseUnaryOp<A, C> op, ProtocolBuilderNumeric builder) {
+    ArrayList<C> result = new ArrayList<>();
+    builder.par(par -> {
+      for (int i = 0; i < a.size(); i++) {
+        result.add(op.apply(a.get(i), par));
+      }
+      return null;
+    });
+    return result;
+  }
+
+  @FunctionalInterface
+  private interface EntrywiseUnaryOp<A, C> {
+    C apply(A a, ProtocolBuilderNumeric builder);
+  }
+
+
+  @FunctionalInterface
+  private interface EntrywiseBinaryOp<A, B, C> {
+    C apply(A a, B b, ProtocolBuilderNumeric builder);
   }
 }

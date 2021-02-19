@@ -6,10 +6,7 @@ import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
-import dk.alexandra.fresco.lib.common.compare.Comparison;
-import dk.alexandra.fresco.lib.common.math.AdvancedNumeric;
 import dk.alexandra.fresco.stat.utils.MatrixUtils;
-import dk.alexandra.fresco.stat.utils.MultiDimensionalArray;
 import java.util.List;
 
 public class TwoDimensionalHistogram
@@ -26,74 +23,13 @@ public class TwoDimensionalHistogram
 
   @Override
   public DRes<Matrix<DRes<SInt>>> buildComputation(ProtocolBuilderNumeric builder) {
-    int n = data.size();
-    int w = buckets.getSecond().size() + 1;
-    int h = buckets.getFirst().size() + 1;
-
-    return builder.par(par -> {
-      MultiDimensionalArray<DRes<SInt>> counts =
-          MultiDimensionalArray.build(List.of(w, h, n), l -> {
-            int i = l.get(0);
-            int j = l.get(1);
-            int k = l.get(2);
-
-            if (i == w - 1 && j == h - 1) {
-              return par.numeric().known(1);
-            } else if (i == w - 1) {
-              return Comparison.using(par).compareLEQ(data.get(k).getFirst(),
-                  buckets.getSecond().get(j));
-            } else if (j == h - 1) {
-              return Comparison.using(par).compareLEQ(data.get(k).getSecond(),
-                  buckets.getFirst().get(i));
-            } else {
-              return new LEQPair(data.get(k).getFirst(), buckets.getSecond().get(j),
-                  data.get(k).getSecond(), buckets.getFirst().get(i)).buildComputation(par);
-            }
-          });
-      return () -> counts;
-    }).par((par, counts) -> {
-      MultiDimensionalArray<DRes<SInt>> sums = counts
-          .project(r -> AdvancedNumeric.using(par).sum(r));
-      return () -> sums;
-    }).par((par, sums) -> {
-      Matrix<DRes<SInt>> histogram = MatrixUtils.buildMatrix(h, w, (i, j) -> {
-        if (i == 0 && j == 0) {
-          return sums.get(0, 0);
-        } else if (i == 0) {
-          return par.numeric().sub(sums.get(i, j), sums.get(i, j - 1));
-        } else if (j == 0) {
-          return par.numeric().sub(sums.get(i, j), sums.get(i - 1, j));
-        }
-        return par.numeric().sub(par.numeric().add(sums.get(i, j), sums.get(i - 1, j - 1)),
-            par.numeric().add(sums.get(i - 1, j), sums.get(i, j - 1)));
-      });
-      return () -> histogram;
-    });
-  }
-
-  private static class LEQPair implements Computation<SInt, ProtocolBuilderNumeric> {
-
-    private final DRes<SInt> a1;
-    private final DRes<SInt> a2;
-    private final DRes<SInt> b1;
-    private final DRes<SInt> b2;
-
-    private LEQPair(DRes<SInt> a1, DRes<SInt> a2, DRes<SInt> b1, DRes<SInt> b2) {
-      this.a1 = a1;
-      this.a2 = a2;
-      this.b1 = b1;
-      this.b2 = b2;
-    }
-
-    @Override
-    public DRes<SInt> buildComputation(ProtocolBuilderNumeric builder) {
-      return builder.par(par -> {
-        Comparison comparison = Comparison.using(par);
-        DRes<SInt> c1 = comparison.compareLEQ(a1, a2);
-        DRes<SInt> c2 = comparison.compareLEQ(b1, b2);
-        return Pair.lazy(c1, c2);
-      }).seq((seq, c) -> seq.numeric().mult(c.getFirst(), c.getSecond()));
-    }
-
+    Matrix<DRes<SInt>> dataMatrix = MatrixUtils.buildMatrix(data.size(), 2,
+        (i, j) -> j == 0 ? data.get(i).getFirst() : data.get(i).getSecond());
+    List<List<DRes<SInt>>> bucketsList = List.of(buckets.getFirst(), buckets.getSecond());
+    return builder
+        .seq(seq -> new MultiDimensionalHistogram(bucketsList, dataMatrix).buildComputation(seq))
+        .seq((seq, histogram) -> DRes.of(MatrixUtils
+            .buildMatrix(buckets.getFirst().size() + 1, buckets.getSecond().size() + 1,
+                histogram::get)));
   }
 }
