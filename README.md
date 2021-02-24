@@ -1,4 +1,4 @@
-<h1 align="center">FRESCO-stat</h1>
+<h1 align="center">FRESCO-dk.alexandra.fresco.stat</h1>
 
 <p align="center">
   Library for secure numerical computations, statistics and linear algebra on data held by multiple parties without sharing the data.
@@ -18,7 +18,7 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
-FRESCO-stat is a library for secure numerical computations, statistics 
+FRESCO-dk.alexandra.fresco.stat is a library for secure numerical computations, statistics 
 and linear algebra using the <a href="https://github.com/aicis/fresco">FRESCO framework</a>.
 FRESCO uses secure multi-party computation to enable statistical analysis to be performed on 
 datasets distributed among multiple parties without each party seeing the other parties' data.
@@ -35,9 +35,9 @@ mvn javadoc:javadoc
 
 The functions in the library is accessible through three collections of functions:
 
-1. [Statistics](src/main/java/dk/alexandra/fresco/stat/Statistics.java) Descriptive statistics, statistical tests and regression.
-2. [Linear Algebra](src/main/java/dk/alexandra/fresco/stat/LinearAlgebra.java) Advanced linear algebra.
-3. [Sampler](src/main/java/dk/alexandra/fresco/stat/Sampler.java)  Draw samples from various distributions.
+1. [Statistics](core/src/main/java/dk.alexandra.fresco.stat/Statistics.java) Descriptive statistics, statistical tests and regression.
+2. [Linear Algebra](core/src/main/java/dk.alexandra.fresco.stat/LinearAlgebra.java) Advanced linear algebra.
+3. [Sampler](core/src/main/java/dk.alexandra.fresco.stat/Sampler.java)  Draw samples from various distributions.
 
 They are used similarly to builders in FRESCO, namely by calling e.g.
 
@@ -53,7 +53,7 @@ This may be avoided by normalizing the input data and/or using a bigger modulus 
 <!-- CONTRIBUTING -->
 ## Contributing
 
-If you want to help out developing new features for FRESCO-stat or fix a bug you've stumbled upon, it may be done as follows:
+If you want to help out developing new features for FRESCO-dk.alexandra.fresco.stat or fix a bug you've stumbled upon, it may be done as follows:
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/MyFeature`)
