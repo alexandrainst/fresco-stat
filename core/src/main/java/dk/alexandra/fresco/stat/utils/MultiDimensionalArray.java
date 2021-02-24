@@ -153,23 +153,6 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
     }));
   }
 
-  /**
-   * Compute a tensor-product of this array with another. The resulting array will have dimension
-   * <i>this.dimension() + other.dimension()</i>.
-   */
-  public MultiDimensionalArray<T> tensorProduct(MultiDimensionalArray<T> other, BinaryOperator<T> operator) {
-    List<Integer> widths = new ArrayList<>();
-    widths.addAll(this.getWidths());
-    widths.addAll(other.getWidths());
-    int d1 = this.getDimension();
-    int d2 = other.getDimension();
-    return MultiDimensionalArray.build(widths, i -> {
-      List<Integer> i1 = i.subList(0, d1);
-      List<Integer> i2 = i.subList(d1, d1+d2);
-      return operator.apply(this.get(i1), other.get(i2));
-    });
-  }
-
   static class OneDimensionalArray<S> extends MultiDimensionalArray<S> {
 
     private final List<S> entries;
