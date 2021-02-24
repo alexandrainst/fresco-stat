@@ -57,12 +57,12 @@ There are a couple of demos in the [demo](demo)-module which is build by running
 ```
 mvn package
 ```
-in the root directory of the demo-module and then run the desired demo by executing eg.
+in the root directory of the demo-module. To run a demo, execute eg.
 ```
 java -jar target/survival-jar-with-dependencies.jar 1
 java -jar target/survival-jar-with-dependencies.jar 2
 ```
-in two separate terminals to run the survival analysis demo. 
+in two separate terminals and change the name of the jar to the desired demo.
 
 There are currently three demos. The command line arguments above runs a demo of survival analysis 
 using Cox-regression where each party has the data of a patient group, and where the regression 
