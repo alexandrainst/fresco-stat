@@ -1,6 +1,6 @@
-<h1 align="center">FRESCO-stat</h1>
+<h1>FRESCO-stat</h1>
 
-<p align="center">
+<p>
   Library for secure numerical computations, statistics and linear algebra on data held by multiple parties without sharing the data.
 </p>
 
