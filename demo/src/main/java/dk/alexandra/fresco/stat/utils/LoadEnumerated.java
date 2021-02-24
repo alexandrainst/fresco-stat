@@ -12,7 +12,8 @@ import org.apache.commons.csv.CSVRecord;
 
 public class LoadEnumerated {
 
-  public static Pair<ArrayList<ArrayList<BigInteger>>, ArrayList<ArrayList<String>>> readFromCSV(String file, int limit,
+  public static Pair<ArrayList<ArrayList<BigInteger>>, ArrayList<ArrayList<String>>> readFromCSV(
+      String file, int limit,
       List<Integer> enumerate, List<Integer> preserve) throws IOException {
 
     ArrayList<ArrayList<String>> mappings = new ArrayList<>();

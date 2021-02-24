@@ -249,7 +249,7 @@ public interface Statistics extends ComputationDirectory {
    * @param data    The sample data.
    * @return
    */
-  DRes<List<DRes<SInt>>> histogramContinuous(List<DRes<SFixed>>  buckets, List<DRes<SFixed>> data);
+  DRes<List<DRes<SInt>>> histogramContinuous(List<DRes<SFixed>> buckets, List<DRes<SFixed>> data);
 
   /**
    * Compute the histogram for the given two-dimensional sample.
@@ -288,23 +288,26 @@ public interface Statistics extends ComputationDirectory {
    * Compute a k-anonymized version of the given datset.
    * <p>
    * Each row in the data set are the quasi-identifiers of an individual with a corresponding entry
-   * in the list of values of the sensitive attribute. The buckets indicates the desired generalization
-   * of the quasi-identifiers as in a histogram. K is the smallest allowed number of individuals in each bucket.
+   * in the list of values of the sensitive attribute. The buckets indicates the desired
+   * generalization of the quasi-identifiers as in a histogram. K is the smallest allowed number of
+   * individuals in each bucket.
    * <p>
-   * The output is a histogram on the given buckets with the value in the histogram being a list
-   * of size data.getHeight() with a non-zero entry <i>x</i> at index <i>i</i> indicating that the data
-   * point at row <i>i</i> is in this bucket and that the corresponding sensitive attribute was <i>x</i>.
+   * The output is a histogram on the given buckets with the value in the histogram being a list of
+   * size data.getHeight() with a non-zero entry <i>x</i> at index <i>i</i> indicating that the data
+   * point at row <i>i</i> is in this bucket and that the corresponding sensitive attribute was
+   * <i>x</i>.
    * <p>
-   * Note that this leaks the corresponding indices of the individuals in each bucket. To avoid this the
-   * data could be shuffled before running the computation.
+   * Note that this leaks the corresponding indices of the individuals in each bucket. To avoid this
+   * the data could be shuffled before running the computation.
    *
-   * @param data The quasi identifiers for each individual.
+   * @param data                The quasi identifiers for each individual.
    * @param sensitiveAttributes The corresponding sensitive attributes.
-   * @param buckets The buckets defining the desired generalization.
-   * @param k The smallest allowed number of individuals in each bucket.
+   * @param buckets             The buckets defining the desired generalization.
+   * @param k                   The smallest allowed number of individuals in each bucket.
    * @return A k-anonymous data set with all buckets with fewer than k elements suppressed.
    */
-  DRes<MultiDimensionalArray<List<DRes<SInt>>>> kAnonymity(Matrix<DRes<SInt>> data, List<DRes<SInt>> sensitiveAttributes,
+  DRes<MultiDimensionalArray<List<DRes<SInt>>>> kAnonymity(Matrix<DRes<SInt>> data,
+      List<DRes<SInt>> sensitiveAttributes,
       List<List<DRes<SInt>>> buckets, int k);
 
 

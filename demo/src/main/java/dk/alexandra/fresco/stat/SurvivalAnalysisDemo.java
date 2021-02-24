@@ -171,10 +171,11 @@ public class SurvivalAnalysisDemo {
       ).seq((seq, data) -> {
         List<SurvivalInfoDiscrete> structuredData = new ArrayList<>();
         for (Pair<DRes<SInt>, List<DRes<SInt>>> row : data) {
-          structuredData.add(new SurvivalInfoDiscrete(List.of(List.of(row.getSecond().get(0), row.getSecond().get(1))),
+          structuredData.add(new SurvivalInfoDiscrete(
+              List.of(List.of(row.getSecond().get(0), row.getSecond().get(1))),
               row.getFirst(), row.getSecond().get(2)));
         }
-        return Statistics.using(seq).coxRegressionDiscrete(structuredData,5, 0.1,
+        return Statistics.using(seq).coxRegressionDiscrete(structuredData, 5, 0.1,
             new double[]{1});
       }).seq((seq, result) -> FixedNumeric.using(seq).open(result.get(0)));
     }

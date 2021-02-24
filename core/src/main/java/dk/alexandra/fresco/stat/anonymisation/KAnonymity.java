@@ -27,17 +27,18 @@ public class KAnonymity implements
   private final int dimensions;
 
   /**
-   * Each row in the data set contains the quasi-identifiers of an individual with a corresponding entry
-   * in the list of values of the sensitive attribute. The buckets indicates the desired generalization
-   * of the quasi-identifiers as the upper limits in the corresponding histogram. K is the smallest
-   * allowed number of individuals in each bucket.
+   * Each row in the data set contains the quasi-identifiers of an individual with a corresponding
+   * entry in the list of values of the sensitive attribute. The buckets indicates the desired
+   * generalization of the quasi-identifiers as the upper limits in the corresponding histogram. K
+   * is the smallest allowed number of individuals in each bucket.
    * <p>
-   * The output is a histogram on the given buckets with the value in the histogram being a list
-   * of size data.getHeight() with a non-zero entry <i>x</i> at index <i>i</i> indicating that the data
-   * point at row <i>i</i> is in this bucket and that the corresponding sensitive attribute was <i>x</i>.
+   * The output is a histogram on the given buckets with the value in the histogram being a list of
+   * size data.getHeight() with a non-zero entry <i>x</i> at index <i>i</i> indicating that the data
+   * point at row <i>i</i> is in this bucket and that the corresponding sensitive attribute was
+   * <i>x</i>.
    * <p>
-   * Note that the output leaks the corresponding indices of the individuals in each bucket. To avoid
-   * this the data could be shuffled obliviously before running the computation.
+   * Note that the output leaks the corresponding indices of the individuals in each bucket. To
+   * avoid this the data could be shuffled obliviously before running the computation.
    */
   public KAnonymity(Matrix<DRes<SInt>> data, List<DRes<SInt>> sensitive,
       List<List<DRes<SInt>>> buckets, int k) {

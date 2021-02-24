@@ -110,7 +110,7 @@ public class VectorUtils {
    */
   public static ArrayList<DRes<SFixed>> scale(List<DRes<SFixed>> vector, DRes<SFixed> scalar,
       ProtocolBuilderNumeric builder) {
-    return entrywiseUnaryOp(vector, (x,bld) -> FixedNumeric.using(bld).mult(scalar, x), builder);
+    return entrywiseUnaryOp(vector, (x, bld) -> FixedNumeric.using(bld).mult(scalar, x), builder);
   }
 
   /**
@@ -163,7 +163,7 @@ public class VectorUtils {
    */
   public static List<DRes<SFixed>> add(List<DRes<SFixed>> a, List<DRes<SFixed>> b,
       ProtocolBuilderNumeric builder) {
-    return entrywiseBinaryOp(a, b, (x,y,bld) -> FixedNumeric.using(bld).add(x, y), builder);
+    return entrywiseBinaryOp(a, b, (x, y, bld) -> FixedNumeric.using(bld).add(x, y), builder);
   }
 
   /**
@@ -176,7 +176,7 @@ public class VectorUtils {
    */
   public static ArrayList<DRes<SFixed>> sub(List<DRes<SFixed>> a, List<DRes<SFixed>> b,
       ProtocolBuilderNumeric builder) {
-    return entrywiseBinaryOp(a, b, (x,y,bld) -> FixedNumeric.using(bld).sub(x, y), builder);
+    return entrywiseBinaryOp(a, b, (x, y, bld) -> FixedNumeric.using(bld).sub(x, y), builder);
   }
 
   /**
@@ -194,17 +194,19 @@ public class VectorUtils {
   /**
    * Subtract two secret vectors.
    *
-   * @param a       A secret vector.
-   * @param b       A secret scalar.
+   * @param a                      A secret vector.
+   * @param b                      A secret scalar.
    * @param protocolBuilderNumeric The builder to use.
    * @return a.*b
    */
   public static List<DRes<SInt>> mult(List<DRes<SInt>> a, List<DRes<SInt>> b,
       ProtocolBuilderNumeric protocolBuilderNumeric) {
-    return entrywiseBinaryOp(a, b, (x,y,builder) -> builder.numeric().mult(x, y), protocolBuilderNumeric);
+    return entrywiseBinaryOp(a, b, (x, y, builder) -> builder.numeric().mult(x, y),
+        protocolBuilderNumeric);
   }
 
-  private static <A, B ,C> ArrayList<C> entrywiseBinaryOp(List<A> a, List<B> b, EntrywiseBinaryOp<A, B, C> op, ProtocolBuilderNumeric builder) {
+  private static <A, B, C> ArrayList<C> entrywiseBinaryOp(List<A> a, List<B> b,
+      EntrywiseBinaryOp<A, B, C> op, ProtocolBuilderNumeric builder) {
     ArrayList<C> result = new ArrayList<>();
     builder.par(par -> {
       if (a.size() != b.size()) {
@@ -218,7 +220,8 @@ public class VectorUtils {
     return result;
   }
 
-  private static <A ,C> ArrayList<C> entrywiseUnaryOp(List<A> a, EntrywiseUnaryOp<A, C> op, ProtocolBuilderNumeric builder) {
+  private static <A, C> ArrayList<C> entrywiseUnaryOp(List<A> a, EntrywiseUnaryOp<A, C> op,
+      ProtocolBuilderNumeric builder) {
     ArrayList<C> result = new ArrayList<>();
     builder.par(par -> {
       for (int i = 0; i < a.size(); i++) {
@@ -227,17 +230,6 @@ public class VectorUtils {
       return null;
     });
     return result;
-  }
-
-  @FunctionalInterface
-  private interface EntrywiseUnaryOp<A, C> {
-    C apply(A a, ProtocolBuilderNumeric builder);
-  }
-
-
-  @FunctionalInterface
-  private interface EntrywiseBinaryOp<A, B, C> {
-    C apply(A a, B b, ProtocolBuilderNumeric builder);
   }
 
   public static ArrayList<DRes<SInt>> input(List<BigInteger> list, int party,
@@ -252,4 +244,17 @@ public class VectorUtils {
     return result;
   }
 
+
+  @FunctionalInterface
+  private interface EntrywiseUnaryOp<A, C> {
+
+    C apply(A a, ProtocolBuilderNumeric builder);
   }
+
+  @FunctionalInterface
+  private interface EntrywiseBinaryOp<A, B, C> {
+
+    C apply(A a, B b, ProtocolBuilderNumeric builder);
+  }
+
+}

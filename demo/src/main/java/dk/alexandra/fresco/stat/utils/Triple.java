@@ -14,8 +14,12 @@ public class Triple<A, B, C> {
     this.c = c;
   }
 
-  public static <E,F,G> Triple<E, F, G> of(E e, F f, G g) {
+  public static <E, F, G> Triple<E, F, G> of(E e, F f, G g) {
     return new Triple<>(e, f, g);
+  }
+
+  public static <E, F, G> DRes<Triple<E, F, G>> lazy(E e, F f, G g) {
+    return DRes.of(new Triple<>(e, f, g));
   }
 
   public A getFirst() {
@@ -30,8 +34,4 @@ public class Triple<A, B, C> {
     return c;
   }
 
-  public static <E,F,G> DRes<Triple<E, F, G>> lazy(E e, F f, G g) {
-    return DRes.of(new Triple<>(e, f, g));
-  }
-  
 }

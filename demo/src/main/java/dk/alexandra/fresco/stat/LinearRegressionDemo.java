@@ -17,7 +17,6 @@ import dk.alexandra.fresco.framework.util.AesCtrDrbg;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
-import dk.alexandra.fresco.stat.Statistics;
 import dk.alexandra.fresco.suite.spdz.SpdzProtocolSuite;
 import dk.alexandra.fresco.suite.spdz.SpdzResourcePool;
 import dk.alexandra.fresco.suite.spdz.SpdzResourcePoolImpl;
@@ -93,7 +92,8 @@ public class LinearRegressionDemo {
 //        new SpdzOpenedValueStoreImpl(),
 //        preprocessedValuesDataSupplier, AesCtrDrbg::new);
 
-    SpdzDataSupplier supplier = new SpdzDummyDataSupplier(myId, noParties, definition, BigInteger.valueOf(1234));
+    SpdzDataSupplier supplier = new SpdzDummyDataSupplier(myId, noParties, definition,
+        BigInteger.valueOf(1234));
 //    SpdzDataSupplier supplier = SpdzMascotDataSupplier
 //        .createSimpleSupplier(myId, noParties, () -> network,
 //            modBitLength, definition, pipeLength -> {
@@ -115,7 +115,8 @@ public class LinearRegressionDemo {
     Reader in = new FileReader("real-estate-" + myId + ".csv");
     Iterable<CSVRecord> records = CSVFormat.DEFAULT.withRecordSeparator(",").parse(in);
     List<List<String>> data = StreamSupport.stream(records.spliterator(), false).map(
-        record -> StreamSupport.stream(record.spliterator(), false).collect(Collectors.toList())).collect(Collectors.toList());
+        record -> StreamSupport.stream(record.spliterator(), false).collect(Collectors.toList()))
+        .collect(Collectors.toList());
 
     // Party 1 has all independent variables, party 2 has the dependant variable
     List<List<Double>> x = new ArrayList<>();

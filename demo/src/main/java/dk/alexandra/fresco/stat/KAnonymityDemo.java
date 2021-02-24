@@ -86,11 +86,15 @@ public class KAnonymityDemo {
     // All enumerated attributes start from 1
     List<List<Integer>> buckets = List.of(
         List.of(20, 40), // age
-        List.of(5, 10), // workclass -- Self-emp-not-inc=0,  Federal-gov=1,  Local-gov=2,  Self-emp-inc=3,  Never-worked=4,  State-gov=5,  Private=6,  ?=7,  Without-pay=8
-        List.of(3), // education -- 1st-4th=0,  Bachelors=1,  9th=2,  HS-grad=3,  Masters=4,  Assoc-voc=5,  Some-college=6,  10th=7,  11th=8,  Assoc-acdm=9,  12th=10,  Prof-school=11,  5th-6th=12,  7th-8th=13,  Doctorate=14,  Preschool=15
+        List.of(5, 10),
+        // workclass -- Self-emp-not-inc=0,  Federal-gov=1,  Local-gov=2,  Self-emp-inc=3,  Never-worked=4,  State-gov=5,  Private=6,  ?=7,  Without-pay=8
+        List.of(3),
+        // education -- 1st-4th=0,  Bachelors=1,  9th=2,  HS-grad=3,  Masters=4,  Assoc-voc=5,  Some-college=6,  10th=7,  11th=8,  Assoc-acdm=9,  12th=10,  Prof-school=11,  5th-6th=12,  7th-8th=13,  Doctorate=14,  Preschool=15
         //List.of(2, 4), // marital-status -- Married-spouse-absent=0,  Never-married=1,  Married-civ-spouse=2,  Divorced=3,  Separated=4,  Married-AF-spouse=5,  Widowed=6
-        List.of(5, 10), // occupation -- Craft-repair=0,  Other-service=1,  Handlers-cleaners=2,  Priv-house-serv=3,  Exec-managerial=4,  Machine-op-inspct=5,  Prof-specialty=6,  Farming-fishing=7,  Armed-Forces=8,  Sales=9,  Transport-moving=10,  Tech-support=11,  Adm-clerical=12,  Protective-serv=13,  ?=14
-        List.of(3), // race -- Black=0,  Asian-Pac-Islander=1,  Other=2,  White=3,  Amer-Indian-Eskimo=4
+        List.of(5, 10),
+        // occupation -- Craft-repair=0,  Other-service=1,  Handlers-cleaners=2,  Priv-house-serv=3,  Exec-managerial=4,  Machine-op-inspct=5,  Prof-specialty=6,  Farming-fishing=7,  Armed-Forces=8,  Sales=9,  Transport-moving=10,  Tech-support=11,  Adm-clerical=12,  Protective-serv=13,  ?=14
+        List.of(3),
+        // race -- Black=0,  Asian-Pac-Islander=1,  Other=2,  White=3,  Amer-Indian-Eskimo=4
         List.of(1) // sex -- Female=0,  Male=1
     );
 
@@ -114,12 +118,14 @@ public class KAnonymityDemo {
       List<BigInteger> nonZeroEntries = value.stream().filter(t -> t.intValue() > 0)
           .collect(Collectors.toList());
       if (!nonZeroEntries.isEmpty()) {
-        System.out.println(bucketToString(buckets, indices) + ": " + nonZeroEntries.stream().collect(Collectors.groupingBy(
-            Function.identity(), Collectors.counting())));
+        System.out.println(bucketToString(buckets, indices) + ": " + nonZeroEntries.stream()
+            .collect(Collectors.groupingBy(
+                Function.identity(), Collectors.counting())));
       }
     });
 
-    long suppressed = out.stream().flatMap(Collection::stream).mapToInt(BigInteger::intValue).filter(u -> u != 0).count();
+    long suppressed = out.stream().flatMap(Collection::stream).mapToInt(BigInteger::intValue)
+        .filter(u -> u != 0).count();
     System.out.println("Suppressed rows: " + (n - suppressed));
     System.out.println("Took " + Duration.between(start, Instant.now()));
   }

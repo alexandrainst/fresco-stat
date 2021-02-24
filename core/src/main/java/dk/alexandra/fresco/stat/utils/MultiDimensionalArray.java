@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiConsumer;
-import java.util.function.BinaryOperator;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
@@ -18,8 +17,8 @@ import java.util.stream.Stream;
 /**
  * A multi-dimensional array is a data collection where entries are indexed by a fixed length vector
  * (the length equals the dimension of the array). The elements are stored recursively using nested
- * instances {@link ArrayList}'s, so the complexity of get and set operations are linear in the depth
- * of the array.
+ * instances {@link ArrayList}'s, so the complexity of get and set operations are linear in the
+ * depth of the array.
  *
  * @param <T> The type of objects stored in the array.
  */
@@ -64,6 +63,25 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
 
   private static List<Integer> append(List<Integer> list, int a) {
     return new AppendList<>(list, a);
+  }
+
+  /**
+   * Given a list of widths <i>(l<sub>0</sub>, ..., l<sub>n-1</sub>)</i>, this method returns a
+   * stream of all lists <i>k<sub>0</sub>, ..., k<sub>n-1</sub></i> with <i>0 &le; k<sub>i</sub> <
+   * l<sub>i</sub></i> in lexicographical order.
+   */
+  private static Stream<List<Integer>> allIndices(List<Integer> widths) {
+    if (widths.size() == 1) {
+      return IntStream.range(0, widths.get(0)).mapToObj(List::of);
+    }
+
+    return IntStream.range(0, widths.get(0)).boxed()
+        .flatMap(i -> allIndices(widths.subList(1, widths.size())).map(tail -> {
+          List<Integer> out = new ArrayList<>();
+          out.add(i);
+          out.addAll(tail);
+          return out;
+        }));
   }
 
   /**
@@ -119,38 +137,26 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
         .mapToObj(i -> get(append(l, i))).collect(Collectors.toList())));
   }
 
-  /** Return a new {@link MultiDimensionalArray} of the same size as this, using the given function
-   * to map from the elements of this array to the corresponding entry in the new array */
+  /**
+   * Return a new {@link MultiDimensionalArray} of the same size as this, using the given function
+   * to map from the elements of this array to the corresponding entry in the new array
+   */
   public <S> MultiDimensionalArray<S> map(Function<T, S> function) {
     return build(this.getWidths(), l -> function.apply(get(l)));
   }
 
-  /** Perform an operation on all elements */
+  /**
+   * Perform an operation on all elements
+   */
   public void forEachWithIndices(BiConsumer<T, List<Integer>> consumer) {
     allIndices().forEach(i -> consumer.accept(get(i), i));
   }
 
-  /** Return a stream of all indices of this array */
+  /**
+   * Return a stream of all indices of this array
+   */
   private Stream<List<Integer>> allIndices() {
     return allIndices(getWidths());
-  }
-
-  /**
-   * Given a list of widths <i>(l<sub>0</sub>, ..., l<sub>n-1</sub>)</i>, this method returns a stream
-   * of all lists <i>k<sub>0</sub>, ..., k<sub>n-1</sub></i> with <i>0 &le; k<sub>i</sub> < l<sub>i</sub></i>
-   * in lexicographical order.
-   */
-  private static Stream<List<Integer>> allIndices(List<Integer> widths) {
-    if (widths.size() == 1) {
-      return IntStream.range(0, widths.get(0)).mapToObj(List::of);
-    }
-
-    return IntStream.range(0, widths.get(0)).boxed().flatMap(i -> allIndices(widths.subList(1, widths.size())).map(tail -> {
-      List<Integer> out = new ArrayList<>();
-      out.add(i);
-      out.addAll(tail);
-      return out;
-    }));
   }
 
   static class OneDimensionalArray<S> extends MultiDimensionalArray<S> {
@@ -261,7 +267,9 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
     }
   }
 
-  /** An immutable list consisting of an element prepended to an existing list */
+  /**
+   * An immutable list consisting of an element prepended to an existing list
+   */
   private static class PrependList<E> extends AbstractList<E> {
 
     private final List<E> list;
@@ -288,7 +296,9 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
 
   }
 
-  /** An immutable list consisting of an element appended to an existing list */
+  /**
+   * An immutable list consisting of an element appended to an existing list
+   */
   private static class AppendList<E> extends AbstractList<E> {
 
     private final List<E> list;

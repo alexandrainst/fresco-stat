@@ -182,7 +182,8 @@ public class DefaultStatistics implements Statistics {
   }
 
   @Override
-  public DRes<List<DRes<SInt>>> histogramContinuous(List<DRes<SFixed>> buckets, List<DRes<SFixed>> data) {
+  public DRes<List<DRes<SInt>>> histogramContinuous(List<DRes<SFixed>> buckets,
+      List<DRes<SFixed>> data) {
     return builder.seq(seq -> {
       List<DRes<SInt>> intBuckets =
           buckets.stream().map(bi -> bi.out().getSInt()).collect(Collectors.toList());

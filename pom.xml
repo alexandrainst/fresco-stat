@@ -1,24 +1,7 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-
-  <groupId>dk.alexandra.fresco</groupId>
   <artifactId>stat</artifactId>
-  <packaging>pom</packaging>
-  <version>0.2-SNAPSHOT</version>
-
-  <properties>
-    <fresco.version>1.3.1-SNAPSHOT</fresco.version>
-    <maven.compiler.source>9</maven.compiler.source>
-    <maven.compiler.target>9</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
-
-  <modules>
-    <module>demo</module>
-    <module>core</module>
-  </modules>
 
   <build>
     <plugins>
@@ -29,5 +12,22 @@
       </plugin>
     </plugins>
   </build>
+  <groupId>dk.alexandra.fresco</groupId>
+  <modelVersion>4.0.0</modelVersion>
+  <modules>
+    <module>demo</module>
+    <module>core</module>
+  </modules>
+
+  <packaging>pom</packaging>
+
+  <properties>
+    <fresco.version>1.3.1-SNAPSHOT</fresco.version>
+    <maven.compiler.source>9</maven.compiler.source>
+    <maven.compiler.target>9</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <version>0.2-SNAPSHOT</version>
 
 </project>

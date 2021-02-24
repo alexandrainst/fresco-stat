@@ -68,6 +68,33 @@ public class UtilTests {
     testVectorEntrywiseOpSizeMismatch(VectorUtils::add);
   }
 
+  @Test
+  public void testCreateMultidimensionalArray() {
+    MultiDimensionalArray<Integer> array = MultiDimensionalArray.build(List.of(2, 2, 3), i -> {
+      if (i.get(0) == 1 && i.get(1) == 0 && i.get(2) == 1) {
+        return 1;
+      }
+      return 0;
+    });
+    Assert.assertEquals(array.get(1, 0, 1).intValue(), 1);
+    Assert.assertEquals(array.get(1, 1, 2).intValue(), 0);
+    array.set(List.of(1, 0, 1), 0);
+    array.set(List.of(1, 1, 2), 1);
+    Assert.assertEquals(array.get(1, 0, 1).intValue(), 0);
+    Assert.assertEquals(array.get(1, 1, 2).intValue(), 1);
+  }
+
+  @Test
+  public void testMultidimensionalArrayIterator() {
+    MultiDimensionalArray<Integer> array = MultiDimensionalArray.build(List.of(2, 2, 3), i ->
+        i.get(0) * 2 * 3 + i.get(1) * 3 + i.get(2));
+    int n = 2 * 2 * 3;
+    Assert.assertEquals(n, array.size());
+    Assert.assertEquals(n, array.stream().count());
+    Assert.assertArrayEquals(IntStream.range(0, n).toArray(),
+        array.stream().mapToInt(Integer::intValue).toArray());
+  }
+
   private interface EntrywiseListOp<A, B> {
 
     Object apply(List<A> list1, List<B> list2, ProtocolBuilderNumeric builder);
@@ -99,33 +126,6 @@ public class UtilTests {
         }
       };
     }
-  }
-
-  @Test
-  public void testCreateMultidimensionalArray() {
-    MultiDimensionalArray<Integer> array = MultiDimensionalArray.build(List.of(2, 2, 3), i -> {
-      if (i.get(0) == 1 && i.get(1) == 0 && i.get(2) == 1) {
-        return 1;
-      }
-      return 0;
-    });
-    Assert.assertEquals(array.get(1, 0, 1).intValue(), 1);
-    Assert.assertEquals(array.get(1, 1, 2).intValue(), 0);
-    array.set(List.of(1, 0, 1), 0);
-    array.set(List.of(1, 1, 2), 1);
-    Assert.assertEquals(array.get(1, 0, 1).intValue(), 0);
-    Assert.assertEquals(array.get(1, 1, 2).intValue(), 1);
-  }
-
-  @Test
-  public void testMultidimensionalArrayIterator() {
-    MultiDimensionalArray<Integer> array = MultiDimensionalArray.build(List.of(2, 2, 3), i ->
-        i.get(0) * 2 * 3 + i.get(1) * 3 + i.get(2));
-    int n = 2 * 2 * 3;
-    Assert.assertEquals(n, array.size());
-    Assert.assertEquals(n, array.stream().count());
-    Assert.assertArrayEquals(IntStream.range(0, n).toArray(),
-        array.stream().mapToInt(Integer::intValue).toArray());
   }
 
 }

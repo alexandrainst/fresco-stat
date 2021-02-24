@@ -349,17 +349,19 @@ public class DescriptiveStatTests {
         @Override
         public void test() {
 
-          Application<List<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder.seq(seq -> {
-            List<DRes<SInt>> xSecret =
-                x.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList());
-            List<DRes<SInt>> bSecret =
-                buckets.stream().map(b -> seq.numeric().input(b, 2)).collect(Collectors.toList());
-            return Statistics.using(seq).histogramDiscrete(bSecret, xSecret);
-          }).seq((seq, h) -> {
-            List<DRes<BigInteger>> out =
-                h.stream().map(seq.numeric()::open).collect(Collectors.toList());
-            return () -> out.stream().map(DRes::out).collect(Collectors.toList());
-          });
+          Application<List<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder
+              .seq(seq -> {
+                List<DRes<SInt>> xSecret =
+                    x.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList());
+                List<DRes<SInt>> bSecret =
+                    buckets.stream().map(b -> seq.numeric().input(b, 2))
+                        .collect(Collectors.toList());
+                return Statistics.using(seq).histogramDiscrete(bSecret, xSecret);
+              }).seq((seq, h) -> {
+                List<DRes<BigInteger>> out =
+                    h.stream().map(seq.numeric()::open).collect(Collectors.toList());
+                return () -> out.stream().map(DRes::out).collect(Collectors.toList());
+              });
 
           List<BigInteger> output = runApplication(testApplication);
           for (int i = 0; i < output.size(); i++) {
@@ -384,17 +386,20 @@ public class DescriptiveStatTests {
         @Override
         public void test() {
 
-          Application<List<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder.seq(seq -> {
-            List<DRes<SFixed>> xSecret =
-                x.stream().map(x -> FixedNumeric.using(seq).input(x, 1)).collect(Collectors.toList());
-            List<DRes<SFixed>> bSecret = buckets.stream().map(b -> FixedNumeric.using(seq).input(b, 2))
-                .collect(Collectors.toList());
-            return Statistics.using(seq).histogramContinuous(bSecret, xSecret);
-          }).seq((seq, h) -> {
-            List<DRes<BigInteger>> out =
-                h.stream().map(seq.numeric()::open).collect(Collectors.toList());
-            return () -> out.stream().map(DRes::out).collect(Collectors.toList());
-          });
+          Application<List<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder
+              .seq(seq -> {
+                List<DRes<SFixed>> xSecret =
+                    x.stream().map(x -> FixedNumeric.using(seq).input(x, 1))
+                        .collect(Collectors.toList());
+                List<DRes<SFixed>> bSecret = buckets.stream()
+                    .map(b -> FixedNumeric.using(seq).input(b, 2))
+                    .collect(Collectors.toList());
+                return Statistics.using(seq).histogramContinuous(bSecret, xSecret);
+              }).seq((seq, h) -> {
+                List<DRes<BigInteger>> out =
+                    h.stream().map(seq.numeric()::open).collect(Collectors.toList());
+                return () -> out.stream().map(DRes::out).collect(Collectors.toList());
+              });
 
           List<BigInteger> output = runApplication(testApplication);
           for (int i = 0; i < output.size(); i++) {
@@ -420,22 +425,24 @@ public class DescriptiveStatTests {
         @Override
         public void test() {
 
-          Application<Matrix<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder.seq(seq -> {
-            Pair<List<DRes<SInt>>, List<DRes<SInt>>> buckets = new Pair<>(
-                bucketsX.stream().map(x -> seq.numeric().input(x, 1))
-                    .collect(Collectors.toList()),
-                bucketsY.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList())
-            );
-            List<Pair<DRes<SInt>, DRes<SInt>>> data = IntStream.range(0, x.size()).mapToObj(
-                i -> new Pair<>(seq.numeric().input(x.get(i), 1),
-                    seq.numeric().input(y.get(i), 1))).collect(Collectors.toList());
+          Application<Matrix<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder
+              .seq(seq -> {
+                Pair<List<DRes<SInt>>, List<DRes<SInt>>> buckets = new Pair<>(
+                    bucketsX.stream().map(x -> seq.numeric().input(x, 1))
+                        .collect(Collectors.toList()),
+                    bucketsY.stream().map(x -> seq.numeric().input(x, 1))
+                        .collect(Collectors.toList())
+                );
+                List<Pair<DRes<SInt>, DRes<SInt>>> data = IntStream.range(0, x.size()).mapToObj(
+                    i -> new Pair<>(seq.numeric().input(x.get(i), 1),
+                        seq.numeric().input(y.get(i), 1))).collect(Collectors.toList());
 
-            return Statistics.using(seq)
-                .twoDimensionalHistogramDiscrete(buckets, data);
-          }).seq((seq, histogram) -> {
-            Matrix<DRes<BigInteger>> opened = MatrixUtils.map(histogram, seq.numeric()::open);
-            return () -> MatrixUtils.map(opened, DRes::out);
-          });
+                return Statistics.using(seq)
+                    .twoDimensionalHistogramDiscrete(buckets, data);
+              }).seq((seq, histogram) -> {
+                Matrix<DRes<BigInteger>> opened = MatrixUtils.map(histogram, seq.numeric()::open);
+                return () -> MatrixUtils.map(opened, DRes::out);
+              });
 
           Matrix<BigInteger> output = runApplication(testApplication);
           assertEquals(BigInteger.valueOf(0), output.getRow(0).get(0));
@@ -463,28 +470,31 @@ public class DescriptiveStatTests {
         @Override
         public void test() {
 
-          Application<MultiDimensionalArray<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder.seq(seq -> {
-            List<List<DRes<SInt>>> buckets = List.of(
-                bucketsX.stream().map(x -> seq.numeric().input(x, 1))
-                    .collect(Collectors.toList()),
-                bucketsY.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList()),
-                bucketsZ.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList())
-            );
-            Matrix<DRes<SInt>> data = MatrixUtils.buildMatrix(7, 3, (i,j) -> {
-              if (j == 0) {
-                return seq.numeric().input(x.get(i), 1);
-              } else if (j == 1) {
-                return seq.numeric().input(y.get(i), 2);
-              } else {
-                return seq.numeric().input(z.get(i), 1);
-              }
-            });
+          Application<MultiDimensionalArray<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder
+              .seq(seq -> {
+                List<List<DRes<SInt>>> buckets = List.of(
+                    bucketsX.stream().map(x -> seq.numeric().input(x, 1))
+                        .collect(Collectors.toList()),
+                    bucketsY.stream().map(x -> seq.numeric().input(x, 1))
+                        .collect(Collectors.toList()),
+                    bucketsZ.stream().map(x -> seq.numeric().input(x, 1))
+                        .collect(Collectors.toList())
+                );
+                Matrix<DRes<SInt>> data = MatrixUtils.buildMatrix(7, 3, (i, j) -> {
+                  if (j == 0) {
+                    return seq.numeric().input(x.get(i), 1);
+                  } else if (j == 1) {
+                    return seq.numeric().input(y.get(i), 2);
+                  } else {
+                    return seq.numeric().input(z.get(i), 1);
+                  }
+                });
 
-            return new MultiDimensionalHistogram(buckets, data).buildComputation(seq);
-          }).seq((seq, histogram) -> {
-            MultiDimensionalArray<DRes<BigInteger>> opened = histogram.map(seq.numeric()::open);
-            return () -> opened.map(DRes::out);
-          });
+                return new MultiDimensionalHistogram(buckets, data).buildComputation(seq);
+              }).seq((seq, histogram) -> {
+                MultiDimensionalArray<DRes<BigInteger>> opened = histogram.map(seq.numeric()::open);
+                return () -> opened.map(DRes::out);
+              });
 
           MultiDimensionalArray<BigInteger> output = runApplication(testApplication);
 
@@ -536,31 +546,37 @@ public class DescriptiveStatTests {
         @Override
         public void test() {
 
-          Application<MultiDimensionalArray<List<BigInteger>>, ProtocolBuilderNumeric> testApplication = builder -> builder.seq(seq -> {
-            List<List<DRes<SInt>>> buckets = List.of(
-                bucketsX.stream().map(x -> seq.numeric().input(x, 1))
-                    .collect(Collectors.toList()),
-                bucketsY.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList()),
-                bucketsZ.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList())
+          Application<MultiDimensionalArray<List<BigInteger>>, ProtocolBuilderNumeric> testApplication = builder -> builder
+              .seq(seq -> {
+                List<List<DRes<SInt>>> buckets = List.of(
+                    bucketsX.stream().map(x -> seq.numeric().input(x, 1))
+                        .collect(Collectors.toList()),
+                    bucketsY.stream().map(x -> seq.numeric().input(x, 1))
+                        .collect(Collectors.toList()),
+                    bucketsZ.stream().map(x -> seq.numeric().input(x, 1))
+                        .collect(Collectors.toList())
 
-            );
-            Matrix<DRes<SInt>> data = MatrixUtils.buildMatrix(x.size(), 3, (i,j) -> {
-              if (j == 0) {
-                return seq.numeric().input(x.get(i), 1);
-              } else if (j == 1) {
-                return seq.numeric().input(y.get(i), 2);
-              } else {
-                return seq.numeric().input(z.get(i), 1);
-              }
-            });
-            List<DRes<SInt>> sensitive = s.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList());
+                );
+                Matrix<DRes<SInt>> data = MatrixUtils.buildMatrix(x.size(), 3, (i, j) -> {
+                  if (j == 0) {
+                    return seq.numeric().input(x.get(i), 1);
+                  } else if (j == 1) {
+                    return seq.numeric().input(y.get(i), 2);
+                  } else {
+                    return seq.numeric().input(z.get(i), 1);
+                  }
+                });
+                List<DRes<SInt>> sensitive = s.stream().map(x -> seq.numeric().input(x, 1))
+                    .collect(Collectors.toList());
 
-            return new KAnonymity(data, sensitive, buckets,3).buildComputation(seq);
-          }).seq((seq, histogram) -> {
-            Collections collections = Collections.using(seq);
-            MultiDimensionalArray<DRes<List<DRes<BigInteger>>>> opened = histogram.map(l -> collections.openList(DRes.of(l)));
-            return () -> opened.map(a -> a.out().stream().map(DRes::out).collect(Collectors.toList()));
-          });
+                return new KAnonymity(data, sensitive, buckets, 3).buildComputation(seq);
+              }).seq((seq, histogram) -> {
+                Collections collections = Collections.using(seq);
+                MultiDimensionalArray<DRes<List<DRes<BigInteger>>>> opened = histogram
+                    .map(l -> collections.openList(DRes.of(l)));
+                return () -> opened
+                    .map(a -> a.out().stream().map(DRes::out).collect(Collectors.toList()));
+              });
 
           MultiDimensionalArray<List<BigInteger>> output = runApplication(testApplication);
 
@@ -568,25 +584,25 @@ public class DescriptiveStatTests {
             for (int j = 0; j < 2; j++) {
               for (int k = 0; k < 2; k++) {
                 for (int n = 0; n < s.size(); n++) {
-                    if (output.get(i, j, k).get(n).intValue() > 0) {
-                      Assert.assertEquals(s.get(n).intValue(), output.get(i, j, k).get(n).intValue());
+                  if (output.get(i, j, k).get(n).intValue() > 0) {
+                    Assert.assertEquals(s.get(n).intValue(), output.get(i, j, k).get(n).intValue());
 
-                      boolean a = x.get(n) <= bucketsX.get(0);
-                      boolean b = y.get(n) <= bucketsY.get(0);
-                      boolean c = z.get(n) <= bucketsZ.get(0);
+                    boolean a = x.get(n) <= bucketsX.get(0);
+                    boolean b = y.get(n) <= bucketsY.get(0);
+                    boolean c = z.get(n) <= bucketsZ.get(0);
 
-                      if (i == 0) {
-                        Assert.assertTrue(a);
-                      }
-
-                      if (j == 0) {
-                        Assert.assertTrue(b);
-                      }
-
-                      if (k == 0) {
-                        Assert.assertTrue(c);
-                      }
+                    if (i == 0) {
+                      Assert.assertTrue(a);
                     }
+
+                    if (j == 0) {
+                      Assert.assertTrue(b);
+                    }
+
+                    if (k == 0) {
+                      Assert.assertTrue(c);
+                    }
+                  }
                 }
               }
             }
@@ -595,7 +611,6 @@ public class DescriptiveStatTests {
       };
     }
   }
-
 
 //  public static class TestKAnonymityLarge<ResourcePoolT extends ResourcePool>
 //      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
