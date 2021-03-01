@@ -5,8 +5,11 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -38,6 +41,10 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
     return new MultiDimensionalArrayImpl<>(width, populator);
   }
 
+  public static <S> MultiDimensionalArray<S> sparse(List<Integer> dimensions) {
+    return new MultiDimensionalArraySparse<>(dimensions);
+  }
+
   /**
    * Create a new one-dimensional array with the given entries.
    */
@@ -46,15 +53,15 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
   }
 
   /**
-   * Create a new multi-dimensional array with the given widths and with each entry being generated
+   * Create a new multi-dimensional array with the given dimensions and with each entry being generated
    * by the populator function.
    */
-  public static <S> MultiDimensionalArray<S> build(List<Integer> widths,
+  public static <S> MultiDimensionalArray<S> build(List<Integer> dimensions,
       Function<List<Integer>, S> populator) {
-    if (widths.size() == 1) {
-      return new OneDimensionalArray<>(widths.get(0), i -> populator.apply(List.of(i)));
+    if (dimensions.size() == 1) {
+      return new OneDimensionalArray<>(dimensions.get(0), i -> populator.apply(List.of(i)));
     }
-    return new MultiDimensionalArrayImpl<>(widths, populator);
+    return new MultiDimensionalArrayImpl<>(dimensions, populator);
   }
 
   private static List<Integer> prepend(int a, List<Integer> list) {
@@ -66,17 +73,17 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
   }
 
   /**
-   * Given a list of widths <i>(l<sub>0</sub>, ..., l<sub>n-1</sub>)</i>, this method returns a
+   * Given a list of dimensions <i>(l<sub>0</sub>, ..., l<sub>n-1</sub>)</i>, this method returns a
    * stream of all lists <i>k<sub>0</sub>, ..., k<sub>n-1</sub></i> with <i>0 &le; k<sub>i</sub> <
    * l<sub>i</sub></i> in lexicographical order.
    */
-  private static Stream<List<Integer>> allIndices(List<Integer> widths) {
-    if (widths.size() == 1) {
-      return IntStream.range(0, widths.get(0)).mapToObj(List::of);
+  private static Stream<List<Integer>> allIndices(List<Integer> dimensions) {
+    if (dimensions.size() == 1) {
+      return IntStream.range(0, dimensions.get(0)).mapToObj(List::of);
     }
 
-    return IntStream.range(0, widths.get(0)).boxed()
-        .flatMap(i -> allIndices(widths.subList(1, widths.size())).map(tail -> {
+    return IntStream.range(0, dimensions.get(0)).boxed()
+        .flatMap(i -> allIndices(dimensions.subList(1, dimensions.size())).map(tail -> {
           List<Integer> out = new ArrayList<>();
           out.add(i);
           out.addAll(tail);
@@ -116,9 +123,9 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
   }
 
   /**
-   * Get the widths of this array.
+   * Get the dimensions of this array.
    */
-  public abstract List<Integer> getWidths();
+  public abstract List<Integer> getDimensions();
 
   /**
    * Get the dimension of this array.
@@ -130,7 +137,7 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
    */
   public MultiDimensionalArray<T> project(Function<List<T>, T> projection) {
     assert (getDimension() > 1);
-    List<Integer> dim = getWidths();
+    List<Integer> dim = getDimensions();
     List<Integer> newDimensions = dim.subList(0, dim.size() - 1);
 
     return build(newDimensions, l -> projection.apply(IntStream.range(0, dim.get(dim.size() - 1))
@@ -142,7 +149,7 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
    * to map from the elements of this array to the corresponding entry in the new array
    */
   public <S> MultiDimensionalArray<S> map(Function<T, S> function) {
-    return build(this.getWidths(), l -> function.apply(get(l)));
+    return build(this.getDimensions(), l -> function.apply(get(l)));
   }
 
   /**
@@ -156,7 +163,7 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
    * Return a stream of all indices of this array
    */
   private Stream<List<Integer>> allIndices() {
-    return allIndices(getWidths());
+    return allIndices(getDimensions());
   }
 
   static class OneDimensionalArray<S> extends MultiDimensionalArray<S> {
@@ -204,7 +211,7 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
     }
 
     @Override
-    public List<Integer> getWidths() {
+    public List<Integer> getDimensions() {
       return List.of(entries.size());
     }
 
@@ -262,8 +269,8 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
     }
 
     @Override
-    public List<Integer> getWidths() {
-      return prepend(entries.size(), entries.get(0).getWidths());
+    public List<Integer> getDimensions() {
+      return prepend(entries.size(), entries.get(0).getDimensions());
     }
   }
 
@@ -327,4 +334,62 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
 
   }
 
+  private static class MultiDimensionalArraySparse<S> extends MultiDimensionalArray<S> {
+
+    private final static Comparator<List<Integer>> COMPARATOR = new IndexComparator();
+    private final SortedMap<List<Integer>, S> entries;
+    private final List<Integer> dimensions;
+
+    public MultiDimensionalArraySparse(List<Integer> dimensions) {
+      this.entries = new TreeMap<>(COMPARATOR);
+      this.dimensions = dimensions;
+    }
+
+    @Override
+    public S get(List<Integer> index) throws IndexOutOfBoundsException {
+      return entries.get(index);
+    }
+
+    @Override
+    public void set(List<Integer> index, S value) throws IndexOutOfBoundsException {
+      entries.put(index, value);
+    }
+
+    @Override
+    public List<Integer> getDimensions() {
+      return dimensions;
+    }
+
+    @Override
+    public int getDimension() {
+      return dimensions.size();
+    }
+
+    @Override
+    public Iterator<S> iterator() {
+      return MultiDimensionalArray.allIndices(dimensions).map(this::get).iterator();
+    }
+
+    @Override
+    public int size() {
+      return dimensions.stream().reduce(1, (a,b) -> a*b);
+    }
+
+    private static class IndexComparator implements Comparator<List<Integer>> {
+
+      @Override
+      public int compare(List<Integer> a, List<Integer> b) {
+        if (a.size() != b.size()) {
+          throw new IllegalArgumentException("Lists must have same size");
+        }
+        for (int i = 0; i < a.size(); i++) {
+          int c = Integer.compare(a.get(i), b.get(i));
+          if (c != 0) {
+            return c;
+          }
+        }
+        return 0;
+      }
+    }
+  }
 }
