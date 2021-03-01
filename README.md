@@ -27,7 +27,7 @@ be divided horizontally, where each party has a different set of data entries, o
 where each party has different attributes for the same entries, or the data could be intermediate 
 results from other secure multi-party computations.
 
-The library has the following functionality:
+The library has four function libraries with the following functions:
 1. [Statistics](core/src/main/java/dk.alexandra.fresco.stat/Statistics.java)
     * Descriptive statistics
         * Sample mean
