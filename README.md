@@ -7,12 +7,13 @@
 
 <!-- TABLE OF CONTENTS -->
 <h2>Table of Contents</h2>
-1. <a href="#about-the-project">About The Project</a>
-1. <a href="#built-with">Built With</a>
-1. <a href="#demos">Demos</a>
-1. <a href="#contributing">Contributing</a>
-1. <a href="#license">License</a>
-1. <a href="#contact">Contact</a>
+
+* <a href="#about-the-project">About The Project</a>
+* <a href="#built-with">Built With</a>
+* <a href="#demos">Demos</a>
+* <a href="#contributing">Contributing</a>
+* <a href="#license">License</a>
+* <a href="#contact">Contact</a>
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
