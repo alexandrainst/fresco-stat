@@ -24,6 +24,51 @@ and linear algebra using the <a href="https://github.com/aicis/fresco">FRESCO fr
 FRESCO uses secure multi-party computation to enable statistical analysis to be performed on 
 datasets distributed among multiple parties without each party seeing the other parties' data.
 
+There is no assumption on how the data is distributed among the parties -- the data may 
+be divided horizontally, where each party has a different set of data entries, or vertically, 
+where each party has different attributes for the same entries, or the data could be intermediate 
+results from other secure multi-party computations.
+
+The library has the following functionality:
+1. Statistics
+    * Descriptive statistics
+        * Sample mean
+        * Sample standard deviation
+        * Sample variance
+        * Simple and multi-dimensional histogram
+        * Frequency table
+        * Sample correlation
+    * Regression
+        * Simple linear regression
+        * Multivariate linear regression
+        * Logistic regression via gradient descent 
+    * Statistical tests
+        * &chi;<sup>2</sup>-test
+        * F-test
+        * One- and two-sample t-test
+        * Kruskall-Wallis test
+    * Survival analysis
+        * Cox regression
+    * Misc.
+        * <i>k</i>-anonymization
+1. Sampling from the following distributions
+    * Bernoulli distribution
+    * Categorical distribution
+    * Exponential distribution
+    * Irwin-Hall distribution
+    * Laplace distribution
+    * Normal distribution
+    * Rademacher distribution
+    * Uniform distribution
+1. Advanced linear algebra (see also the <i>fixed</i> library in FRESCO for basic linear algebra functions)
+    * Back- and forward substitution
+    * Gram-Schmidt process
+    * Inverse of triangular matrices
+    * Moore-Penrose pseudo inverse
+    * QR-algorithm for eigenvalue computation
+    * QR-decomposition
+
+
 ## Built With
 Build the project and the documentation using maven:
 ```
@@ -37,8 +82,8 @@ mvn javadoc:javadoc
 The functions in the library is in the [core](core)-module and is accessible through three collections of functions:
 
 1. [Statistics](core/src/main/java/dk.alexandra.fresco.stat/Statistics.java) Descriptive statistics, statistical tests and regression.
-2. [Linear Algebra](core/src/main/java/dk.alexandra.fresco.stat/LinearAlgebra.java) Advanced linear algebra.
-3. [Sampler](core/src/main/java/dk.alexandra.fresco.stat/Sampler.java)  Draw samples from various distributions.
+1. [Sampler](core/src/main/java/dk.alexandra.fresco.stat/Sampler.java)  Draw samples from various distributions.
+1. [Linear Algebra](core/src/main/java/dk.alexandra.fresco.stat/LinearAlgebra.java) Advanced linear algebra.
 
 They are used similarly to builders in FRESCO, namely by calling e.g.
 
