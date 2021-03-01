@@ -28,7 +28,7 @@ where each party has different attributes for the same entries, or the data coul
 results from other secure multi-party computations.
 
 The library has four function libraries with the following functions:
-1. [Statistics](core/src/main/java/dk.alexandra.fresco.stat/Statistics.java)
+1. [Statistics](core/src/main/java/dk/alexandra/fresco/stat/Statistics.java)
     * Descriptive statistics
         * Sample mean
         * Sample standard deviation
@@ -41,7 +41,7 @@ The library has four function libraries with the following functions:
         * Multivariate linear regression
         * Logistic regression via gradient descent 
     * Statistical tests
-        * &chi;<sup>2</sup>-test
+        * ꭓ²-test
         * F-test
         * One- and two-sample t-test
         * Kruskall-Wallis test
@@ -49,7 +49,7 @@ The library has four function libraries with the following functions:
         * Cox regression
     * Misc.
         * <i>k</i>-anonymization
-1. [Sampling from various distributions](core/src/main/java/dk.alexandra.fresco.stat/Sampler.java)
+1. [Sampling from various distributions](core/src/main/java/dk/alexandra/fresco/stat/Sampler.java)
     * Bernoulli distribution
     * Categorical distribution
     * Exponential distribution
@@ -58,7 +58,7 @@ The library has four function libraries with the following functions:
     * Normal distribution
     * Rademacher distribution
     * Uniform distribution
-1. [Advanced Linear Algebra](core/src/main/java/dk.alexandra.fresco.stat/LinearAlgebra.java) (see also the <i>fixed</i> library in FRESCO for basic linear algebra functions)
+1. [Advanced Linear Algebra](core/src/main/java/dk/alexandra/fresco/stat/AdvancedLinearAlgebra.java) (see also the <i>fixed</i> library in FRESCO for basic linear algebra functions)
     * Back- and forward substitution
     * Gram-Schmidt process
     * Inverse of triangular matrices
