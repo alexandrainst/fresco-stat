@@ -82,7 +82,7 @@ public class KAnonymity implements
       // Compute indicator histogram -- for each bucket we get an indicator vector of size data.size()
       // with a 1 at index i indicating that the i'th data point is in the corresponding bucket.
       MultiDimensionalArray<DRes<List<DRes<SInt>>>> histogram = MultiDimensionalArray
-          .build(cumulativeHistogram.getWidths(), i -> par.seq(seq -> {
+          .build(cumulativeHistogram.getDimensions(), i -> par.seq(seq -> {
             List<DRes<SInt>> value = cumulativeHistogram.get(i);
             for (int j = 0; j < dimensions; j++) {
               if (i.get(j) == 0) {

@@ -1,7 +1,8 @@
 <h1>FRESCO-stat</h1>
 
 <p>
-  Library for secure numerical computations, statistics and linear algebra on data held by multiple parties without sharing the data.
+  Library for secure statistics and linear algebra on data held by multiple parties without sharing 
+  the data with the other parties.
 </p>
 
 <!-- TABLE OF CONTENTS -->
@@ -14,6 +15,7 @@
     <li><a href="#demos">Demos</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
+    <li><a href="#contact">Contact</a></li>
   </ol>
 </details>
 
@@ -67,7 +69,9 @@ The library has the following functionality:
     * Moore-Penrose pseudo inverse
     * QR-algorithm for eigenvalue computation
     * QR-decomposition
-
+1. Optimization methods
+    * Linear programming
+    * Data envelopment method (DEA)
 
 ## Built With
 Build the project and the documentation using maven:
@@ -79,11 +83,12 @@ mvn javadoc:javadoc
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-The functions in the library is in the [core](core)-module and is accessible through three collections of functions:
+The functions listed above is accessible through three collections of functions:
 
 1. [Statistics](core/src/main/java/dk.alexandra.fresco.stat/Statistics.java) Descriptive statistics, statistical tests and regression.
-1. [Sampler](core/src/main/java/dk.alexandra.fresco.stat/Sampler.java)  Draw samples from various distributions.
-1. [Linear Algebra](core/src/main/java/dk.alexandra.fresco.stat/LinearAlgebra.java) Advanced linear algebra.
+1. [Sampling](core/src/main/java/dk.alexandra.fresco.stat/Sampler.java)  Draw samples from distributions.
+1. [Advanced Linear Algebra](core/src/main/java/dk.alexandra.fresco.stat/LinearAlgebra.java) Advanced linear algebra.
+1. [Optimization](core/src/main/java/dk/alexandra/fresco/stat/Optimization.java) Various opimization methods.
 
 They are used similarly to builders in FRESCO, namely by calling e.g.
 
@@ -128,7 +133,8 @@ Each demo should take between 30s to a few minutes to run on a modern laptop.
 <!-- CONTRIBUTING -->
 ## Contributing
 
-If you want to help out developing new features for FRESCO-dk.alexandra.fresco.stat or fix a bug you've stumbled upon, it may be done as follows:
+If you want to help out developing new features for FRESCO-stat or fix a bug you've stumbled upon, 
+it may be done as follows:
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/MyFeature`)
@@ -140,3 +146,10 @@ If you want to help out developing new features for FRESCO-dk.alexandra.fresco.s
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
+
+
+<!-- CONTACT -->
+## Contact 
+The library is developed and maintained by the Security Lab in the <a href="https://alexandra.dk/about-the-alexandra-institute/">Alexandra Institute</a>. 
+If you have discoved a bug, have questions about the usage of the library or you are missing a certain 
+function, feel free to contact us at <a href="fresco@alexandra.dk">fresco@alexandra.dk</a>. 
