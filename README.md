@@ -9,7 +9,7 @@
 <h2>Table of Contents</h2>
 
 * <a href="#about-the-project">About The Project</a>
-* <a href="#built-with">Built With</a>
+* <a href="#build">Build</a>
 * <a href="#demos">Demos</a>
 * <a href="#contributing">Contributing</a>
 * <a href="#license">License</a>
@@ -19,13 +19,12 @@
 ## About The Project
 FRESCO-stat is a library for secure numerical computations, statistics 
 and linear algebra using the <a href="https://github.com/aicis/fresco">FRESCO framework</a>.
-FRESCO uses secure multi-party computation to enable statistical analysis to be performed on 
-datasets distributed among multiple parties without each party seeing the other parties' data.
+FRESCO uses secure multi-party computation to enable computations to be performed on 
+data distributed among multiple parties without each party seeing the other parties' data.
 
 There is no assumption on how the data is distributed among the parties -- the data may 
-be divided horizontally, where each party has a different set of data entries, or vertically, 
-where each party has different attributes for the same entries, or the data could be intermediate 
-results from other secure multi-party computations.
+be for example be divided horizontally, where each party has a different set of data entries, or vertically, 
+where each party has different attributes for the same entries, or any combination of the two.
 
 The library has four function libraries with the following functions:
 1. [Statistics](core/src/main/java/dk/alexandra/fresco/stat/Statistics.java)
@@ -37,13 +36,12 @@ The library has four function libraries with the following functions:
         * Frequency table
         * Sample correlation
     * Regression
-        * Simple linear regression
-        * Multivariate linear regression
+        * Simple and multivariate linear regression
         * Logistic regression via gradient descent 
     * Statistical tests
+        * One- and two-sample t-test
         * ꭓ²-test
         * F-test
-        * One- and two-sample t-test
         * Kruskall-Wallis test
     * Survival analysis
         * Cox regression
@@ -69,18 +67,18 @@ The library has four function libraries with the following functions:
     * Linear programming
     * Data envelopment method (DEA)
 
-They are used similarly to builders in FRESCO, namely by calling e.g.
+They are used similarly to computation directories in FRESCO by calling e.g.
 
 ```
 Statistics.using(builder).chiSquare(observed, expected);
 ``` 
 
-to perform a ꭓ²-test.
+to perform a ꭓ²-test on a dataset.
 
-Note that overflows may happen during computation, which will likely appear as very large outputs. 
-This may be avoided by normalizing the input data and/or using a bigger modulus in FRESCO.
+Note that it is not uncommon to experience overflows during computation, which will appear as very large 
+outputs. This may be avoided by normalizing the input data and/or using a bigger modulus in FRESCO.
 
-## Built With
+## Build
 Build the project and the documentation using maven:
 ```
 mvn clean install
