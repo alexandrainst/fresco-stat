@@ -6,18 +6,13 @@
 </p>
 
 <!-- TABLE OF CONTENTS -->
-<details open="open">
-  <summary><h2 style="display: inline-block">Table of Contents</h2></summary>
-  <ol>
-    <li><a href="#about-the-project">About The Project</a></li>
-    <li><a href="#built-with">Built With</a></li>
-    <li><a href="#usage">Usage</a></li>
-    <li><a href="#demos">Demos</a></li>
-    <li><a href="#contributing">Contributing</a></li>
-    <li><a href="#license">License</a></li>
-    <li><a href="#contact">Contact</a></li>
-  </ol>
-</details>
+<h2>Table of Contents</h2>
+1. <a href="#about-the-project">About The Project</a>
+1. <a href="#built-with">Built With</a>
+1. <a href="#demos">Demos</a>
+1. <a href="#contributing">Contributing</a>
+1. <a href="#license">License</a>
+1. <a href="#contact">Contact</a>
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
@@ -73,17 +68,7 @@ The library has the following functionality:
     * Linear programming
     * Data envelopment method (DEA)
 
-## Built With
-Build the project and the documentation using maven:
-```
-mvn clean install
-mvn javadoc:javadoc
-```
-
-<!-- USAGE EXAMPLES -->
-## Usage
-
-The functions listed above is accessible through three collections of functions:
+The functions listed above are accessible through three collections of functions:
 
 1. [Statistics](core/src/main/java/dk.alexandra.fresco.stat/Statistics.java) Descriptive statistics, statistical tests and regression.
 1. [Sampling](core/src/main/java/dk.alexandra.fresco.stat/Sampler.java)  Draw samples from distributions.
@@ -100,6 +85,14 @@ to perform a ꭓ²-test.
 
 Note that overflows may happen during computation, which will likely appear as very large outputs. 
 This may be avoided by normalizing the input data and/or using a bigger modulus in FRESCO.
+
+
+## Built With
+Build the project and the documentation using maven:
+```
+mvn clean install
+mvn javadoc:javadoc
+```
 
 ## Demos
 
@@ -137,16 +130,15 @@ If you want to help out developing new features for FRESCO-stat or fix a bug you
 it may be done as follows:
 
 1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/MyFeature`)
-3. Commit your Changes (`git commit -m 'Add MyFeature'`)
-4. Push to the Branch (`git push origin feature/MyFeature`)
-5. Open a Pull Request
+1. Create your Feature Branch (`git checkout -b feature/MyFeature`)
+1. Commit your Changes (`git commit -m 'Add MyFeature'`)
+1. Push to the Branch (`git push origin feature/MyFeature`)
+1. Open a Pull Request
 
 <!-- LICENSE -->
 ## License
 
 Distributed under the MIT License. See `LICENSE` for more information.
-
 
 <!-- CONTACT -->
 ## Contact 
