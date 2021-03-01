@@ -28,7 +28,7 @@ where each party has different attributes for the same entries, or the data coul
 results from other secure multi-party computations.
 
 The library has the following functionality:
-1. Statistics
+1. [Statistics](core/src/main/java/dk.alexandra.fresco.stat/Statistics.java)
     * Descriptive statistics
         * Sample mean
         * Sample standard deviation
@@ -49,7 +49,7 @@ The library has the following functionality:
         * Cox regression
     * Misc.
         * <i>k</i>-anonymization
-1. Sampling from the following distributions
+1. [Sampling from various distributions](core/src/main/java/dk.alexandra.fresco.stat/Sampler.java)
     * Bernoulli distribution
     * Categorical distribution
     * Exponential distribution
@@ -58,23 +58,16 @@ The library has the following functionality:
     * Normal distribution
     * Rademacher distribution
     * Uniform distribution
-1. Advanced linear algebra (see also the <i>fixed</i> library in FRESCO for basic linear algebra functions)
+1. [Advanced Linear Algebra](core/src/main/java/dk.alexandra.fresco.stat/LinearAlgebra.java) (see also the <i>fixed</i> library in FRESCO for basic linear algebra functions)
     * Back- and forward substitution
     * Gram-Schmidt process
     * Inverse of triangular matrices
     * Moore-Penrose pseudo inverse
     * QR-algorithm for eigenvalue computation
     * QR-decomposition
-1. Optimization methods
+1. [Optimization methods](core/src/main/java/dk/alexandra/fresco/stat/Optimization.java)
     * Linear programming
     * Data envelopment method (DEA)
-
-The functions listed above are accessible through three collections of functions:
-
-1. [Statistics](core/src/main/java/dk.alexandra.fresco.stat/Statistics.java) Descriptive statistics, statistical tests and regression.
-1. [Sampling](core/src/main/java/dk.alexandra.fresco.stat/Sampler.java)  Draw samples from distributions.
-1. [Advanced Linear Algebra](core/src/main/java/dk.alexandra.fresco.stat/LinearAlgebra.java) Advanced linear algebra.
-1. [Optimization](core/src/main/java/dk/alexandra/fresco/stat/Optimization.java) Various opimization methods.
 
 They are used similarly to builders in FRESCO, namely by calling e.g.
 
@@ -86,7 +79,6 @@ to perform a ꭓ²-test.
 
 Note that overflows may happen during computation, which will likely appear as very large outputs. 
 This may be avoided by normalizing the input data and/or using a bigger modulus in FRESCO.
-
 
 ## Built With
 Build the project and the documentation using maven:
