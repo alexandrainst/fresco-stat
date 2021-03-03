@@ -22,8 +22,7 @@ import dk.alexandra.fresco.stat.LATests.TestLinearInverseProblemNoSolution;
 import dk.alexandra.fresco.stat.LATests.TestLinearInverseProblemOverdetermined;
 import dk.alexandra.fresco.stat.LATests.TestLinearInverseProblemUnderdetermined;
 import dk.alexandra.fresco.stat.LATests.TestMoorePenrosePseudoInverse;
-import dk.alexandra.fresco.stat.LATests.TestQR;
-import dk.alexandra.fresco.stat.LATests.TestQRRectangular;
+import dk.alexandra.fresco.stat.LATests.TestQRDcomposition;
 import dk.alexandra.fresco.stat.LATests.TestTriangularInverse;
 import dk.alexandra.fresco.stat.LinRegTests.TestLinearRegression;
 import dk.alexandra.fresco.stat.LinRegTests.TestSimpleLinearRegression;
@@ -46,6 +45,7 @@ import dk.alexandra.fresco.stat.utils.VectorUtils;
 import dk.alexandra.fresco.suite.dummy.arithmetic.AbstractDummyArithmeticTest;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Random;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.apache.commons.math3.distribution.LaplaceDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
@@ -54,9 +54,9 @@ import org.junit.Test;
 
 public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTest {
 
-  private static final TestParameters TEST_PARAMETERS = new TestParameters().maxBitLength(128)
+  private static final TestParameters TEST_PARAMETERS = new TestParameters().maxBitLength(180)
       .field(MersennePrimeFieldDefinition.find(256))
-      .fixedPointPrecesion(16).evaluationStrategy(EvaluationStrategy.SEQUENTIAL).numParties(2)
+      .fixedPointPrecesion(32).evaluationStrategy(EvaluationStrategy.SEQUENTIAL).numParties(2)
       .performanceLogging(false);
 
   @Test
@@ -303,13 +303,14 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   }
 
   @Test
-  public void test_qr_decomposition() {
-    runTest(new TestQR<>(), TEST_PARAMETERS);
-  }
-
-  @Test
   public void test_qr_decomposition_rectangular() {
-    runTest(new TestQRRectangular<>(), TEST_PARAMETERS);
+    Random random = new Random(1234);
+    for (int i = 0; i < 10; i++) {
+      runTest(new TestQRDcomposition<>(random.nextLong(), true), TEST_PARAMETERS);
+    }
+    for (int i = 0; i < 10; i++) {
+      runTest(new TestQRDcomposition<>(random.nextLong(), false), TEST_PARAMETERS);
+    }
   }
 
   @Test
@@ -354,7 +355,13 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
 
   @Test
   public void test_moore_penrose_pseudo_inverse() {
-    runTest(new TestMoorePenrosePseudoInverse<>(), TEST_PARAMETERS);
+    Random random = new Random(1234);
+    for (int i = 0; i < 10; i++) {
+      runTest(new TestMoorePenrosePseudoInverse<>(random.nextLong(), true), TEST_PARAMETERS);
+    }
+    for (int i = 0; i < 10; i++) {
+      runTest(new TestMoorePenrosePseudoInverse<>(random.nextLong(), false), TEST_PARAMETERS);
+    }
   }
 
   @Test

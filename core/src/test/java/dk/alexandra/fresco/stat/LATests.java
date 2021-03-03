@@ -18,10 +18,13 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.Collectors;
 import org.apache.commons.math3.linear.Array2DRowRealMatrix;
 import org.apache.commons.math3.linear.ArrayRealVector;
 import org.apache.commons.math3.linear.DecompositionSolver;
+import org.apache.commons.math3.linear.QRDecomposition;
+import org.apache.commons.math3.linear.RealMatrix;
 import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.linear.SingularValueDecomposition;
 import org.junit.Assert;
@@ -113,138 +116,65 @@ public class LATests {
     }
   }
 
-  public static class TestQR<ResourcePoolT extends ResourcePool>
+  public static class TestQRDcomposition<ResourcePoolT extends ResourcePool>
       extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
 
-    @Override
-    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
-      return new TestThread<>() {
+    private final long seed;
+    private final boolean square;
 
-        @Override
-        public void test() {
-
-          ArrayList<BigDecimal> rowOne = new ArrayList<>();
-          rowOne.add(BigDecimal.valueOf(12));
-          rowOne.add(BigDecimal.valueOf(-51));
-          rowOne.add(BigDecimal.valueOf(4));
-          ArrayList<BigDecimal> rowTwo = new ArrayList<>();
-          rowTwo.add(BigDecimal.valueOf(6));
-          rowTwo.add(BigDecimal.valueOf(167));
-          rowTwo.add(BigDecimal.valueOf(-68));
-          ArrayList<BigDecimal> rowThree = new ArrayList<>();
-          rowThree.add(BigDecimal.valueOf(-4));
-          rowThree.add(BigDecimal.valueOf(24));
-          rowThree.add(BigDecimal.valueOf(-41));
-          ArrayList<ArrayList<BigDecimal>> mat = new ArrayList<>();
-          mat.add(rowOne);
-          mat.add(rowTwo);
-          mat.add(rowThree);
-          Matrix<BigDecimal> input = new Matrix<>(3, 3, mat);
-
-          Application<Pair<Matrix<BigDecimal>, Matrix<BigDecimal>>, ProtocolBuilderNumeric> testApplication = builder ->
-              builder.seq(seq -> FixedLinearAlgebra.using(seq).input(input, 1))
-                  .seq((seq, a) -> AdvancedLinearAlgebra.using(seq).qrDecomposition(
-                      a)).seq((seq, qr) -> {
-                Matrix<DRes<BigDecimal>> qOut = MatrixUtils
-                    .map(qr.getFirst(), FixedNumeric.using(seq)::open);
-                Matrix<DRes<BigDecimal>> rOut = MatrixUtils
-                    .map(qr.getSecond(), FixedNumeric.using(seq)::open);
-                return Pair.lazy(qOut, rOut);
-              }).seq((seq, qr) -> {
-                Matrix<BigDecimal> qOut = MatrixUtils.map(qr.getFirst(), DRes::out);
-                Matrix<BigDecimal> rOut = MatrixUtils.map(qr.getSecond(), DRes::out);
-                return Pair.lazy(qOut, rOut);
-              });
-
-          Pair<Matrix<BigDecimal>, Matrix<BigDecimal>> out = runApplication(testApplication);
-
-          // Assert q is ortonormal
-          Matrix<BigDecimal> q = out.getFirst();
-          for (int i = 0; i < q.getWidth(); i++) {
-            assertEquals(1.0, innerProduct(q.getColumn(i), q.getColumn(i)).doubleValue(), 0.01);
-            for (int j = i + 1; j < q.getWidth(); j++) {
-              assertEquals(0.0, innerProduct(q.getColumn(i), q.getColumn(j)).doubleValue(), 0.01);
-            }
-          }
-
-          // Assert r is upper-triangular
-          Matrix<BigDecimal> r = out.getSecond();
-          for (int i = 0; i < r.getWidth(); i++) {
-            for (int j = i + 1; j < r.getHeight(); j++) {
-              assertEquals(0.0, r.getColumn(i).get(j).doubleValue(), 0.01);
-            }
-          }
-        }
-      };
+    public TestQRDcomposition(long seed, boolean square) {
+      this.seed = seed;
+      this.square = square;
     }
-  }
-
-
-  public static class TestQRRectangular<ResourcePoolT extends ResourcePool>
-      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
 
     @Override
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+
       return new TestThread<>() {
+
+        final Random random = new Random(seed);
+        final int m = random.nextInt(5) + 1;
+        final int n = square ? m : random.nextInt(m) + 1;
+        final Matrix<BigDecimal> input = MatrixUtils.buildMatrix(m, n, (i,j) -> BigDecimal.valueOf(20 * random.nextDouble() - 10));
 
         @Override
         public void test() {
-
-          ArrayList<BigDecimal> rowOne = new ArrayList<>();
-          rowOne.add(BigDecimal.valueOf(12));
-          rowOne.add(BigDecimal.valueOf(-51));
-          rowOne.add(BigDecimal.valueOf(4));
-          ArrayList<BigDecimal> rowTwo = new ArrayList<>();
-          rowTwo.add(BigDecimal.valueOf(6));
-          rowTwo.add(BigDecimal.valueOf(167));
-          rowTwo.add(BigDecimal.valueOf(-68));
-          ArrayList<BigDecimal> rowThree = new ArrayList<>();
-          rowThree.add(BigDecimal.valueOf(-4));
-          rowThree.add(BigDecimal.valueOf(24));
-          rowThree.add(BigDecimal.valueOf(-41));
-          ArrayList<BigDecimal> rowFour = new ArrayList<>();
-          rowFour.add(BigDecimal.valueOf(-2));
-          rowFour.add(BigDecimal.valueOf(-1));
-          rowFour.add(BigDecimal.valueOf(11));
-
-          ArrayList<ArrayList<BigDecimal>> mat = new ArrayList<>();
-          mat.add(rowOne);
-          mat.add(rowTwo);
-          mat.add(rowThree);
-          mat.add(rowFour);
-          Matrix<BigDecimal> input = new Matrix<>(4, 3, mat);
-
           Application<Pair<Matrix<BigDecimal>, Matrix<BigDecimal>>, ProtocolBuilderNumeric> testApplication = builder ->
               builder.seq(seq -> FixedLinearAlgebra.using(seq).input(input, 1))
-                  .seq((seq, a) -> AdvancedLinearAlgebra.using(seq).qrDecomposition(
-                      a)).seq((seq, qr) -> {
-                Matrix<DRes<BigDecimal>> qOut = MatrixUtils
-                    .map(qr.getFirst(), FixedNumeric.using(seq)::open);
-                Matrix<DRes<BigDecimal>> rOut = MatrixUtils
-                    .map(qr.getSecond(), FixedNumeric.using(seq)::open);
-                return Pair.lazy(qOut, rOut);
-              }).seq((seq, qr) -> {
-                Matrix<BigDecimal> qOut = MatrixUtils.map(qr.getFirst(), DRes::out);
-                Matrix<BigDecimal> rOut = MatrixUtils.map(qr.getSecond(), DRes::out);
-                return Pair.lazy(qOut, rOut);
-              });
+              .seq((seq, a) -> AdvancedLinearAlgebra.using(seq).qrDecomposition(
+                  a)).seq((seq, qr) -> {
+            Matrix<DRes<BigDecimal>> qOut = MatrixUtils
+                .map(qr.getFirst(), FixedNumeric.using(seq)::open);
+            Matrix<DRes<BigDecimal>> rOut = MatrixUtils
+                .map(qr.getSecond(), FixedNumeric.using(seq)::open);
+            return Pair.lazy(qOut, rOut);
+          }).seq((seq, qr) -> {
+            Matrix<BigDecimal> qOut = MatrixUtils.map(qr.getFirst(), DRes::out);
+            Matrix<BigDecimal> rOut = MatrixUtils.map(qr.getSecond(), DRes::out);
+            return Pair.lazy(qOut, rOut);
+          });
 
           Pair<Matrix<BigDecimal>, Matrix<BigDecimal>> out = runApplication(testApplication);
 
-          // Assert q is ortonormal
-          Matrix<BigDecimal> q = out.getFirst();
-          for (int i = 0; i < q.getWidth(); i++) {
-            assertEquals(1.0, innerProduct(q.getColumn(i), q.getColumn(i)).doubleValue(), 0.01);
-            for (int j = i + 1; j < q.getWidth(); j++) {
-              assertEquals(0.0, innerProduct(q.getColumn(i), q.getColumn(j)).doubleValue(), 0.01);
+          RealMatrix a = new Array2DRowRealMatrix(m, n);
+          for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+              a.setEntry(i, j, input.getRow(i).get(j).doubleValue());
+            }
+          }
+          QRDecomposition qrDecomposition = new QRDecomposition(a);
+          RealMatrix q = qrDecomposition.getQ();
+          RealMatrix r = qrDecomposition.getR();
+
+          for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+              assertEquals(Math.abs(q.getEntry(i, j)), Math.abs(out.getFirst().getRow(i).get(j).doubleValue()), 0.01);
             }
           }
 
-          // Assert r is upper-triangular
-          Matrix<BigDecimal> r = out.getSecond();
-          for (int i = 0; i < r.getWidth(); i++) {
-            for (int j = i + 1; j < r.getHeight(); j++) {
-              assertEquals(0.0, r.getColumn(i).get(j).doubleValue(), 0.01);
+          for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+              assertEquals(Math.abs(r.getEntry(i, j)), Math.abs(out.getSecond().getRow(i).get(j).doubleValue()), 0.01);
             }
           }
         }
@@ -707,35 +637,26 @@ public class LATests {
   public static class TestMoorePenrosePseudoInverse<ResourcePoolT extends ResourcePool>
       extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
 
+    private final long seed;
+    private final boolean square;
+
+    public TestMoorePenrosePseudoInverse(long seed, boolean square) {
+      this.seed = seed;
+      this.square = square;
+    }
+
     @Override
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+
       return new TestThread<>() {
+
+        final Random random = new Random(seed);
+        final int m = random.nextInt(5) + 1;
+        final int n = square ? m : random.nextInt(m) + 1;
+        final Matrix<BigDecimal> input = MatrixUtils.buildMatrix(m, n, (i,j) -> BigDecimal.valueOf(20 * random.nextDouble() - 10));
 
         @Override
         public void test() {
-
-          ArrayList<BigDecimal> rowOne = new ArrayList<>();
-          rowOne.add(BigDecimal.valueOf(1));
-          rowOne.add(BigDecimal.valueOf(-1));
-          rowOne.add(BigDecimal.valueOf(4));
-          ArrayList<BigDecimal> rowTwo = new ArrayList<>();
-          rowTwo.add(BigDecimal.valueOf(1));
-          rowTwo.add(BigDecimal.valueOf(4));
-          rowTwo.add(BigDecimal.valueOf(-2));
-          ArrayList<BigDecimal> rowThree = new ArrayList<>();
-          rowThree.add(BigDecimal.valueOf(1));
-          rowThree.add(BigDecimal.valueOf(4));
-          rowThree.add(BigDecimal.valueOf(2));
-          ArrayList<BigDecimal> rowFour = new ArrayList<>();
-          rowFour.add(BigDecimal.valueOf(1));
-          rowFour.add(BigDecimal.valueOf(-1));
-          rowFour.add(BigDecimal.valueOf(0));
-          ArrayList<ArrayList<BigDecimal>> mat = new ArrayList<>();
-          mat.add(rowOne);
-          mat.add(rowTwo);
-          mat.add(rowThree);
-          mat.add(rowFour);
-          Matrix<BigDecimal> input = new Matrix<>(4, 3, mat);
 
           Application<Matrix<BigDecimal>, ProtocolBuilderNumeric> testApplication = builder ->
               builder.seq(seq -> FixedLinearAlgebra.using(seq).input(input, 1))
@@ -751,18 +672,22 @@ public class LATests {
 
           Matrix<BigDecimal> out = runApplication(testApplication);
 
-          // We expect the product of the pseudo-inverse and the input to be the identity matrix
-          Matrix<BigDecimal> product = multiply(out, input);
-          for (int i = 0; i < product.getHeight(); i++) {
-            for (int j = 0; j < product.getWidth(); j++) {
-              Assert
-                  .assertEquals(i == j ? 1.0 : 0.0, product.getRow(i).get(j).doubleValue(), 0.001);
+          RealMatrix a = new Array2DRowRealMatrix(m, n);
+          for (int i = 0; i < m; i++) {
+            for (int j = 0; j < n; j++) {
+              a.setEntry(i, j, input.getRow(i).get(j).doubleValue());
+            }
+          }
+
+          RealMatrix b = new SingularValueDecomposition(a).getSolver().getInverse();
+          for (int i = 0; i < n; i++) {
+            for (int j = 0; j < m; j++) {
+              Assert.assertEquals(b.getEntry(i, j), out.getRow(i).get(j).doubleValue(), 0.02);
             }
           }
         }
       };
     }
   }
-
 
 }

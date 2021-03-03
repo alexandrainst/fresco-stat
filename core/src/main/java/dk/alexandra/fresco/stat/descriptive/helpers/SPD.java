@@ -3,6 +3,7 @@ package dk.alexandra.fresco.stat.descriptive.helpers;
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
+import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
@@ -32,11 +33,12 @@ public class SPD implements Computation<SFixed, ProtocolBuilderNumeric> {
   public DRes<SFixed> buildComputation(ProtocolBuilderNumeric root) {
     return root.par(builder -> {
       FixedNumeric fixedNumeric = FixedNumeric.using(builder);
-      List<DRes<SFixed>> terms = IntStream.range(0, x.size()).mapToObj(i ->
-          fixedNumeric.mult(fixedNumeric.sub(x.get(i), meanX),
-              fixedNumeric.sub(y.get(i), meanY))).collect(Collectors.toList());
-      return DRes.of(terms);
-    }).seq((builder, terms) -> AdvancedFixedNumeric.using(builder).sum(terms));
+      List<DRes<SFixed>> termsX = x.stream().map(xi -> fixedNumeric.sub(xi, meanX)).collect(
+          Collectors.toList());
+      List<DRes<SFixed>> termsY = y.stream().map(yi -> fixedNumeric.sub(yi, meanY)).collect(
+          Collectors.toList());
+      return Pair.lazy(termsX, termsY);
+    }).seq((seq, terms) -> seq.seq(new SP(terms.getFirst(), terms.getSecond())));
   }
 
 }

@@ -1,5 +1,6 @@
 package dk.alexandra.fresco.stat;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -15,6 +16,7 @@ import dk.alexandra.fresco.lib.fixed.FixedLinearAlgebra;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.regression.linear.LinearRegression;
+import dk.alexandra.fresco.stat.regression.linear.SimpleLinearRegression.SimpleLinearRegressionResult;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,7 +64,7 @@ public class LinRegTests {
         @Override
         public void test() {
 
-          Application<Pair<BigDecimal, BigDecimal>, ProtocolBuilderNumeric> testApplication =
+          Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication =
               builder -> {
                 List<DRes<SFixed>> xSecret = x.stream().map(x -> FixedNumeric
                     .using(builder).input(x, 1))
@@ -70,13 +72,16 @@ public class LinRegTests {
                 List<DRes<SFixed>> ySecret = y.stream()
                     .map(y -> FixedNumeric.using(builder).input(y, 2))
                     .collect(Collectors.toList());
-                DRes<Pair<DRes<SFixed>, DRes<SFixed>>> f = Statistics.using(builder)
+                DRes<SimpleLinearRegressionResult> f = Statistics.using(builder)
                     .simpleLinearRegression(xSecret, ySecret);
                 return builder.par(par -> {
-                  Pair<DRes<BigDecimal>, DRes<BigDecimal>> result =
-                      new Pair<>(FixedNumeric.using(par).open(f.out().getFirst()),
-                          FixedNumeric.using(par).open(f.out().getSecond()));
-                  return () -> new Pair<>(result.getFirst().out(), result.getSecond().out());
+                  List<DRes<BigDecimal>> result =
+                      List.of(FixedNumeric.using(par).open(f.out().getAlpha()),
+                          FixedNumeric.using(par).open(f.out().getBeta()),
+                          FixedNumeric.using(par).open(f.out().getErrorAlphaSquared()),
+                          FixedNumeric.using(par).open(f.out().getErrorBetaSquared()),
+                          FixedNumeric.using(par).open(f.out().getR()));
+                  return () -> result.stream().map(DRes::out).collect(Collectors.toList());
                 });
               };
 
@@ -85,12 +90,14 @@ public class LinRegTests {
             simpleRegression.addData(x.get(i), y.get(i));
           }
           RegressionResults result = simpleRegression.regress();
+          List<BigDecimal> output = runApplication(testApplication);
 
-          Pair<BigDecimal, BigDecimal> output = runApplication(testApplication);
-          assertTrue(output.getFirst().subtract(BigDecimal.valueOf(result.getParameterEstimate(0)))
-              .abs().compareTo(BigDecimal.valueOf(0.001)) < 0);
-          assertTrue(output.getSecond().subtract(BigDecimal.valueOf(result.getParameterEstimate(1)))
-              .abs().compareTo(BigDecimal.valueOf(0.001)) < 0);
+          double delta = 0.001;
+          assertEquals(output.get(0).doubleValue(), result.getParameterEstimate(0), delta);
+          assertEquals(output.get(1).doubleValue(), result.getParameterEstimate(1), delta);
+          assertEquals(output.get(2).doubleValue(), Math.pow(result.getStdErrorOfEstimate(0), 2), delta);
+          assertEquals(output.get(3).doubleValue(), Math.pow(result.getStdErrorOfEstimate(1), 2), delta);
+          assertEquals(output.get(4).doubleValue(), Math.sqrt(result.getRSquared()), delta);
         }
       };
     }
@@ -103,15 +110,15 @@ public class LinRegTests {
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
       return new TestThread<>() {
 
-        final List<BigDecimal> x1 = Stream.of(18, 24, 12, 30, 30, 22).map(BigDecimal::valueOf)
+        final List<BigDecimal> x1 = Stream.of(.18, .24, .12, .30, .30, .22).map(BigDecimal::valueOf)
             .collect(Collectors.toList());
-        final List<BigDecimal> x2 = Stream.of(52, 40, 40, 48, 32, 16).map(BigDecimal::valueOf)
+        final List<BigDecimal> x2 = Stream.of(.52, .40, .40, .48, .32, .16).map(BigDecimal::valueOf)
             .collect(Collectors.toList());
         final List<ArrayList<BigDecimal>> X = IntStream.range(0, x1.size())
             .mapToObj(i -> List.of(BigDecimal.ONE, x1.get(i), x2.get(i))).map(
                 ArrayList::new).collect(Collectors.toList());
 
-        final List<Double> y = Arrays.asList(.4, .2, -2.4, -8.4, -5.6, -5.2);
+        final List<Double> y = Arrays.asList(.04, .02, -.24, -.84, -.56, -.52);
 
         @Override
         public void test() {
@@ -128,15 +135,21 @@ public class LinRegTests {
                 return Pair.lazy(x1secret, ySecret);
               }).seq((seq, inputs) -> {
                 Statistics statistics = Statistics.using(seq);
-                DRes<ArrayList<DRes<SFixed>>> beta = statistics.linearRegression(
+
+                return statistics.linearRegression(
                     inputs.getFirst().stream().map(DRes::out).collect(
                         Collectors.toList()), inputs.getSecond());
-
-                return FixedLinearAlgebra.using(seq).openArrayList(beta);
-              }).seq((seq, beta) -> DRes
-                  .of(beta.stream().map(DRes::out).collect(Collectors.toList())));
+              }).seq((seq, result) -> {
+                ArrayList<DRes<SFixed>> toOutput = new ArrayList<>(result.getBeta());
+                toOutput.add(result.getErrorVariance());
+                toOutput.addAll(result.getStdErrorsSquared());
+                toOutput.add(result.getRSquared());
+                return FixedLinearAlgebra.using(seq).openArrayList(DRes.of(toOutput));
+              }).seq((seq, beta) -> DRes.of(beta.stream().map(DRes::out).collect(Collectors.toList())));
 
           List<BigDecimal> output = runApplication(testApplication);
+
+          System.out.println(output);
 
           OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
           double[] yArray = y.stream().mapToDouble(Double::valueOf).toArray();
@@ -148,7 +161,15 @@ public class LinRegTests {
 
           double[] betaExpected = regression.estimateRegressionParameters();
           Assert.assertArrayEquals(betaExpected,
-              output.stream().mapToDouble(BigDecimal::doubleValue).toArray(), 0.01);
+              output.subList(0, 3).stream().mapToDouble(BigDecimal::doubleValue).toArray(), 0.01);
+
+          Assert.assertEquals(output.get(3).doubleValue(), regression.estimateErrorVariance(), 0.001);
+
+          double[] errorsExpected = Arrays.stream(regression.estimateRegressionParametersStandardErrors()).map(z -> z * z)
+              .toArray();
+          Assert.assertArrayEquals(errorsExpected, output.subList(4, 7).stream().mapToDouble(BigDecimal::doubleValue).toArray(), 0.01);
+
+          Assert.assertEquals(output.get(7).doubleValue(), regression.calculateRSquared(), 0.001);
         }
       };
     }

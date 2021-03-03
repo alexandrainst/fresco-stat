@@ -25,14 +25,11 @@ public class SSD implements Computation<SFixed, ProtocolBuilderNumeric> {
   @Override
   public DRes<SFixed> buildComputation(ProtocolBuilderNumeric root) {
     return root.par(par -> {
-      List<DRes<SFixed>> terms = data.stream().map(x -> FixedNumeric.using(par).sub(x, mean))
+      FixedNumeric fixedNumeric = FixedNumeric.using(par);
+      List<DRes<SFixed>> terms = data.stream().map(x -> fixedNumeric.sub(x, mean))
           .collect(Collectors.toList());
       return DRes.of(terms);
-    }).par((par, terms) -> {
-      List<DRes<SFixed>> squaredTerms =
-          terms.stream().map(x -> FixedNumeric.using(par).mult(x, x)).collect(Collectors.toList());
-      return DRes.of(squaredTerms);
-    }).seq((seq, terms) -> AdvancedFixedNumeric.using(seq).sum(terms));
+    }).seq((seq, terms) -> seq.seq(new USS(terms)));
   }
 
 }

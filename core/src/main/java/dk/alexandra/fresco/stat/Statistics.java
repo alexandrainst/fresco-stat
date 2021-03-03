@@ -7,6 +7,8 @@ import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.regression.linear.LinearRegression.LinearRegressionResult;
+import dk.alexandra.fresco.stat.regression.linear.SimpleLinearRegression.SimpleLinearRegressionResult;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoContinuous;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoDiscrete;
 import dk.alexandra.fresco.stat.utils.MultiDimensionalArray;
@@ -110,7 +112,7 @@ public interface Statistics extends ComputationDirectory {
    * @param y The dependant values
    * @return An estimation for the parameters of a linear model for the given data.
    */
-  DRes<ArrayList<DRes<SFixed>>> linearRegression(List<ArrayList<DRes<SFixed>>> x,
+  DRes<LinearRegressionResult> linearRegression(List<ArrayList<DRes<SFixed>>> x,
       ArrayList<DRes<SFixed>> y);
 
   /**
@@ -120,7 +122,7 @@ public interface Statistics extends ComputationDirectory {
    * @param y The dependant values.
    * @return An estimation for the parameters of a linear model for the given data.
    */
-  DRes<Pair<DRes<SFixed>, DRes<SFixed>>> simpleLinearRegression(List<DRes<SFixed>> x,
+  DRes<SimpleLinearRegressionResult> simpleLinearRegression(List<DRes<SFixed>> x,
       List<DRes<SFixed>> y);
 
   /**

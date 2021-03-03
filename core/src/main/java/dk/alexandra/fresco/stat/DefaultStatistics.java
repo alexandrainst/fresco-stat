@@ -17,7 +17,9 @@ import dk.alexandra.fresco.stat.descriptive.SampleStandardDeviation;
 import dk.alexandra.fresco.stat.descriptive.SampleVariance;
 import dk.alexandra.fresco.stat.descriptive.TwoDimensionalHistogram;
 import dk.alexandra.fresco.stat.regression.linear.LinearRegression;
+import dk.alexandra.fresco.stat.regression.linear.LinearRegression.LinearRegressionResult;
 import dk.alexandra.fresco.stat.regression.linear.SimpleLinearRegression;
+import dk.alexandra.fresco.stat.regression.linear.SimpleLinearRegression.SimpleLinearRegressionResult;
 import dk.alexandra.fresco.stat.regression.logistic.LogisticRegression;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoContinuous;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoDiscrete;
@@ -96,21 +98,15 @@ public class DefaultStatistics implements Statistics {
   }
 
   @Override
-  public DRes<ArrayList<DRes<SFixed>>> linearRegression(List<ArrayList<DRes<SFixed>>> x,
+  public DRes<LinearRegressionResult> linearRegression(List<ArrayList<DRes<SFixed>>> x,
       ArrayList<DRes<SFixed>> y) {
     return new LinearRegression(x, y).buildComputation(builder);
   }
 
   @Override
-  public DRes<Pair<DRes<SFixed>, DRes<SFixed>>> simpleLinearRegression(List<DRes<SFixed>> x,
+  public DRes<SimpleLinearRegressionResult> simpleLinearRegression(List<DRes<SFixed>> x,
       List<DRes<SFixed>> y) {
-    return builder.par(par -> {
-      Statistics stat = Statistics.using(par);
-      DRes<SFixed> meanX = stat.sampleMean(x);
-      DRes<SFixed> meanY = stat.sampleMean(y);
-      return Pair.lazy(meanX, meanY);
-    }).seq((seq, means) -> new SimpleLinearRegression(x, means.getFirst(), y, means.getSecond())
-        .buildComputation(seq));
+    return builder.seq(new SimpleLinearRegression(x, y));
   }
 
   @Override
