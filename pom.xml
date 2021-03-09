@@ -2,6 +2,36 @@
   xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <artifactId>stat</artifactId>
+  <groupId>dk.alexandra.fresco</groupId>
+  <modelVersion>4.0.0</modelVersion>
+
+  <modules>
+    <module>demo</module>
+    <module>core</module>
+  </modules>
+
+  <name>FRESCO-stat</name>
+  <description>
+    Library for secure statistics and linear algebra on data held by multiple parties without sharing the data with the other parties.
+  </description>
+  <url>https://github.com/alexandrainst/fresco-stat</url>
+
+  <licenses>
+    <license>
+      <name>MIT-License</name>
+      <url>https://github.com/alexandrainst/fresco-stat/blob/master/LICENSE</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>FRESCO team</name>
+      <email>fresco@alexandra.dk</email>
+      <organization>The Alexandra Institute</organization>
+      <organizationUrl>https://alexandra.dk</organizationUrl>
+    </developer>
+  </developers>
 
   <build>
     <plugins>
@@ -12,12 +42,6 @@
       </plugin>
     </plugins>
   </build>
-  <groupId>dk.alexandra.fresco</groupId>
-  <modelVersion>4.0.0</modelVersion>
-  <modules>
-    <module>demo</module>
-    <module>core</module>
-  </modules>
 
   <packaging>pom</packaging>
 
