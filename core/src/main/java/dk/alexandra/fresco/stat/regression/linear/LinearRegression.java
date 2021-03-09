@@ -1,7 +1,6 @@
 package dk.alexandra.fresco.stat.regression.linear;
 
 import dk.alexandra.fresco.framework.DRes;
-import dk.alexandra.fresco.framework.builder.BuildStep;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
@@ -11,7 +10,6 @@ import dk.alexandra.fresco.lib.fixed.FixedLinearAlgebra;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.AdvancedLinearAlgebra;
-import dk.alexandra.fresco.stat.Statistics;
 import dk.alexandra.fresco.stat.descriptive.SampleMean;
 import dk.alexandra.fresco.stat.descriptive.helpers.SSD;
 import dk.alexandra.fresco.stat.linearalgebra.LinearInverseProblem;
@@ -20,7 +18,6 @@ import dk.alexandra.fresco.stat.utils.MatrixUtils;
 import dk.alexandra.fresco.stat.utils.VectorUtils;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class LinearRegression implements
     Computation<LinearRegressionResult, ProtocolBuilderNumeric> {
@@ -30,13 +27,13 @@ public class LinearRegression implements
   private final int p;
   private final ArrayList<DRes<SFixed>> y;
   private final boolean computeErrors;
-  private final boolean computeR;
 
   public LinearRegression(List<ArrayList<DRes<SFixed>>> observations, ArrayList<DRes<SFixed>> y) {
-    this(observations, y, true, true);
+    this(observations, y, true);
   }
 
-  public LinearRegression(List<ArrayList<DRes<SFixed>>> observations, ArrayList<DRes<SFixed>> y, boolean computeErrors, boolean computeR) {
+  public LinearRegression(List<ArrayList<DRes<SFixed>>> observations, ArrayList<DRes<SFixed>> y,
+      boolean computeErrors) {
     if (observations.stream().mapToInt(ArrayList::size).distinct().count() != 1) {
       throw new IllegalArgumentException(
           "Each observation must contain the same number of entries");
@@ -53,7 +50,6 @@ public class LinearRegression implements
     this.y = y;
 
     this.computeErrors = computeErrors;
-    this.computeR = computeR;
   }
 
   @Override
@@ -63,7 +59,7 @@ public class LinearRegression implements
         .seq((seq, beta) -> {
 
       if (computeErrors) {
-        DRes<Pair<SFixed, SFixed>> out = seq
+        DRes<Pair<SFixed, SFixed>> sAndR = seq
             .seq(sub ->
                 FixedLinearAlgebra.using(sub).vectorMult(DRes.of(x),
                     DRes.of(beta)))
@@ -77,16 +73,17 @@ public class LinearRegression implements
                         (b, yBar) -> new SSD(y, yBar).buildComputation(b))
                     .seq((b, ys) -> FixedNumeric.using(b).div(ys.getFirst(), ys.getSecond())));
 
+        // Compute std errors (squared) for all estimates
         DRes<ArrayList<DRes<SFixed>>> errors = seq.seq(sub ->
           FixedLinearAlgebra.using(sub).mult(DRes.of(MatrixUtils.transpose(x)), DRes.of(x))).seq(
             (sub, m) ->
               AdvancedLinearAlgebra.using(sub).moorePenrosePseudoInverse(m)
         ).par((sub, m) -> {
           FixedNumeric fixedNumeric = FixedNumeric.using(sub);
-            return DRes.of(VectorUtils.listBuilder(m.getHeight(), i -> fixedNumeric.mult(out.out().getFirst(), m.getRow(i).get(i))));
+            return DRes.of(VectorUtils.listBuilder(m.getHeight(), i -> fixedNumeric.mult(sAndR.out().getFirst(), m.getRow(i).get(i))));
           });
 
-        return () -> new LinearRegressionResult(beta, out.out().getFirst(), errors.out(), out.out().getSecond());
+        return () -> new LinearRegressionResult(beta, sAndR.out().getFirst(), errors.out(), sAndR.out().getSecond());
       }
 
       return DRes.of(new LinearRegressionResult(beta, null, null, null));
@@ -95,30 +92,34 @@ public class LinearRegression implements
 
   public static class LinearRegressionResult {
 
-    private final ArrayList<DRes<SFixed>> beta;
+    private final List<DRes<SFixed>> beta;
     private final DRes<SFixed> errorVariance;
     private final DRes<SFixed> rSquared;
     private final List<DRes<SFixed>> errors;
 
-    private LinearRegressionResult(ArrayList<DRes<SFixed>> beta, DRes<SFixed> errorVariance, List<DRes<SFixed>> errors, DRes<SFixed> rSquared) {
+    private LinearRegressionResult(List<DRes<SFixed>> beta, DRes<SFixed> errorVariance, List<DRes<SFixed>> errors, DRes<SFixed> rSquared) {
       this.beta = beta;
       this.errorVariance = errorVariance;
       this.errors = errors;
       this.rSquared = rSquared;
     }
 
-    public ArrayList<DRes<SFixed>> getBeta() {
+    /** Estimates for the coefficients */
+    public List<DRes<SFixed>> getBeta() {
       return beta;
     }
 
+    /** The regression error variance (s<sup>2</sup>) which is equal to the regression standard error squared */
     public DRes<SFixed> getErrorVariance() {
       return errorVariance;
     }
 
+    /** The coefficient of determination (R<sup>2</sup>) */
     public DRes<SFixed> getRSquared() {
       return rSquared;
     }
 
+    /** Standard errors (squared) for each coefficient estimate */
     public List<DRes<SFixed>> getStdErrorsSquared() {
       return errors;
     }

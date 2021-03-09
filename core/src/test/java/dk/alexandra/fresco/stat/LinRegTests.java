@@ -80,7 +80,7 @@ public class LinRegTests {
                           FixedNumeric.using(par).open(f.out().getBeta()),
                           FixedNumeric.using(par).open(f.out().getErrorAlphaSquared()),
                           FixedNumeric.using(par).open(f.out().getErrorBetaSquared()),
-                          FixedNumeric.using(par).open(f.out().getR()));
+                          FixedNumeric.using(par).open(f.out().getRSquared()));
                   return () -> result.stream().map(DRes::out).collect(Collectors.toList());
                 });
               };
@@ -97,7 +97,7 @@ public class LinRegTests {
           assertEquals(output.get(1).doubleValue(), result.getParameterEstimate(1), delta);
           assertEquals(output.get(2).doubleValue(), Math.pow(result.getStdErrorOfEstimate(0), 2), delta);
           assertEquals(output.get(3).doubleValue(), Math.pow(result.getStdErrorOfEstimate(1), 2), delta);
-          assertEquals(output.get(4).doubleValue(), Math.sqrt(result.getRSquared()), delta);
+          assertEquals(output.get(4).doubleValue(), result.getRSquared(), delta);
         }
       };
     }

@@ -81,8 +81,7 @@ public class SimpleLinearRegression implements
       }
 
       if (computeCorrelation) {
-        UnaryOperator<DRes<SFixed>> sqrt = AdvancedFixedNumeric.using(seq)::sqrt;
-        state.correlation = fixedNumeric.div(state.covxy, sqrt.apply(fixedNumeric.mult(state.varx, state.vary)));
+        state.correlation = fixedNumeric.div(fixedNumeric.mult(state.covxy, state.covxy), fixedNumeric.mult(state.varx, state.vary));
       }
       return DRes.of(new SimpleLinearRegressionResult(state));
     });
@@ -136,7 +135,7 @@ public class SimpleLinearRegression implements
       return errorBeta;
     }
 
-    public DRes<SFixed> getR() {
+    public DRes<SFixed> getRSquared() {
       return correlation;
     }
   }
