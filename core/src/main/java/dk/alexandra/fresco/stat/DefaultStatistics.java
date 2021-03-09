@@ -4,6 +4,7 @@ import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
+import dk.alexandra.fresco.lib.common.collections.Collections;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
@@ -31,6 +32,8 @@ import dk.alexandra.fresco.stat.tests.KruskallWallisTest;
 import dk.alexandra.fresco.stat.tests.OneSampleTTest;
 import dk.alexandra.fresco.stat.tests.TwoSampleTTest;
 import dk.alexandra.fresco.stat.utils.MultiDimensionalArray;
+import dk.alexandra.fresco.stat.utils.VectorUtils;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -139,9 +142,51 @@ public class DefaultStatistics implements Statistics {
   }
 
   @Override
-  public DRes<List<Pair<DRes<SInt>, Integer>>> leakyFrequencies(List<DRes<SInt>> data) {
+  public DRes<List<Pair<DRes<SInt>, Integer>>> leakyFrequencyTable(List<DRes<SInt>> data) {
     return builder.seq(seq -> new LeakyFrequencyTable(data).buildComputation(seq));
   }
+
+  @Override
+  public DRes<List<Pair<BigInteger, Integer>>> frequencyTable(List<DRes<SInt>> data) {
+    // The shuffle method expects a matrix whose height is a two power. If this is not the case, we
+    // pad with zeros and remove them afterwards.
+    BigInteger paddingValue = BigInteger.ZERO;
+    int padding = Integer.bitCount(data.size()) == 1 ? 0 : (Integer.highestOneBit(data.size()) << 1) - data.size();
+    return builder.par(par -> {
+      List<DRes<SInt>> input = data;
+
+      if (padding > 0) {
+        input = new ArrayList<>(data);
+        for (int i = 0; i < padding; i++) {
+          input.add(par.numeric().known(paddingValue));
+        }
+      }
+      ArrayList<ArrayList<DRes<SInt>>> rows =
+          input.stream().map(List::of).map(ArrayList::new)
+              .collect(
+                  Collectors.toCollection(ArrayList::new));
+      return DRes.of(new Matrix<>(input.size(), 1, rows));
+    }).seq((seq, columnVector) -> Collections.using(seq).shuffle(DRes.of(columnVector))).seq((seq, shuffledMatrix) -> {
+      List<DRes<SInt>> shuffled = VectorUtils.listBuilder(shuffledMatrix.getHeight(),
+          i -> shuffledMatrix.getRow(i).get(0));
+      return new LeakyFrequencyTable(shuffled).buildComputation(seq);
+    }).par((par, frequencyTable) -> DRes.of(frequencyTable.stream().map(pair -> new Pair<>(par.numeric().open(pair.getFirst()), pair.getSecond())).collect(
+        Collectors.toList()))).seq((seq, frequencyTable) -> {
+      List<Pair<BigInteger, Integer>> uncorrected = frequencyTable.stream().map(pair -> new Pair<>(pair.getFirst().out(), pair.getSecond())).collect(Collectors.toList());
+      List<Pair<BigInteger, Integer>> result = new ArrayList<>();
+      for (Pair<BigInteger, Integer> frequencyPair : uncorrected) {
+        if (!frequencyPair.getFirst().equals(paddingValue)) {
+          result.add(frequencyPair);
+        } else {
+          if (frequencyPair.getSecond() > padding) {
+            result.add(new Pair<>(paddingValue, frequencyPair.getSecond() - padding));
+          }
+        }
+      }
+      return DRes.of(result);
+    });
+  }
+
 
   @Override
   public DRes<List<DRes<SFixed>>> coxRegressionDiscrete(List<SurvivalInfoDiscrete> data,

@@ -188,7 +188,6 @@ public class DescriptiveStatTests {
     }
   }
 
-
   public static class TestLeakyFrequencyTable<ResourcePoolT extends ResourcePool>
       extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
 
@@ -203,7 +202,7 @@ public class DescriptiveStatTests {
               builder.seq(seq -> {
                 List<DRes<SInt>> xSecret =
                     x.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList());
-                return Statistics.using(seq).leakyFrequencies(xSecret);
+                return Statistics.using(seq).leakyFrequencyTable(xSecret);
               }).seq((seq, ft) -> {
                 List<Pair<DRes<BigInteger>, Integer>> out =
                     ft.stream()
@@ -228,6 +227,40 @@ public class DescriptiveStatTests {
       };
     }
   }
+
+  public static class TestFrequencyTable<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+        final List<Integer> x = Arrays.asList(1, 3, 2, 1, 3, 1, 0, 0, 4);
+
+        @Override
+        public void test() {
+          Application<List<Pair<BigInteger, Integer>>, ProtocolBuilderNumeric> testApplication = builder ->
+              builder.seq(seq -> {
+                List<DRes<SInt>> xSecret =
+                    x.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList());
+                return Statistics.using(seq).frequencyTable(xSecret);
+              });
+
+          Map<Integer, Integer> expected = new HashMap<>();
+          for (int xi : x) {
+            expected.putIfAbsent(xi, 0);
+            expected.computeIfPresent(xi, (k, v) -> v + 1);
+          }
+
+          List<Pair<BigInteger, Integer>> output = runApplication(testApplication);
+          for (Pair<BigInteger, Integer> outputs : output) {
+            assertEquals(expected.get(outputs.getFirst().intValue()),
+                outputs.getSecond());
+          }
+        }
+      };
+    }
+  }
+
 
   public static class TestLeakyRanks<ResourcePoolT extends ResourcePool>
       extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {

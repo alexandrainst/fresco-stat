@@ -232,8 +232,13 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   }
 
   @Test
-  public void test_leaky_frequencies() {
+  public void test_leaky_frequency_table() {
     runTest(new DescriptiveStatTests.TestLeakyFrequencyTable<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_frequency_table() {
+    runTest(new DescriptiveStatTests.TestFrequencyTable<>(), TEST_PARAMETERS);
   }
 
   @Test

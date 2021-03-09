@@ -12,6 +12,7 @@ import dk.alexandra.fresco.stat.regression.linear.SimpleLinearRegression.SimpleL
 import dk.alexandra.fresco.stat.survival.SurvivalInfoContinuous;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoDiscrete;
 import dk.alexandra.fresco.stat.utils.MultiDimensionalArray;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntToDoubleFunction;
@@ -120,7 +121,7 @@ public interface Statistics extends ComputationDirectory {
    *
    * @param x The dataset.
    * @param y The dependant values.
-   * @return An estimation for the parameters of a linear model for the given data.
+   * @return An estimation for the parameters of a linear model.
    */
   DRes<SimpleLinearRegressionResult> simpleLinearRegression(List<DRes<SFixed>> x,
       List<DRes<SFixed>> y);
@@ -172,7 +173,15 @@ public interface Statistics extends ComputationDirectory {
    * @param data A dataset
    * @return A frequency table.
    */
-  DRes<List<Pair<DRes<SInt>, Integer>>> leakyFrequencies(List<DRes<SInt>> data);
+  DRes<List<Pair<DRes<SInt>, Integer>>> leakyFrequencyTable(List<DRes<SInt>> data);
+
+  /**
+   * Compute a frequency table for the data.
+   *
+   * @param data A dataset
+   * @return A frequency table.
+   */
+  DRes<List<Pair<BigInteger, Integer>>> frequencyTable(List<DRes<SInt>> data);
 
   /**
    * Estimate the parameters of a Cox model on the given data. Here it's assumed that each covariate
