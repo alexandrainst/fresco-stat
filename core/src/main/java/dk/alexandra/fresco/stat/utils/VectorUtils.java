@@ -191,6 +191,12 @@ public class VectorUtils {
     return entrywiseUnaryOp(a, (x, b) -> b.numeric().sub(1, x), builder);
   }
 
+  public static ArrayList<DRes<BigInteger>> open(List<DRes<SInt>> a,
+      ProtocolBuilderNumeric builder) {
+    return entrywiseUnaryOp(a, (x, b) -> b.numeric().open(x), builder);
+  }
+
+
   /**
    * Subtract two secret vectors.
    *

@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-public class KAnonymity implements
+public class LeakyKAnonymity implements
     Computation<MultiDimensionalArray<List<DRes<SInt>>>, ProtocolBuilderNumeric> {
 
   private final Matrix<DRes<SInt>> data;
@@ -40,7 +40,7 @@ public class KAnonymity implements
    * Note that the output leaks the corresponding indices of the individuals in each bucket. To
    * avoid this the data could be shuffled obliviously before running the computation.
    */
-  public KAnonymity(Matrix<DRes<SInt>> data, List<DRes<SInt>> sensitive,
+  public LeakyKAnonymity(Matrix<DRes<SInt>> data, List<DRes<SInt>> sensitive,
       List<List<DRes<SInt>>> buckets, int k) {
     if (data.getHeight() != sensitive.size()) {
       throw new IllegalArgumentException("There must be a sensitive attribute per data point");

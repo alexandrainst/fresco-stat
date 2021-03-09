@@ -13,11 +13,9 @@ import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.sce.resources.ResourcePool;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
-import dk.alexandra.fresco.lib.common.collections.Collections;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
-import dk.alexandra.fresco.stat.anonymisation.KAnonymity;
 import dk.alexandra.fresco.stat.descriptive.LeakyBreakTies;
 import dk.alexandra.fresco.stat.descriptive.MultiDimensionalHistogram;
 import dk.alexandra.fresco.stat.descriptive.Ranks;
@@ -602,27 +600,25 @@ public class DescriptiveStatTests {
                 List<DRes<SInt>> sensitive = s.stream().map(x -> seq.numeric().input(x, 1))
                     .collect(Collectors.toList());
 
-                return new KAnonymity(data, sensitive, buckets, 3).buildComputation(seq);
-              }).seq((seq, histogram) -> {
-                Collections collections = Collections.using(seq);
-                MultiDimensionalArray<DRes<List<DRes<BigInteger>>>> opened = histogram
-                    .map(l -> collections.openList(DRes.of(l)));
-                return () -> opened
-                    .map(a -> a.out().stream().map(DRes::out).collect(Collectors.toList()));
+                return Statistics.using(seq).kAnonymizeAndOpen(data, sensitive, buckets, 3);
               });
 
           MultiDimensionalArray<List<BigInteger>> output = runApplication(testApplication);
 
+          int suppressed = s.size();
           for (int i = 0; i < 2; i++) {
             for (int j = 0; j < 2; j++) {
               for (int k = 0; k < 2; k++) {
-                for (int n = 0; n < s.size(); n++) {
+                for (int n = 0; n < output.get(i,j,k).size(); n++) {
                   if (output.get(i, j, k).get(n).intValue() > 0) {
-                    Assert.assertEquals(s.get(n).intValue(), output.get(i, j, k).get(n).intValue());
 
-                    boolean a = x.get(n) <= bucketsX.get(0);
-                    boolean b = y.get(n) <= bucketsY.get(0);
-                    boolean c = z.get(n) <= bucketsZ.get(0);
+                    suppressed--;
+
+                    // Invert shuffle
+                    int m = s.indexOf(output.get(i, j, k).get(n).intValue());
+                    boolean a = x.get(m) <= bucketsX.get(0);
+                    boolean b = y.get(m) <= bucketsY.get(0);
+                    boolean c = z.get(m) <= bucketsZ.get(0);
 
                     if (i == 0) {
                       Assert.assertTrue(a);
@@ -640,12 +636,65 @@ public class DescriptiveStatTests {
               }
             }
           }
+          Assert.assertEquals(3, suppressed);
         }
       };
     }
   }
 
-//  public static class TestKAnonymityLarge<ResourcePoolT extends ResourcePool>
+  public static class TestKAnonymityOpen<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        final List<Integer> x = Arrays.asList(0, 0, 1, 1, 3, 4, 5, 1, 3, 5, 6, 7, 8, 10);
+        final List<Integer> y = Arrays.asList(0, 2, 1, 1, 1, 1, 0, 2, 4, 5, 8, 9, 10, 11);
+        final List<Integer> z = Arrays.asList(0, 0, 0, 1, 5, 3, 4, 1, 7, 2, 3, 4, 2, 11);
+        final List<Integer> s = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14);
+        final List<Integer> bucketsX = java.util.Collections.singletonList(2);
+        final List<Integer> bucketsY = java.util.Collections.singletonList(2);
+        final List<Integer> bucketsZ = java.util.Collections.singletonList(3);
+
+        @Override
+        public void test() {
+
+          Application<MultiDimensionalArray<List<BigInteger>>, ProtocolBuilderNumeric> testApplication = builder -> builder
+              .seq(seq -> {
+                List<List<DRes<SInt>>> buckets = List.of(
+                    bucketsX.stream().map(x -> seq.numeric().input(x, 1))
+                        .collect(Collectors.toList()),
+                    bucketsY.stream().map(x -> seq.numeric().input(x, 1))
+                        .collect(Collectors.toList()),
+                    bucketsZ.stream().map(x -> seq.numeric().input(x, 1))
+                        .collect(Collectors.toList())
+
+                );
+                Matrix<DRes<SInt>> data = MatrixUtils.buildMatrix(x.size(), 3, (i, j) -> {
+                  if (j == 0) {
+                    return seq.numeric().input(x.get(i), 1);
+                  } else if (j == 1) {
+                    return seq.numeric().input(y.get(i), 2);
+                  } else {
+                    return seq.numeric().input(z.get(i), 1);
+                  }
+                });
+                List<DRes<SInt>> sensitive = s.stream().map(x -> seq.numeric().input(x, 1))
+                    .collect(Collectors.toList());
+
+                return Statistics.using(seq).kAnonymizeAndOpen(data, sensitive, buckets, 3);
+              });
+
+          MultiDimensionalArray<List<BigInteger>> output = runApplication(testApplication);
+          System.out.println(output);
+
+        }
+      };
+    }
+  }
+
+  //  public static class TestKAnonymityLarge<ResourcePoolT extends ResourcePool>
 //      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
 //
 //    @Override

@@ -8,6 +8,7 @@ import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestHistogramContinuous;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestHistogramDiscrete;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestKAnonymity;
+import dk.alexandra.fresco.stat.DescriptiveStatTests.TestKAnonymityOpen;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMean;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMultiDimHistogram;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestStandardDeviation;
@@ -397,6 +398,11 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   @Test
   public void test_k_anonymity() {
     runTest(new TestKAnonymity<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_k_anonymity_open() {
+    runTest(new TestKAnonymityOpen<>(), TEST_PARAMETERS);
   }
 
 }

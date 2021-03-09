@@ -199,7 +199,7 @@ public class KAnonymityDemo {
             Matrix<DRes<SInt>> x = new Matrix<>(data.getFirst().size(),
                 data.getFirst().get(0).size(),
                 data.getFirst());
-            return Statistics.using(seq).kAnonymity(x, data.getSecond(), data.getThird(), k);
+            return Statistics.using(seq).kAnonymize(x, data.getSecond(), data.getThird(), k);
           }).seq((seq, histogram) -> {
             Collections collections = Collections.using(seq);
             MultiDimensionalArray<DRes<List<DRes<BigInteger>>>> opened = histogram

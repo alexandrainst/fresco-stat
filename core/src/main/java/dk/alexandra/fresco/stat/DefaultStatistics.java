@@ -8,7 +8,7 @@ import dk.alexandra.fresco.lib.common.collections.Collections;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
-import dk.alexandra.fresco.stat.anonymisation.KAnonymity;
+import dk.alexandra.fresco.stat.anonymisation.LeakyKAnonymity;
 import dk.alexandra.fresco.stat.descriptive.Histogram;
 import dk.alexandra.fresco.stat.descriptive.LeakyFrequencyTable;
 import dk.alexandra.fresco.stat.descriptive.MultiDimensionalHistogram;
@@ -31,6 +31,7 @@ import dk.alexandra.fresco.stat.tests.FTest;
 import dk.alexandra.fresco.stat.tests.KruskallWallisTest;
 import dk.alexandra.fresco.stat.tests.OneSampleTTest;
 import dk.alexandra.fresco.stat.tests.TwoSampleTTest;
+import dk.alexandra.fresco.stat.utils.MatrixUtils;
 import dk.alexandra.fresco.stat.utils.MultiDimensionalArray;
 import dk.alexandra.fresco.stat.utils.VectorUtils;
 import java.math.BigInteger;
@@ -39,6 +40,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.IntToDoubleFunction;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class DefaultStatistics implements Statistics {
 
@@ -151,7 +153,8 @@ public class DefaultStatistics implements Statistics {
     // The shuffle method expects a matrix whose height is a two power. If this is not the case, we
     // pad with zeros and remove them afterwards.
     BigInteger paddingValue = BigInteger.ZERO;
-    int padding = Integer.bitCount(data.size()) == 1 ? 0 : (Integer.highestOneBit(data.size()) << 1) - data.size();
+    int padding = Integer.bitCount(data.size()) == 1 ? 0
+        : (Integer.highestOneBit(data.size()) << 1) - data.size();
     return builder.par(par -> {
       List<DRes<SInt>> input = data;
 
@@ -166,25 +169,29 @@ public class DefaultStatistics implements Statistics {
               .collect(
                   Collectors.toCollection(ArrayList::new));
       return DRes.of(new Matrix<>(input.size(), 1, rows));
-    }).seq((seq, columnVector) -> Collections.using(seq).shuffle(DRes.of(columnVector))).seq((seq, shuffledMatrix) -> {
-      List<DRes<SInt>> shuffled = VectorUtils.listBuilder(shuffledMatrix.getHeight(),
-          i -> shuffledMatrix.getRow(i).get(0));
-      return new LeakyFrequencyTable(shuffled).buildComputation(seq);
-    }).par((par, frequencyTable) -> DRes.of(frequencyTable.stream().map(pair -> new Pair<>(par.numeric().open(pair.getFirst()), pair.getSecond())).collect(
-        Collectors.toList()))).seq((seq, frequencyTable) -> {
-      List<Pair<BigInteger, Integer>> uncorrected = frequencyTable.stream().map(pair -> new Pair<>(pair.getFirst().out(), pair.getSecond())).collect(Collectors.toList());
-      List<Pair<BigInteger, Integer>> result = new ArrayList<>();
-      for (Pair<BigInteger, Integer> frequencyPair : uncorrected) {
-        if (!frequencyPair.getFirst().equals(paddingValue)) {
-          result.add(frequencyPair);
-        } else {
-          if (frequencyPair.getSecond() > padding) {
-            result.add(new Pair<>(paddingValue, frequencyPair.getSecond() - padding));
+    }).seq((seq, columnVector) -> Collections.using(seq).shuffle(DRes.of(columnVector)))
+        .seq((seq, shuffledMatrix) -> {
+          List<DRes<SInt>> shuffled = VectorUtils.listBuilder(shuffledMatrix.getHeight(),
+              i -> shuffledMatrix.getRow(i).get(0));
+          return new LeakyFrequencyTable(shuffled).buildComputation(seq);
+        }).par((par, frequencyTable) -> DRes.of(frequencyTable.stream()
+            .map(pair -> new Pair<>(par.numeric().open(pair.getFirst()), pair.getSecond())).collect(
+                Collectors.toList()))).seq((seq, frequencyTable) -> {
+          List<Pair<BigInteger, Integer>> uncorrected = frequencyTable.stream()
+              .map(pair -> new Pair<>(pair.getFirst().out(), pair.getSecond()))
+              .collect(Collectors.toList());
+          List<Pair<BigInteger, Integer>> result = new ArrayList<>();
+          for (Pair<BigInteger, Integer> frequencyPair : uncorrected) {
+            if (!frequencyPair.getFirst().equals(paddingValue)) {
+              result.add(frequencyPair);
+            } else {
+              if (frequencyPair.getSecond() > padding) {
+                result.add(new Pair<>(paddingValue, frequencyPair.getSecond() - padding));
+              }
+            }
           }
-        }
-      }
-      return DRes.of(result);
-    });
+          return DRes.of(result);
+        });
   }
 
 
@@ -271,10 +278,83 @@ public class DefaultStatistics implements Statistics {
     return new MultiDimensionalHistogram(buckets, data).buildComputation(builder);
   }
 
-  @Override
-  public DRes<MultiDimensionalArray<List<DRes<SInt>>>> kAnonymity(Matrix<DRes<SInt>> data,
+  private DRes<MultiDimensionalArray<List<DRes<SInt>>>> leakyKAnonymity(Matrix<DRes<SInt>> data,
       List<DRes<SInt>> sensitiveAttributes, List<List<DRes<SInt>>> buckets, int k) {
-    return new KAnonymity(data, sensitiveAttributes, buckets, k).buildComputation(builder);
+    return new LeakyKAnonymity(data, sensitiveAttributes, buckets, k).buildComputation(builder);
   }
 
+  @Override
+  public DRes<MultiDimensionalArray<List<DRes<SInt>>>> kAnonymize(Matrix<DRes<SInt>> data,
+      List<DRes<SInt>> sensitiveAttributes, List<List<DRes<SInt>>> buckets, int k) {
+    // The shuffle method expects a matrix whose height is a two power. If this is not the case, we
+    // pad with zero rows and put an extra indicator attribute to be able to remove them afterwards.
+
+    // Smallest representable value
+    BigInteger paddingValue = BigInteger.valueOf(0);
+    BigInteger paddingSensitive = BigInteger.valueOf(0);
+
+    // Distance to next power of two
+    int padding = Integer.bitCount(data.getHeight()) == 1 ? 0
+        : (Integer.highestOneBit(data.getHeight()) << 1) - data.getHeight();
+    boolean pad = padding > 0;
+
+
+    return builder.par(par -> {
+
+      // Create a matrix consisting of quasi identifiers, padding indicator and sensitive attributes
+      // | quasi identifiers | padded? | sensitive |
+      ArrayList<ArrayList<DRes<SInt>>> rows = new ArrayList<>();
+
+      for (int i = 0; i < data.getHeight(); i++) {
+        ArrayList<DRes<SInt>> row = new ArrayList<>(data.getRow(i));
+
+        // Add padding indicator attribute. If the size happens to be a power of two, this may be removed
+        if (pad) {
+          row.add(par.numeric().known(0));
+        }
+        row.add(sensitiveAttributes.get(i));
+        rows.add(row);
+      }
+
+      if (pad) {
+        for (int i = 0; i < padding; i++) {
+          ArrayList<DRes<SInt>> row = IntStream.range(0, data.getWidth())
+              .mapToObj(j -> par.numeric().known(paddingValue))
+              .collect(Collectors.toCollection(ArrayList::new));
+          row.add(par.numeric().known(1)); // Add padding indicator attribute
+          row.add(par.numeric().known(paddingSensitive));
+          rows.add(row);
+        }
+      }
+      return DRes.of(new Matrix<>(rows.size(), rows.get(0).size(), rows));
+    }).seq((seq, columnVector) -> {
+      // Shuffle the matrix we created above
+      return Collections.using(seq).shuffle(DRes.of(columnVector));
+    }).seq((seq, shuffledMatrix) -> {
+      // Extract matrix of quasi-identifiers and list of sensitive attributes from shuffled matrix
+      Matrix<DRes<SInt>> shuffledData = MatrixUtils
+          .subMatrix(shuffledMatrix, 0, shuffledMatrix.getHeight(), 0,
+              shuffledMatrix.getWidth() - 1);
+      List<DRes<SInt>> shuffledSensitive = shuffledMatrix.getColumn(shuffledMatrix.getWidth() - 1);
+      List<List<DRes<SInt>>> bucketsWithIndicator = new ArrayList<>(buckets);
+      bucketsWithIndicator.add(List.of(seq.numeric().known(0)));
+
+      // Run "leaky" k-anonymity algorithm on these inputs. Indices are
+      return new DefaultStatistics(seq)
+          .leakyKAnonymity(shuffledData, shuffledSensitive, bucketsWithIndicator, k);
+    }).par((par, kAnonymousData) -> {
+      MultiDimensionalArray<List<DRes<SInt>>> uncorrected = kAnonymousData.project(l -> l.get(0));
+      return DRes.of(uncorrected);
+    });
+  }
+
+  @Override
+  public DRes<MultiDimensionalArray<List<BigInteger>>> kAnonymizeAndOpen(Matrix<DRes<SInt>> data,
+      List<DRes<SInt>> sensitiveAttributes, List<List<DRes<SInt>>> buckets, int k) {
+    return builder
+        .seq(seq -> Statistics.using(seq).kAnonymize(data, sensitiveAttributes, buckets, k))
+        .par((par, kAnonymousData) -> DRes.of(kAnonymousData.map(x -> VectorUtils.open(x, par))))
+        .par((par, kAnonymousData) -> DRes.of(kAnonymousData.map(h -> h.stream().map(DRes::out)
+            .filter(x -> !x.equals(BigInteger.ZERO)).collect(Collectors.toList()))));
+  }
 }

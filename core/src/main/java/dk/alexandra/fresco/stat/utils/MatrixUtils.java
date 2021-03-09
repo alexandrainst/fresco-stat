@@ -33,8 +33,15 @@ public class MatrixUtils {
 
   @FunctionalInterface
   public interface MatrixPopulator<E> {
-
     E apply(int i, int j);
+  }
+
+  public static <E> Matrix<E> subMatrix(Matrix<E> matrix, int i0, int i1, int j0, int j1) {
+    ArrayList<ArrayList<E>> rows = new ArrayList<>();
+    for (int i = i0; i < i1; i++) {
+      rows.add(new ArrayList<>(matrix.getRow(i).subList(j0, j1)));
+    }
+    return new Matrix<>(i1-i0, j1-j0, rows);
   }
 
 }
