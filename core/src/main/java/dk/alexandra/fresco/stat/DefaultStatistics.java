@@ -278,11 +278,6 @@ public class DefaultStatistics implements Statistics {
     return new MultiDimensionalHistogram(buckets, data).buildComputation(builder);
   }
 
-  private DRes<MultiDimensionalArray<List<DRes<SInt>>>> leakyKAnonymity(Matrix<DRes<SInt>> data,
-      List<DRes<SInt>> sensitiveAttributes, List<List<DRes<SInt>>> buckets, int k) {
-    return new LeakyKAnonymity(data, sensitiveAttributes, buckets, k).buildComputation(builder);
-  }
-
   @Override
   public DRes<MultiDimensionalArray<List<DRes<SInt>>>> kAnonymize(Matrix<DRes<SInt>> data,
       List<DRes<SInt>> sensitiveAttributes, List<List<DRes<SInt>>> buckets, int k) {
@@ -340,8 +335,7 @@ public class DefaultStatistics implements Statistics {
       bucketsWithIndicator.add(List.of(seq.numeric().known(0)));
 
       // Run "leaky" k-anonymity algorithm on these inputs. Indices are
-      return new DefaultStatistics(seq)
-          .leakyKAnonymity(shuffledData, shuffledSensitive, bucketsWithIndicator, k);
+      return seq.seq(new LeakyKAnonymity(shuffledData, shuffledSensitive, bucketsWithIndicator, k));
     }).par((par, kAnonymousData) -> {
       MultiDimensionalArray<List<DRes<SInt>>> uncorrected = kAnonymousData.project(l -> l.get(0));
       return DRes.of(uncorrected);
