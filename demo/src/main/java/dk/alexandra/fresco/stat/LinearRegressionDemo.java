@@ -236,7 +236,7 @@ public class LinearRegressionDemo {
       }).seq((seq, data) -> Statistics.using(seq).linearRegression(data.getFirst(),
           data.getSecond())).seq((seq, result) -> {
         FixedNumeric fixedNumeric = FixedNumeric.using(seq);
-        return DRes.of(result.stream().map(fixedNumeric::open).collect(Collectors.toList()));
+        return DRes.of(result.getBeta().stream().map(fixedNumeric::open).collect(Collectors.toList()));
       }).seq((seq, data) -> DRes.of(data.stream().map(DRes::out).collect(Collectors.toList())));
     }
   }
