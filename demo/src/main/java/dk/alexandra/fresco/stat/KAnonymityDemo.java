@@ -41,6 +41,10 @@ import java.util.stream.Collectors;
 
 public class KAnonymityDemo {
 
+  /**
+   * Compute a k-anonymized version of a subset of the attributes of the "adult" dataset with
+   * predefined generalizations. Equivalence classes with less than k individuals are suppressed.
+   */
   public static void main(String[] arguments) throws IOException {
     if (arguments.length != 1) {
       throw new IllegalArgumentException("Must provide party id");
