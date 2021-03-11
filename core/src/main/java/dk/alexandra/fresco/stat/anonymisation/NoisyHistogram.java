@@ -45,11 +45,13 @@ public class NoisyHistogram implements Computation<List<DRes<SInt>>, ProtocolBui
       List<DRes<SFixed>> noise = new ArrayList<>();
       Sampler sampler = Sampler.using(par);
       for (int i = 0; i < buckets.size() + 1; i++) {
+        // We apply the Laplace mechanism with a sensitivity of 1 (because we are counting)
         noise.add(sampler.sampleLaplaceDistribution(1.0 / epsilon));
       }
       return Pair.lazy(histogram, noise);
     }).par((par, histogramAndNoise) -> {
       FixedNumeric fixedNumeric = FixedNumeric.using(par);
+      // We round the noise as floor(x + 0.5)
       List<DRes<SFixed>> noisePlusHalf = histogramAndNoise.getSecond().stream().map(x -> fixedNumeric.add(
           0.5, x)).collect(Collectors.toList());
       return Pair.lazy(histogramAndNoise.getFirst().out(), noisePlusHalf);
