@@ -45,8 +45,10 @@ The library has four function libraries with the following functions:
         * Kruskall-Wallis test
     * Survival analysis
         * Cox regression
-    * Misc.
+    * Anonymization methods
         * <i>k</i>-anonymization
+        * Differentially private histograms
+        * Differentially private linear regression
 1. [Sampling from various distributions](core/src/main/java/dk/alexandra/fresco/stat/Sampler.java)
     * Bernoulli distribution
     * Categorical distribution

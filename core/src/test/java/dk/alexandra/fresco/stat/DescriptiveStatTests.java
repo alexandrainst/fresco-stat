@@ -16,6 +16,7 @@ import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.anonymisation.NoisyHistogram;
 import dk.alexandra.fresco.stat.descriptive.LeakyBreakTies;
 import dk.alexandra.fresco.stat.descriptive.MultiDimensionalHistogram;
 import dk.alexandra.fresco.stat.descriptive.Ranks;
@@ -28,6 +29,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
@@ -373,9 +375,14 @@ public class DescriptiveStatTests {
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
       return new TestThread<>() {
 
-        final List<Integer> x = Arrays.asList(1, 5, 7, 3, 9, 5, 34, 5, -1, -3);
-        final List<Integer> buckets = Arrays.asList(0, 5, 10);
-        final List<Integer> expected = Arrays.asList(2, 5, 2, 1);
+        final int n = 100;
+        final Random random = new Random(1234);
+        final List<Integer> x = IntStream.range(0,n).map(i -> random.nextInt(50)).boxed().collect(
+            Collectors.toList());
+        final List<Integer> buckets = Arrays.asList(10, 20, 30, 40);
+        final List<Integer> bucketsExt = Arrays.asList(-1, 10, 20, 30, 40, 50);
+        final List<Integer> expected = IntStream.range(1, 6).map(i -> (int) x.stream().filter(y -> y <= bucketsExt.get(i) && y > bucketsExt.get(i-1)).count()).boxed().collect(
+            Collectors.toList());
 
         @Override
         public void test() {
@@ -402,6 +409,51 @@ public class DescriptiveStatTests {
       };
     }
   }
+
+  public static class TestNoisyHistogram<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        final int n = 100;
+        final Random random = new Random(1234);
+        final List<Integer> x = IntStream.range(0,n).map(i -> random.nextInt(50)).boxed().collect(
+            Collectors.toList());
+        final List<Integer> buckets = Arrays.asList(10, 20, 30, 40);
+        final List<Integer> bucketsExt = Arrays.asList(-1, 10, 20, 30, 40, 50);
+        final List<Integer> expected = IntStream.range(1, 6).map(i -> (int) x.stream().filter(y -> y <= bucketsExt.get(i) && y > bucketsExt.get(i-1)).count()).boxed().collect(
+            Collectors.toList());
+
+        @Override
+        public void test() {
+
+          Application<List<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder
+              .seq(seq -> {
+                List<DRes<SInt>> xSecret =
+                    x.stream().map(x -> seq.numeric().input(x, 1)).collect(Collectors.toList());
+                List<DRes<SInt>> bSecret =
+                    buckets.stream().map(b -> seq.numeric().input(b, 2))
+                        .collect(Collectors.toList());
+                return seq.seq(new NoisyHistogram(bSecret, xSecret, 1.0));
+              }).seq((seq, h) -> {
+                List<DRes<BigInteger>> out =
+                    h.stream().map(seq.numeric()::open).collect(Collectors.toList());
+                return () -> out.stream().map(DRes::out).collect(Collectors.toList());
+              });
+
+
+          List<BigInteger> output = runApplication(testApplication);
+          for (int i = 0; i < output.size(); i++) {
+            // TODO: How may we test this in a meaningful way?
+            assertTrue(Math.abs(expected.get(i) - output.get(i).intValue()) < 10);
+          }
+        }
+      };
+    }
+  }
+
 
   public static class TestHistogramContinuous<ResourcePoolT extends ResourcePool>
       extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {

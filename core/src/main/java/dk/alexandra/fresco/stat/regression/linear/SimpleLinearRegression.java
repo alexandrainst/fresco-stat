@@ -45,7 +45,7 @@ public class SimpleLinearRegression implements
       DRes<SFixed> Sx = AdvancedFixedNumeric.using(builder).sum(x);
       DRes<SFixed> Sxx = builder.seq(new USS(x));
       DRes<SFixed> Sy = AdvancedFixedNumeric.using(builder).sum(y);
-      DRes<SFixed> Syy = builder.seq(new USS(y));
+      DRes<SFixed> Syy = computeErrors || computeErrors ? builder.seq(new USS(y)) : null;
       DRes<SFixed> Sxy = builder.seq(new SP(x, y));
       return new State(Sx, Sxx, Sy, Syy, Sxy);
     }).par((par, state) -> {
@@ -59,11 +59,13 @@ public class SimpleLinearRegression implements
         return numeric.sub(numeric.mult(n, state.sxx), numeric
             .mult(state.sx, state.sx));
       });
-      state.vary = par.seq(seq -> {
-        FixedNumeric numeric = FixedNumeric.using(seq);
-        return numeric.sub(numeric.mult(n, state.syy), numeric
-            .mult(state.sy, state.sy));
-      });
+      if (computeErrors || computeCorrelation) {
+        state.vary = par.seq(seq -> {
+          FixedNumeric numeric = FixedNumeric.using(seq);
+          return numeric.sub(numeric.mult(n, state.syy), numeric
+              .mult(state.sy, state.sy));
+        });
+      }
       return state;
     }).seq((seq, state) -> {
       FixedNumeric numeric = FixedNumeric.using(seq);

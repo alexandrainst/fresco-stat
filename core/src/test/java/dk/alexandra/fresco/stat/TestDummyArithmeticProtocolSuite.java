@@ -11,6 +11,7 @@ import dk.alexandra.fresco.stat.DescriptiveStatTests.TestKAnonymity;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestKAnonymityOpen;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMean;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMultiDimHistogram;
+import dk.alexandra.fresco.stat.DescriptiveStatTests.TestNoisyHistogram;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestStandardDeviation;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestTwoDimHistogram;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestVariance;
@@ -26,6 +27,7 @@ import dk.alexandra.fresco.stat.LATests.TestMoorePenrosePseudoInverse;
 import dk.alexandra.fresco.stat.LATests.TestQRDcomposition;
 import dk.alexandra.fresco.stat.LATests.TestTriangularInverse;
 import dk.alexandra.fresco.stat.LinRegTests.TestLinearRegression;
+import dk.alexandra.fresco.stat.LinRegTests.TestNoisySimpleLinearRegression;
 import dk.alexandra.fresco.stat.LinRegTests.TestSimpleLinearRegression;
 import dk.alexandra.fresco.stat.LogRegTests.TestLogRegPrediction;
 import dk.alexandra.fresco.stat.LogRegTests.TestLogRegSGDSingleEpoch;
@@ -103,6 +105,11 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   @Test
   public void test_simple_linear_regression() {
     runTest(new TestSimpleLinearRegression<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_noisy_simple_linear_regression() {
+    runTest(new TestNoisySimpleLinearRegression<>(), TEST_PARAMETERS);
   }
 
   @Test
@@ -378,6 +385,11 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   @Test
   public void test_histogram_discrete() {
     runTest(new TestHistogramDiscrete<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_noisy_histogram() {
+    runTest(new TestNoisyHistogram<>(), TEST_PARAMETERS);
   }
 
   @Test
