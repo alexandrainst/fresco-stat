@@ -36,6 +36,7 @@ import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.apache.commons.math3.stat.descriptive.moment.Variance;
+import org.apache.commons.math3.stat.descriptive.rank.Median;
 import org.apache.commons.math3.stat.ranking.NaturalRanking;
 import org.apache.commons.math3.stat.ranking.RankingAlgorithm;
 import org.junit.Assert;
@@ -99,7 +100,10 @@ public class DescriptiveStatTests {
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
       return new TestThread<>() {
 
-        final List<Double> x = Arrays.asList(1.0, 2.0, 1.3, 3.75, 2.25);
+        final Random random = new Random(1234);
+        final int n = 100;
+        final List<Double> x = IntStream.range(0, n).mapToDouble(i -> random.nextDouble() * 10.0 - 5.0).boxed().collect(
+            Collectors.toList());
 
         @Override
         public void test() {
@@ -116,6 +120,41 @@ public class DescriptiveStatTests {
 
           Mean mean = new Mean();
           double expected = mean.evaluate(xArray);
+
+          BigDecimal output = runApplication(testApplication);
+          assertTrue(Math.abs(expected - output.doubleValue()) < 0.01);
+        }
+      };
+    }
+  }
+
+  public static class TestMedian<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        final Random random = new Random(1234);
+        final int n = 100;
+        final List<Double> x = IntStream.range(0, n).mapToDouble(i -> random.nextDouble() * 10.0 - 5.0).boxed().collect(
+            Collectors.toList());
+
+        @Override
+        public void test() {
+
+          Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
+            FixedNumeric numeric = FixedNumeric.using(builder);
+            List<DRes<SFixed>> xSecret =
+                x.stream().map(x -> numeric.input(x, 1)).collect(Collectors.toList());
+            DRes<SFixed> r = Statistics.using(builder).sampleMedian(xSecret);
+            return numeric.open(r);
+          };
+
+          double[] xArray = x.stream().mapToDouble(i -> i).toArray();
+
+          Median median = new Median();
+          double expected = median.evaluate(xArray);
 
           BigDecimal output = runApplication(testApplication);
           assertTrue(Math.abs(expected - output.doubleValue()) < 0.01);
@@ -234,7 +273,11 @@ public class DescriptiveStatTests {
     @Override
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
       return new TestThread<>() {
-        final List<Integer> x = Arrays.asList(1, 3, 2, 1, 3, 1, 0, 0, 4);
+        final int n = 100;
+        final int max = 10;
+        final Random random = new Random(1234);
+        final List<Integer> x = IntStream.range(0, n).map(i -> random.nextInt(max)).boxed().collect(
+            Collectors.toList());
 
         @Override
         public void test() {

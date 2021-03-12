@@ -14,6 +14,7 @@ import dk.alexandra.fresco.stat.descriptive.LeakyFrequencyTable;
 import dk.alexandra.fresco.stat.descriptive.MultiDimensionalHistogram;
 import dk.alexandra.fresco.stat.descriptive.PearsonCorrelation;
 import dk.alexandra.fresco.stat.descriptive.SampleMean;
+import dk.alexandra.fresco.stat.descriptive.SampleMedian;
 import dk.alexandra.fresco.stat.descriptive.SampleStandardDeviation;
 import dk.alexandra.fresco.stat.descriptive.SampleVariance;
 import dk.alexandra.fresco.stat.descriptive.TwoDimensionalHistogram;
@@ -53,6 +54,11 @@ public class DefaultStatistics implements Statistics {
   @Override
   public DRes<SFixed> sampleMean(List<DRes<SFixed>> data) {
     return new SampleMean(data).buildComputation(builder);
+  }
+
+  @Override
+  public DRes<SFixed> sampleMedian(List<DRes<SFixed>> data) {
+    return new SampleMedian(data).buildComputation(builder);
   }
 
   public DRes<SFixed> sampleVariance(List<DRes<SFixed>> data, DRes<SFixed> mean) {

@@ -20,8 +20,7 @@ import java.util.List;
 public class NoisyStats implements
     Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
-  private final List<DRes<SFixed>> x;
-  private final List<DRes<SFixed>> y;
+  private final List<DRes<SFixed>> x, y;
   private final double epsilon;
 
   // https://arxiv.org/pdf/2007.05157.pdf

@@ -32,6 +32,14 @@ public interface Statistics extends ComputationDirectory {
   DRes<SFixed> sampleMean(List<DRes<SFixed>> data);
 
   /**
+   * Compute the sample median of the sample set.
+   *
+   * @param data Samples
+   * @return The median.
+   */
+  DRes<SFixed> sampleMedian(List<DRes<SFixed>> data);
+
+  /**
    * Compute the sample variance of the given data, assuming the sample mean has already been
    * calculated.
    *

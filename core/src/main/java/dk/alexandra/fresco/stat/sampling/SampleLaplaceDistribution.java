@@ -5,6 +5,7 @@ import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
+import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.Sampler;
 import java.util.Objects;
@@ -20,7 +21,6 @@ public class SampleLaplaceDistribution implements Computation<SFixed, ProtocolBu
   public SampleLaplaceDistribution(DRes<SFixed> b) {
     this.b = b;
   }
-
 
   public SampleLaplaceDistribution(double b) {
     this.bKnown = b;
@@ -40,9 +40,8 @@ public class SampleLaplaceDistribution implements Computation<SFixed, ProtocolBu
       DRes<SInt> rademacher = sampler.sampleRademacherDistribution();
       return Pair.lazy(exponential, rademacher);
     }).seq((seq, p) -> {
-      SFixed exp = p.getFirst().out();
-      DRes<SInt> product = seq.numeric().mult(exp.getSInt(), p.getSecond());
-      return new SFixed(product);
+      FixedNumeric fixedNumeric = FixedNumeric.using(seq);
+      return fixedNumeric.mult(p.getFirst(), fixedNumeric.fromSInt(p.getSecond()));
     });
   }
 
