@@ -13,6 +13,7 @@ import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMean;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMedian;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMultiDimHistogram;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestNoisyHistogram;
+import dk.alexandra.fresco.stat.DescriptiveStatTests.TestPercentiles;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestStandardDeviation;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestTwoDimHistogram;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestVariance;
@@ -71,6 +72,11 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   @Test
   public void test_median() {
     runTest(new TestMedian<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_percentiles() {
+    runTest(new TestPercentiles<>(), TEST_PARAMETERS);
   }
 
   @Test

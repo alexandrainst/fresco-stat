@@ -15,6 +15,7 @@ import dk.alexandra.fresco.stat.descriptive.MultiDimensionalHistogram;
 import dk.alexandra.fresco.stat.descriptive.PearsonCorrelation;
 import dk.alexandra.fresco.stat.descriptive.SampleMean;
 import dk.alexandra.fresco.stat.descriptive.SampleMedian;
+import dk.alexandra.fresco.stat.descriptive.SamplePercentiles;
 import dk.alexandra.fresco.stat.descriptive.SampleStandardDeviation;
 import dk.alexandra.fresco.stat.descriptive.SampleVariance;
 import dk.alexandra.fresco.stat.descriptive.TwoDimensionalHistogram;
@@ -59,6 +60,11 @@ public class DefaultStatistics implements Statistics {
   @Override
   public DRes<SFixed> sampleMedian(List<DRes<SFixed>> data) {
     return new SampleMedian(data).buildComputation(builder);
+  }
+
+  @Override
+  public DRes<List<DRes<SFixed>>> samplePercentiles(List<DRes<SFixed>> data, double[] percentiles) {
+    return new SamplePercentiles(data, percentiles).buildComputation(builder);
   }
 
   public DRes<SFixed> sampleVariance(List<DRes<SFixed>> data, DRes<SFixed> mean) {

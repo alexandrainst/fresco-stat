@@ -34,10 +34,19 @@ public interface Statistics extends ComputationDirectory {
   /**
    * Compute the sample median of the sample set.
    *
-   * @param data Samples
+   * @param data Samples.
    * @return The median.
    */
   DRes<SFixed> sampleMedian(List<DRes<SFixed>> data);
+
+  /**
+   * Compute the sample percentiles of a sample set.
+   *
+   * @param data Samples.
+   * @return The median.
+   */
+  DRes<List<DRes<SFixed>>> samplePercentiles(List<DRes<SFixed>> data, double[] quantiles);
+
 
   /**
    * Compute the sample variance of the given data, assuming the sample mean has already been

@@ -32,9 +32,11 @@ The library has four function libraries with the following functions:
         * Sample mean
         * Sample standard deviation
         * Sample variance
-        * Simple and multi-dimensional histogram
+        * Sample median
+        * Simple and multi-dimensional histograms
         * Frequency table
         * Sample correlation
+        * Sample percentiles
     * Regression
         * Simple and multivariate linear regression
         * Logistic regression via gradient descent 

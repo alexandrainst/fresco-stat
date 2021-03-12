@@ -37,6 +37,7 @@ import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
 import org.apache.commons.math3.stat.descriptive.moment.Variance;
 import org.apache.commons.math3.stat.descriptive.rank.Median;
+import org.apache.commons.math3.stat.descriptive.rank.Percentile;
 import org.apache.commons.math3.stat.ranking.NaturalRanking;
 import org.apache.commons.math3.stat.ranking.RankingAlgorithm;
 import org.junit.Assert;
@@ -162,6 +163,48 @@ public class DescriptiveStatTests {
       };
     }
   }
+
+  public static class TestPercentiles<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        final Random random = new Random(1234);
+        final int n = 100;
+        final List<Double> x = IntStream.range(0, n).mapToDouble(i -> random.nextDouble() * 10.0 - 5.0).boxed().collect(
+            Collectors.toList());
+
+        @Override
+        public void test() {
+
+          Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication = builder -> builder.seq(seq -> {
+            FixedNumeric numeric = FixedNumeric.using(seq);
+            List<DRes<SFixed>> xSecret =
+                x.stream().map(x -> numeric.input(x, 1)).collect(Collectors.toList());
+            return Statistics.using(seq).samplePercentiles(xSecret, new double[] {0.25, 0.5, 0.75});
+          }).seq((seq, quartiles) -> {
+            FixedNumeric fixedNumeric = FixedNumeric.using(seq);
+            return DRes.of(quartiles.stream().map(fixedNumeric::open).collect(Collectors.toList()));
+          }).seq((seq, openQuartiles) -> {
+            return DRes.of(openQuartiles.stream().map(DRes::out).collect(Collectors.toList()));
+          });
+
+          double[] xArray = x.stream().mapToDouble(i -> i).toArray();
+          Percentile percentile = new Percentile();
+
+          List<BigDecimal> output = runApplication(testApplication);
+
+          Assert.assertEquals(percentile.evaluate(xArray, 25), output.get(0).doubleValue(), 0.001);
+          Assert.assertEquals(percentile.evaluate(xArray, 50), output.get(1).doubleValue(), 0.001);
+          Assert.assertEquals(percentile.evaluate(xArray, 75), output.get(2).doubleValue(), 0.001);
+
+        }
+      };
+    }
+  }
+
 
   public static class TestVariance<ResourcePoolT extends ResourcePool>
       extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
