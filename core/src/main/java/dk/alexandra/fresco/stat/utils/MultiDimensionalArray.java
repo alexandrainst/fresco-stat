@@ -41,8 +41,8 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
     return new MultiDimensionalArrayImpl<>(width, populator);
   }
 
-  public static <S> MultiDimensionalArray<S> sparse(List<Integer> dimensions) {
-    return new MultiDimensionalArraySparse<>(dimensions);
+  public static <S> MultiDimensionalArray<S> sparse(List<Integer> shape) {
+    return new MultiDimensionalArraySparse<>(shape);
   }
 
   /**
@@ -53,15 +53,15 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
   }
 
   /**
-   * Create a new multi-dimensional array with the given dimensions and with each entry being generated
+   * Create a new multi-dimensional array with the given shape and with each entry being generated
    * by the populator function.
    */
-  public static <S> MultiDimensionalArray<S> build(List<Integer> dimensions,
+  public static <S> MultiDimensionalArray<S> build(List<Integer> shape,
       Function<List<Integer>, S> populator) {
-    if (dimensions.size() == 1) {
-      return new OneDimensionalArray<>(dimensions.get(0), i -> populator.apply(List.of(i)));
+    if (shape.size() == 1) {
+      return new OneDimensionalArray<>(shape.get(0), i -> populator.apply(List.of(i)));
     }
-    return new MultiDimensionalArrayImpl<>(dimensions, populator);
+    return new MultiDimensionalArrayImpl<>(shape, populator);
   }
 
   private static List<Integer> prepend(int a, List<Integer> list) {
@@ -123,9 +123,9 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
   }
 
   /**
-   * Get the dimensions of this array.
+   * Get the shape of this array.
    */
-  public abstract List<Integer> getDimensions();
+  public abstract List<Integer> getShape();
 
   /**
    * Get the dimension of this array.
@@ -137,10 +137,10 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
    */
   public MultiDimensionalArray<T> project(Function<List<T>, T> projection) {
     assert (getDimension() > 1);
-    List<Integer> dim = getDimensions();
-    List<Integer> newDimensions = dim.subList(0, dim.size() - 1);
+    List<Integer> dim = getShape();
+    List<Integer> newShape = dim.subList(0, dim.size() - 1);
 
-    return build(newDimensions, l -> projection.apply(IntStream.range(0, dim.get(dim.size() - 1))
+    return build(newShape, l -> projection.apply(IntStream.range(0, dim.get(dim.size() - 1))
         .mapToObj(i -> get(append(l, i))).collect(Collectors.toList())));
   }
 
@@ -149,7 +149,7 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
    * to map from the elements of this array to the corresponding entry in the new array
    */
   public <S> MultiDimensionalArray<S> map(Function<T, S> function) {
-    return build(this.getDimensions(), l -> function.apply(get(l)));
+    return build(this.getShape(), l -> function.apply(get(l)));
   }
 
   /**
@@ -163,7 +163,7 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
    * Return a stream of all indices of this array
    */
   private Stream<List<Integer>> allIndices() {
-    return allIndices(getDimensions());
+    return allIndices(getShape());
   }
 
   static class OneDimensionalArray<S> extends MultiDimensionalArray<S> {
@@ -211,7 +211,7 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
     }
 
     @Override
-    public List<Integer> getDimensions() {
+    public List<Integer> getShape() {
       return List.of(entries.size());
     }
 
@@ -228,12 +228,12 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
           IntStream.range(0, d).mapToObj(entries).collect(Collectors.toCollection(ArrayList::new));
     }
 
-    private MultiDimensionalArrayImpl(List<Integer> dimensions,
+    private MultiDimensionalArrayImpl(List<Integer> shape,
         Function<List<Integer>, S> populator) {
-      assert (dimensions.size() > 1);
-      this.d = dimensions.size();
-      this.entries = IntStream.range(0, dimensions.get(0)).mapToObj(
-          i -> build(dimensions.subList(1, dimensions.size()), l -> populator.apply(prepend(i, l))))
+      assert (shape.size() > 1);
+      this.d = shape.size();
+      this.entries = IntStream.range(0, shape.get(0)).mapToObj(
+          i -> build(shape.subList(1, shape.size()), l -> populator.apply(prepend(i, l))))
           .collect(Collectors.toCollection(ArrayList::new));
     }
 
@@ -269,8 +269,8 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
     }
 
     @Override
-    public List<Integer> getDimensions() {
-      return prepend(entries.size(), entries.get(0).getDimensions());
+    public List<Integer> getShape() {
+      return prepend(entries.size(), entries.get(0).getShape());
     }
   }
 
@@ -338,11 +338,11 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
 
     private final static Comparator<List<Integer>> COMPARATOR = new IndexComparator();
     private final SortedMap<List<Integer>, S> entries;
-    private final List<Integer> dimensions;
+    private final List<Integer> shape;
 
-    public MultiDimensionalArraySparse(List<Integer> dimensions) {
+    public MultiDimensionalArraySparse(List<Integer> shape) {
       this.entries = new TreeMap<>(COMPARATOR);
-      this.dimensions = dimensions;
+      this.shape = shape;
     }
 
     @Override
@@ -356,23 +356,23 @@ public abstract class MultiDimensionalArray<T> extends AbstractCollection<T> {
     }
 
     @Override
-    public List<Integer> getDimensions() {
-      return dimensions;
+    public List<Integer> getShape() {
+      return shape;
     }
 
     @Override
     public int getDimension() {
-      return dimensions.size();
+      return shape.size();
     }
 
     @Override
     public Iterator<S> iterator() {
-      return MultiDimensionalArray.allIndices(dimensions).map(this::get).iterator();
+      return MultiDimensionalArray.allIndices(shape).map(this::get).iterator();
     }
 
     @Override
     public int size() {
-      return dimensions.stream().reduce(1, (a,b) -> a*b);
+      return shape.stream().reduce(1, (a,b) -> a*b);
     }
 
     private static class IndexComparator implements Comparator<List<Integer>> {

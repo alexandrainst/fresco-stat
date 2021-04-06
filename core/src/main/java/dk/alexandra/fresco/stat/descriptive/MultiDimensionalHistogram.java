@@ -114,7 +114,7 @@ public class MultiDimensionalHistogram
 
       // Correct the cumulative histogram to the actual histogram
       MultiDimensionalArray<DRes<SInt>> histogram = MultiDimensionalArray
-          .build(cumulativeHistogram.getDimensions(), i -> par.seq(seq -> {
+          .build(cumulativeHistogram.getShape(), i -> par.seq(seq -> {
             AtomicReference<DRes<SInt>> value = new AtomicReference<>(cumulativeHistogram.get(i));
 
             List<Integer> nonZeroIndices = IntStream.range(0, dimensions).filter(d -> i.get(d) > 0)
