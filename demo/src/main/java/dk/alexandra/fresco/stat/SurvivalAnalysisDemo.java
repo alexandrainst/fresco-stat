@@ -35,6 +35,9 @@ import java.util.Map;
 
 public class SurvivalAnalysisDemo {
 
+  // Compute the difference in death rate between two patient groups, resp. stage III and stage IV
+  // diffuse histiocytic lymphoma, using Cox regression. Party 1 has data for stage III patients, and
+  // party 2 has data for the stave IV patients.
   public static void main(String[] arguments) {
     if (arguments.length != 1) {
       throw new IllegalArgumentException("Usage: java Demo [id]");

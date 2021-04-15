@@ -41,6 +41,8 @@ import org.apache.commons.csv.CSVRecord;
 
 public class LinearRegressionDemo {
 
+  // Perform a linear regression on a dataset of real estate prices based on different factors. Here,
+  // party 1 has the independant variables and party has the dependant variable (the price).
   public static void main(String[] arguments) throws IOException {
     if (arguments.length != 1) {
       throw new IllegalArgumentException("Usage: java Demo [id]");
@@ -51,7 +53,6 @@ public class LinearRegressionDemo {
     final int otherId = 3 - myId;
     final int modBitLength = 256;
     final int maxBitLength = 180;
-//    final int prgSeedLength = 256;
     final int maxBatchSize = 4096;
 
     Party me = new Party(myId, "localhost", 9000 + myId);
@@ -60,47 +61,11 @@ public class LinearRegressionDemo {
         Map.of(myId, me, otherId, other));
     Network network = new SocketNetwork(networkConfiguration);
 
-//    byte[] seed = new byte[prgSeedLength / 8];
-//    new Random(myId).nextBytes(seed);
-//    Drbg drbg = AesCtrDrbgFactory.fromDerivedSeed(seed);
-//
-//    Map<Integer, RotList> seedOts = new HashMap<>();
-//    for (int id = 1; id <= noParties; id++) {
-//      if (myId != otherId) {
-//        DHParameterSpec dhSpec = DhParameters.getStaticDhParams();
-//        Ot ot = new NaorPinkasOt(otherId, drbg, network, dhSpec);
-//        RotList currentSeedOts = new RotList(drbg, prgSeedLength);
-//        if (myId < otherId) {
-//          currentSeedOts.send(ot);
-//          currentSeedOts.receive(ot);
-//        } else {
-//          currentSeedOts.receive(ot);
-//          currentSeedOts.send(ot);
-//        }
-//        seedOts.put(otherId, currentSeedOts);
-//      }
-//    }
-
     MersennePrimeFieldDefinition definition = MersennePrimeFieldDefinition.find(modBitLength);
-//    FieldElement ssk = SpdzMascotDataSupplier.createRandomSsk(definition, prgSeedLength);
     SpdzProtocolSuite suite = new SpdzProtocolSuite(maxBitLength);
-
-//    SpdzDataSupplier preprocessedValuesDataSupplier
-//        = SpdzMascotDataSupplier.createSimpleSupplier(myId, noParties,
-//            () -> network, modBitLength, definition, null, seedOts, drbg, ssk);
-//    SpdzResourcePool preprocessedValuesResourcePool = new SpdzResourcePoolImpl(myId, noParties,
-//        new SpdzOpenedValueStoreImpl(),
-//        preprocessedValuesDataSupplier, AesCtrDrbg::new);
 
     SpdzDataSupplier supplier = new SpdzDummyDataSupplier(myId, noParties, definition,
         BigInteger.valueOf(1234));
-//    SpdzDataSupplier supplier = SpdzMascotDataSupplier
-//        .createSimpleSupplier(myId, noParties, () -> network,
-//            modBitLength, definition, pipeLength -> {
-//              DRes<List<DRes<SInt>>> pipe = createPipe(pipeLength, network,
-//                  preprocessedValuesResourcePool, suite);
-//              return computeSInts(pipe);
-//            }, seedOts, drbg, ssk);
 
     SpdzResourcePool resourcePool = new SpdzResourcePoolImpl(myId, noParties,
         new SpdzOpenedValueStoreImpl(), supplier,
@@ -150,35 +115,6 @@ public class LinearRegressionDemo {
     System.out.println("b  = " + out);
     System.out.println("Took " + Duration.between(start, Instant.now()));
   }
-
-//  private static DRes<List<DRes<SInt>>> createPipe(int pipeLength, Network network,
-//      SpdzResourcePool resourcePool, SpdzProtocolSuite protocolSuite) {
-//    ProtocolBuilderNumeric sequential = protocolSuite.init(resourcePool).createSequential();
-//    Application<List<DRes<SInt>>, ProtocolBuilderNumeric> expPipe = builder ->
-//        new DefaultPreprocessedValues(builder).getExponentiationPipe(pipeLength);
-//    DRes<List<DRes<SInt>>> exponentiationPipe = expPipe.buildComputation(sequential);
-//    evaluate(sequential, resourcePool, network, protocolSuite);
-//    return exponentiationPipe;
-//  }
-//
-//  private static SpdzSInt[] computeSInts(DRes<List<DRes<SInt>>> pipe) {
-//    List<DRes<SInt>> out = pipe.out();
-//    SpdzSInt[] result = new SpdzSInt[out.size()];
-//    for (int i = 0; i < out.size(); i++) {
-//      DRes<SInt> sIntResult = out.get(i);
-//      result[i] = (SpdzSInt) sIntResult.out();
-//    }
-//    return result;
-//  }
-//
-//  private static void evaluate(ProtocolBuilderNumeric spdzBuilder,
-//      SpdzResourcePool tripleResourcePool,
-//      Network network, SpdzProtocolSuite protocolSuite) {
-//    BatchedStrategy<SpdzResourcePool> batchedStrategy = new BatchedStrategy<>();
-//    BatchedProtocolEvaluator<SpdzResourcePool> batchedProtocolEvaluator =
-//        new BatchedProtocolEvaluator<>(batchedStrategy, protocolSuite);
-//    batchedProtocolEvaluator.eval(spdzBuilder.build(), tripleResourcePool, network);
-//  }
 
   public static class LinearRegressionApplication implements
       Application<List<BigDecimal>, ProtocolBuilderNumeric> {
