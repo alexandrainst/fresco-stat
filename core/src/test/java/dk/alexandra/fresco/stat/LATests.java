@@ -13,6 +13,7 @@ import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.FixedLinearAlgebra;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.linearalgebra.Convolution;
 import dk.alexandra.fresco.stat.utils.MatrixUtils;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -685,6 +686,37 @@ public class LATests {
               Assert.assertEquals(b.getEntry(i, j), out.getRow(i).get(j).doubleValue(), 0.02);
             }
           }
+        }
+      };
+    }
+  }
+
+  public static class TestConvolution<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        @Override
+        public void test() {
+
+          Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication =
+
+              root -> root.seq(seq -> {
+                ArrayList<BigDecimal> a = List.of(1., 0., -1.).stream().map(BigDecimal::valueOf).collect(Collectors.toCollection(ArrayList::new));
+                ArrayList<BigDecimal> b = List.of(0., 1., 2.).stream().map(BigDecimal::valueOf).collect(Collectors.toCollection(ArrayList::new));
+
+                DRes<ArrayList<DRes<SFixed>>> aSecret = FixedLinearAlgebra.using(seq).input(a, 1);
+                DRes<ArrayList<DRes<SFixed>>> bSecret = FixedLinearAlgebra.using(seq).input(b, 2);
+                return Pair.lazy(aSecret, bSecret);
+              }).seq((seq, inputs) -> {
+                DRes<ArrayList<DRes<SFixed>>> result = new Convolution(inputs.getFirst().out(), inputs.getSecond().out()).buildComputation(seq);
+                return FixedLinearAlgebra.using(seq).openArrayList(result);
+              }).seq((seq, result) -> DRes.of(result.stream().map(DRes::out).collect(Collectors.toList())));
+
+          List<BigDecimal> output = runApplication(testApplication);
+          Assert.assertArrayEquals(new double[] {0, 1, 2, -1, -2}, output.stream().mapToDouble(BigDecimal::doubleValue).toArray(), 0.001);
         }
       };
     }

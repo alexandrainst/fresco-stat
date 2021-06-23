@@ -4,6 +4,7 @@ import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.common.math.AdvancedNumeric;
+import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.math.BigDecimal;
@@ -13,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class VectorUtils {
 
@@ -167,6 +169,35 @@ public class VectorUtils {
   }
 
   /**
+   * Add a list of secret vectors.
+   *
+   * @param a       A list of secret vectors.
+   * @param builder The builder to use.
+   * @return sum(a)
+   */
+  public static List<DRes<SFixed>> sum(List<List<DRes<SFixed>>> a,
+      ProtocolBuilderNumeric builder) {
+    int dimension = a.get(0).size();
+    for (int i = 1; i < a.size(); i++) {
+      if (a.get(i).size() != dimension) {
+        throw new IllegalArgumentException("Vector size mismatch");
+      }
+    }
+    List<DRes<SFixed>> output = new ArrayList<>(dimension);
+    builder.par(par -> {
+      AdvancedFixedNumeric advancedFixedNumeric = AdvancedFixedNumeric.using(par);
+      for (int i = 0; i < dimension; i++) {
+        int finalI = i;
+        output.add(advancedFixedNumeric.sum(a.stream().map(entry -> entry.get(finalI)).collect(
+            Collectors.toList())));
+      }
+      return null;
+    });
+    return output;
+  }
+
+
+  /**
    * Subtract two secret vectors.
    *
    * @param a       A secret vector.
@@ -211,7 +242,7 @@ public class VectorUtils {
         protocolBuilderNumeric);
   }
 
-  private static <A, B, C> ArrayList<C> entrywiseBinaryOp(List<A> a, List<B> b,
+  public static <A, B, C> ArrayList<C> entrywiseBinaryOp(List<A> a, List<B> b,
       EntrywiseBinaryOp<A, B, C> op, ProtocolBuilderNumeric builder) {
     ArrayList<C> result = new ArrayList<>();
     builder.par(par -> {
@@ -226,7 +257,7 @@ public class VectorUtils {
     return result;
   }
 
-  private static <A, C> ArrayList<C> entrywiseUnaryOp(List<A> a, EntrywiseUnaryOp<A, C> op,
+  public static <A, C> ArrayList<C> entrywiseUnaryOp(List<A> a, EntrywiseUnaryOp<A, C> op,
       ProtocolBuilderNumeric builder) {
     ArrayList<C> result = new ArrayList<>();
     builder.par(par -> {
@@ -250,15 +281,14 @@ public class VectorUtils {
     return result;
   }
 
-
   @FunctionalInterface
-  private interface EntrywiseUnaryOp<A, C> {
+  public interface EntrywiseUnaryOp<A, C> {
 
     C apply(A a, ProtocolBuilderNumeric builder);
   }
 
   @FunctionalInterface
-  private interface EntrywiseBinaryOp<A, B, C> {
+  public interface EntrywiseBinaryOp<A, B, C> {
 
     C apply(A a, B b, ProtocolBuilderNumeric builder);
   }

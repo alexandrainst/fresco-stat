@@ -10,14 +10,17 @@ import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.sce.resources.ResourcePool;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
+import dk.alexandra.fresco.lib.fixed.FixedLinearAlgebra;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.regression.logistic.LogisticRegressionGD;
 import dk.alexandra.fresco.stat.regression.logistic.LogisticRegressionPrediction;
+import dk.alexandra.fresco.stat.utils.MatrixUtils;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 import java.util.function.ToDoubleBiFunction;
 import java.util.stream.Collectors;
 import org.junit.Assert;
@@ -174,4 +177,5 @@ public class LogRegTests {
       };
     }
   }
+
 }

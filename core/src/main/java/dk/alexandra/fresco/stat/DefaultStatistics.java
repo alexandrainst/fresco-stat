@@ -223,12 +223,6 @@ public class DefaultStatistics implements Statistics {
   }
 
   @Override
-  public DRes<ArrayList<DRes<SFixed>>> logisticRegression(Matrix<DRes<SFixed>> data,
-      ArrayList<DRes<SFixed>> expected, double[] beta, IntToDoubleFunction rate, int epochs) {
-    return new LogisticRegression(data, expected, beta, rate, epochs).buildComputation(builder);
-  }
-
-  @Override
   public DRes<List<DRes<SInt>>> histogramDiscrete(int[] buckets, List<DRes<SInt>> data) {
     return histogramDiscrete(
         Arrays.stream(buckets).mapToObj(builder.numeric()::known)

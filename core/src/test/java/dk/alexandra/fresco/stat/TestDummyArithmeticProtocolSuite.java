@@ -18,6 +18,7 @@ import dk.alexandra.fresco.stat.DescriptiveStatTests.TestStandardDeviation;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestTwoDimHistogram;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestVariance;
 import dk.alexandra.fresco.stat.LATests.TestBackSubstitution;
+import dk.alexandra.fresco.stat.LATests.TestConvolution;
 import dk.alexandra.fresco.stat.LATests.TestEigenvalues;
 import dk.alexandra.fresco.stat.LATests.TestForwardSubstitution;
 import dk.alexandra.fresco.stat.LATests.TestGramSchmidt;
@@ -45,7 +46,14 @@ import dk.alexandra.fresco.stat.TestsTests.TestKruskallWallisFixedPoint;
 import dk.alexandra.fresco.stat.TestsTests.TestTTest;
 import dk.alexandra.fresco.stat.TestsTests.TestTwoSampleTTest;
 import dk.alexandra.fresco.stat.TestsTests.TestTwoSampleTTestDifferentSizes;
+import dk.alexandra.fresco.stat.UtilTests.TestArgMax;
+import dk.alexandra.fresco.stat.UtilTests.TestMax;
 import dk.alexandra.fresco.stat.UtilTests.TestProduct;
+import dk.alexandra.fresco.stat.mlp.NNTests.TestBackwardPropagation;
+import dk.alexandra.fresco.stat.mlp.NNTests.TestFit;
+import dk.alexandra.fresco.stat.mlp.NNTests.TestForwardPropagation;
+import dk.alexandra.fresco.stat.mlp.NNTests.TestPrediction;
+import dk.alexandra.fresco.stat.mlp.NNTests.TestSingleStepTraining;
 import dk.alexandra.fresco.stat.utils.VectorUtils;
 import dk.alexandra.fresco.suite.dummy.arithmetic.AbstractDummyArithmeticTest;
 import java.util.ArrayList;
@@ -390,6 +398,11 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   }
 
   @Test
+  public void test_convolution() {
+    runTest(new TestConvolution<>(), TEST_PARAMETERS);
+  }
+
+  @Test
   public void test_product() {
     runTest(new TestProduct<>(), TEST_PARAMETERS);
   }
@@ -428,5 +441,46 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   public void test_k_anonymity_open() {
     runTest(new TestKAnonymityOpen<>(), TEST_PARAMETERS);
   }
+
+  @Test
+  public void test_forward_propagation() {
+    runTest(new TestForwardPropagation<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_backward_propagation() {
+    runTest(new TestBackwardPropagation<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_single_step_training() {
+    runTest(new TestSingleStepTraining<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_fit() {
+    runTest(new TestFit<>(), TEST_PARAMETERS);
+  }
+
+//  @Test
+//  public void test_batch_training() {
+//    runTest(new TestBatchTraining<>(), TEST_PARAMETERS);
+//  }
+//
+  @Test
+  public void test_prediction() {
+    runTest(new TestPrediction<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_arg_max() {
+    runTest(new TestArgMax<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_max() {
+    runTest(new TestMax<>(), TEST_PARAMETERS);
+  }
+
 
 }

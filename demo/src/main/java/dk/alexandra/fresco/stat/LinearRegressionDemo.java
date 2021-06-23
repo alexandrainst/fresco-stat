@@ -42,7 +42,7 @@ import org.apache.commons.csv.CSVRecord;
 public class LinearRegressionDemo {
 
   // Perform a linear regression on a dataset of real estate prices based on different factors. Here,
-  // party 1 has the independant variables and party has the dependant variable (the price).
+  // party 1 has the independent variables and party has the dependant variable (the price).
   public static void main(String[] arguments) throws IOException {
     if (arguments.length != 1) {
       throw new IllegalArgumentException("Usage: java Demo [id]");

@@ -227,23 +227,6 @@ public interface Statistics extends ComputationDirectory {
       int iterations, double alpha, double[] beta);
 
   /**
-   * Estimate the parameters of a logistic model using gradient descent.
-   *
-   * @param data     The data represented as a matrix with entry as rows.
-   * @param expected The expected outcome for each entry represented as a list. Each entry should be
-   *                 either 0 or 1.
-   * @param beta     The initial guess for the parameters of the model with the first being the
-   *                 constant term.
-   * @param rate     The learning rate used by the gradient descent algorithm as a function of the
-   *                 iteration number.
-   * @param epochs   The number of iterations.
-   * @return An approximation of the parameters of a logistic model fitting the given data.
-   */
-  DRes<ArrayList<DRes<SFixed>>> logisticRegression(Matrix<DRes<SFixed>> data,
-      ArrayList<DRes<SFixed>> expected, double[] beta,
-      IntToDoubleFunction rate, int epochs);
-
-  /**
    * Compute the histogram for the given sample.
    *
    * @param buckets Upper bound for the buckets to use in the histogram.

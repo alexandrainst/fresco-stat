@@ -23,8 +23,10 @@ FRESCO uses secure multi-party computation to enable computations to be performe
 data distributed among multiple parties without each party seeing the other parties' data.
 
 There is no assumption on how the data is distributed among the parties -- the data may 
-be for example be divided horizontally, where each party has a different set of data entries, or vertically, 
-where each party has different attributes for the same entries, or any combination of the two.
+for example be divided horizontally, where each party has a different set of data entries, 
+or vertically, where each party has different attributes for the same entries, or any combination 
+of the two. Or one party could know the model parameters and other parties the data used to fit the,
+model eg. in regression or machine learning.
 
 The library has four function libraries with the following functions:
 1. [Statistics](core/src/main/java/dk/alexandra/fresco/stat/Statistics.java)
@@ -39,7 +41,6 @@ The library has four function libraries with the following functions:
         * Sample percentiles
     * Regression
         * Simple and multivariate linear regression
-        * Logistic regression via gradient descent 
     * Statistical tests
         * One- and two-sample t-test
         * ꭓ²-test
@@ -60,7 +61,7 @@ The library has four function libraries with the following functions:
     * Normal distribution
     * Rademacher distribution
     * Uniform distribution
-1. [Advanced Linear Algebra](core/src/main/java/dk/alexandra/fresco/stat/AdvancedLinearAlgebra.java) (see also the <i>fixed</i> library in FRESCO for basic linear algebra functions)
+1. [Linear Algebra](core/src/main/java/dk/alexandra/fresco/stat/AdvancedLinearAlgebra.java) (see also the <i>fixed</i> library in FRESCO for basic linear algebra functions)
     * Back- and forward substitution
     * Gram-Schmidt process
     * Inverse of triangular matrices
@@ -70,6 +71,9 @@ The library has four function libraries with the following functions:
 1. [Optimization methods](core/src/main/java/dk/alexandra/fresco/stat/Optimization.java)
     * Linear programming
     * Data envelopment method (DEA)
+1. [Machine learning](core/src/main/java/dk/alexandra/fresco/stat/MachineLearning.java)
+    * Logistic regression via gradient descent
+    * Multilayer perceptron 
 
 They are used similarly to computation directories in FRESCO by calling e.g.
 

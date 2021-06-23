@@ -5,6 +5,14 @@
   <artifactId>stat-demo</artifactId>
   <build>
     <plugins>
+
+      <plugin>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <executions>
@@ -70,7 +78,6 @@
             <id>anonymisation</id>
             <phase>package</phase>
           </execution>
-
         </executions>
         <groupId>org.apache.maven.plugins</groupId>
       </plugin>
@@ -95,6 +102,7 @@
       <groupId>org.apache.commons</groupId>
       <version>1.8</version>
     </dependency>
+
   </dependencies>
   <modelVersion>4.0.0</modelVersion>
 

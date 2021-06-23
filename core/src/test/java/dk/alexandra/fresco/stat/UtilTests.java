@@ -13,15 +13,21 @@ import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.ComputationParallel;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.sce.resources.ResourcePool;
+import dk.alexandra.fresco.framework.util.Pair;
+import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.utils.MaxList;
+import dk.alexandra.fresco.stat.utils.MaxPair;
 import dk.alexandra.fresco.stat.utils.MultiDimensionalArray;
 import dk.alexandra.fresco.stat.utils.RealUtils;
 import dk.alexandra.fresco.stat.utils.VectorUtils;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -127,5 +133,63 @@ public class UtilTests {
       };
     }
   }
+
+  public static class TestArgMax<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        final List<BigInteger> a = Stream.of(1, 3, 5, 2, 7, 9, 2, 4, 11, 0, 8).map(BigInteger::valueOf).collect(
+            Collectors.toList());
+
+        @Override
+        public void test() {
+
+          Application<Pair<BigInteger, BigInteger>, ProtocolBuilderNumeric> testApplication = builder ->
+              builder.seq(seq -> {
+                List<DRes<SInt>> input = a.stream().map(seq.numeric()::known)
+                    .collect(Collectors.toList());
+                return new MaxList(input).buildComputation(seq);
+              }).seq((seq, argmax) -> Pair.lazy(seq.numeric().open(argmax.getFirst()), seq.numeric().open(argmax.getSecond())))
+                  .seq((seq, argmax) -> Pair.lazy(argmax.getFirst().out(), argmax.getSecond().out()));
+
+          Pair<BigInteger, BigInteger> out = runApplication(testApplication);
+          Assert.assertEquals(11, out.getFirst().intValue());
+          Assert.assertEquals(8, out.getSecond().intValue());
+        }
+      };
+    }
+  }
+
+  public static class TestMax<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        final Pair<Integer, Integer> a = new Pair<>(2, 7);
+
+        @Override
+        public void test() {
+
+          Application<Pair<BigInteger, BigInteger>, ProtocolBuilderNumeric> testApplication = builder ->
+              builder.seq(seq -> {
+                DRes<SInt> x = seq.numeric().input(a.getFirst(), 1);
+                DRes<SInt> y = seq.numeric().input(a.getSecond(), 2);
+                return new MaxPair(x, y).buildComputation(seq);
+              }).seq((seq, argmax) -> Pair.lazy(seq.numeric().open(argmax.getFirst()), seq.numeric().open(argmax.getSecond())))
+                  .seq((seq, argmax) -> Pair.lazy(argmax.getFirst().out(), argmax.getSecond().out()));
+
+          Pair<BigInteger, BigInteger> out = runApplication(testApplication);
+          Assert.assertEquals(7, out.getFirst().intValue());
+          Assert.assertEquals(1, out.getSecond().intValue());
+        }
+      };
+    }
+  }
+
 
 }
