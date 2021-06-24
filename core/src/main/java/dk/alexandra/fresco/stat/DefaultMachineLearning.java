@@ -16,11 +16,7 @@ public class DefaultMachineLearning implements MachineLearning {
 
   private final ProtocolBuilderNumeric builder;
 
-  public static MachineLearning using(ProtocolBuilderNumeric builder) {
-    return new DefaultMachineLearning(builder);
-  }
-
-  private DefaultMachineLearning(ProtocolBuilderNumeric builder) {
+  DefaultMachineLearning(ProtocolBuilderNumeric builder) {
     this.builder = builder;
   }
 

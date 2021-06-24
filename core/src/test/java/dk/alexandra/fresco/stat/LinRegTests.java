@@ -74,6 +74,7 @@ public class LinRegTests {
                 List<DRes<SFixed>> ySecret = y.stream()
                     .map(y -> FixedNumeric.using(builder).input(y, 2))
                     .collect(Collectors.toList());
+
                 DRes<SimpleLinearRegressionResult> f = Statistics.using(builder)
                     .simpleLinearRegression(xSecret, ySecret);
                 return builder.par(par -> {

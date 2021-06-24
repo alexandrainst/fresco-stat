@@ -158,7 +158,7 @@ public class LogRegTests {
 
                 double[] guess = new double[]{0, 0};
 
-                return Statistics.using(seq)
+                return MachineLearning.using(seq)
                     .logisticRegression(data.getFirst(), data.getSecond(), guess,
                         i -> 5.0 / (i + 35.0), 50);
               }).seq((seq, b) -> {

@@ -1,6 +1,7 @@
 package dk.alexandra.fresco.stat;
 
 import dk.alexandra.fresco.framework.DRes;
+import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.SFixed;
@@ -10,6 +11,10 @@ import java.util.List;
 import java.util.function.IntToDoubleFunction;
 
 public interface MachineLearning {
+
+  static MachineLearning using(ProtocolBuilderNumeric builder) {
+    return new DefaultMachineLearning(builder);
+  }
 
   /**
    * Estimate the parameters of a logistic model using gradient descent.
