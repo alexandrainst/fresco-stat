@@ -9,9 +9,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Convert an instance of type T into a <code>Pair<DRes<SInt>, List<DRes<SInt>>></code> and back for
- * use with {@link dk.alexandra.fresco.lib.common.collections.Collections#sort(List)} to sort on the
- * time of event parameter.
+ * Convert an instance of type <code>T</code> into a {@link Pair} of a {@link DRes}&lt;{@link
+ * SInt}&gt; and a {@link List}&lt;{@link DRes}&lt;{@link SInt}&gt;&gt; and back for use with {@link
+ * dk.alexandra.fresco.lib.common.collections.Collections#sort(List)} to sort on the time of event
+ * parameter.
  *
  * @param <T> A subject for survival analysis.
  */

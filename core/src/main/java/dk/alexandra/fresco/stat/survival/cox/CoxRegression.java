@@ -13,6 +13,9 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * Estimate the coefficients of a Cox proportional hazards model on the given data using gradient descent.
+ */
 class CoxRegression<T> implements Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
   private final List<T> data;

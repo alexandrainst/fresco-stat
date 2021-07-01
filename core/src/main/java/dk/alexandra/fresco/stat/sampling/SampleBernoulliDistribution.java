@@ -9,10 +9,8 @@ import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.math.BigDecimal;
 
 /**
- * Sample a number from a Bernoulli distribution which is 0 with propability <i>p</i> and 1 with
- * propability <i>1-p</i>.
- *
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
+ * Sample a number from a Bernoulli distribution which is 0 with probability <i>p</i> and 1 with
+ * probability <i>1-p</i>.
  */
 public class SampleBernoulliDistribution implements Computation<SInt, ProtocolBuilderNumeric> {
 

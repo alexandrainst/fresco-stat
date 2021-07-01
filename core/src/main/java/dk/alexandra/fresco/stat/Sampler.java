@@ -6,6 +6,7 @@ import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.util.List;
 
+/** This computation library contains functions which samples random values from various distributions. */
 public interface Sampler {
 
   static Sampler using(ProtocolBuilderNumeric builder) {
@@ -47,24 +48,24 @@ public interface Sampler {
   DRes<SInt> sampleCategoricalDistribution(List<DRes<SFixed>> probabilities, boolean normalized);
 
   /**
-   * Draw a sample from an exponential distribution with parameter <i>λ = 1 / b</i> with <i>b >
+   * Draw a sample from an exponential distribution with parameter <i>λ = 1 / b</i> with <i>b gt;
    * 0</i>.
    */
   DRes<SFixed> sampleExponentialDistribution(DRes<SFixed> b);
 
   /**
-   * Draw a sample from an exponential distribution with parameter <i>λ = 1 / b</i> with <i>b >
+   * Draw a sample from an exponential distribution with parameter <i>λ = 1 / b</i> with <i>b gt;
    * 0</i>.
    */
   DRes<SFixed> sampleExponentialDistribution(double b);
 
   /**
-   * Draw a sample from a Laplace distribution with location <i>0</i> and scale <i>b > 0</i>.
+   * Draw a sample from a Laplace distribution with location <i>0</i> and scale <i>b &gt; 0</i>.
    */
   DRes<SFixed> sampleLaplaceDistribution(double b);
 
   /**
-   * Draw a sample from a Laplace distribution with location <i>0</i> and scale <i>b > 0</i>.
+   * Draw a sample from a Laplace distribution with location <i>0</i> and scale <i>b gt; 0</i>.
    */
   DRes<SFixed> sampleLaplaceDistribution(DRes<SFixed> b);
 

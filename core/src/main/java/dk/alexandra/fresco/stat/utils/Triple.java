@@ -2,6 +2,7 @@ package dk.alexandra.fresco.stat.utils;
 
 import dk.alexandra.fresco.framework.DRes;
 
+/** Instances of this class holds three values of arbitrary type. */
 public class Triple<A, B, C> {
 
   private final A a;

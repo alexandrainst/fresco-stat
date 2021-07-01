@@ -14,12 +14,13 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SamplePercentiles implements Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
+/** Compute some quantiles for a sample */
+public class SampleQuantiles implements Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
   private final List<DRes<SFixed>> data;
   private final double[] quantiles;
 
-  public SamplePercentiles(List<DRes<SFixed>> data, double[] quantiles) {
+  public SampleQuantiles(List<DRes<SFixed>> data, double[] quantiles) {
     this.data = data;
     this.quantiles = quantiles;
   }

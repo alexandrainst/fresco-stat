@@ -10,14 +10,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Find sets of mututally equal in a list of secret shared integers: If the <i>i</i>'th and <i>j</i>'th
+ * elements are the same in the result, it indicates that the <i>i</i>'th and <i>j</i>'th elements are
+ * equal in the input data.
+ */
 public class FindTiedGroups implements Computation<List<BigInteger>, ProtocolBuilderNumeric> {
 
   private final List<DRes<SInt>> data;
 
-  /**
-   * Returns a list of integers. If the i'th and j'th elements are the same in the result, it
-   * indicates that the i'th and j'th elements are equal in the input data.
-   */
   public FindTiedGroups(List<DRes<SInt>> data) {
     this.data = data;
   }

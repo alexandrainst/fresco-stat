@@ -14,7 +14,7 @@ public class RealUtils {
    *
    * @param input   The list of factors.
    * @param builder The builder to use.
-   * @return
+   * @return The product of all elements in the input list.
    */
   public static DRes<SFixed> product(List<DRes<SFixed>> input, ProtocolBuilderNumeric builder) {
     return builder.seq(seq -> DRes.of(input))

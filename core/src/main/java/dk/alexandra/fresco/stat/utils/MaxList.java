@@ -11,8 +11,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Given a list <i>X = [x<sub>0</sub>, ..., x<sub>n-1</sub>] with <i>n</i> a power of <i>2</i>, this
- * method returns a pair [max(X), i : x<sub>i</sub> = max(X)]. In the case of ties, the highest
+ * Given a list <i>X = [x<sub>0</sub>, ..., x<sub>n-1</sub>]</i> with <i>n</i> a power of <i>2</i>,
+ * this method returns a pair [max(X), i : x<sub>i</sub> = max(X)]. In the case of ties, the highest
  * index is chosen. The algorithm is in log n rounds each with a total of n-1 comparisons where n is
  * the number of inputs.
  */

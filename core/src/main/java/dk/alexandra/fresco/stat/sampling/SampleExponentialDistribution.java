@@ -12,8 +12,6 @@ import java.math.BigDecimal;
 /**
  * This computation samples from an exponential distribution with rate <i>1/lambda</i> and location
  * 0.
- *
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
 public class SampleExponentialDistribution implements Computation<SFixed, ProtocolBuilderNumeric> {
 

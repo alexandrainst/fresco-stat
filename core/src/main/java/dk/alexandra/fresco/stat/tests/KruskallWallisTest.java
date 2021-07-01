@@ -36,8 +36,8 @@ public class KruskallWallisTest implements Computation<SFixed, ProtocolBuilderNu
    * If the test is to be applied on fixed point numbers (SFixed's), this method should be used to
    * transform the data,
    *
-   * @param observed The data as SFixed's
-   * @return The input data as SInts to be used in the test.
+   * @param observed The data as fixed point numbers.
+   * @return The input data scaled to integers to be used in the test.
    */
   public static List<List<DRes<SInt>>> fromSFixed(List<List<DRes<SFixed>>> observed) {
     return observed.stream().map(

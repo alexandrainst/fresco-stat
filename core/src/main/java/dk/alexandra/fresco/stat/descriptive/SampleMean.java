@@ -10,8 +10,6 @@ import java.util.List;
 
 /**
  * Compute the mean of a list of observations.
- *
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
 public class SampleMean implements Computation<SFixed, ProtocolBuilderNumeric> {
 

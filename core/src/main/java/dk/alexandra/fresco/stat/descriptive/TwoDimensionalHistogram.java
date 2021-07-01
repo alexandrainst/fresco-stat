@@ -9,6 +9,9 @@ import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.stat.utils.MatrixUtils;
 import java.util.List;
 
+/**
+ * Compute a two-dimensional histogram for a given two dimensional data set.
+ */
 public class TwoDimensionalHistogram
     implements Computation<Matrix<DRes<SInt>>, ProtocolBuilderNumeric> {
 

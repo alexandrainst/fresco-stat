@@ -8,9 +8,7 @@ import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.util.List;
 
 /**
- * Compute the stanard deviation of a list of observations.
- *
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
+ * Compute the standard deviation of a list of observations.
  */
 public class SampleStandardDeviation implements Computation<SFixed, ProtocolBuilderNumeric> {
 

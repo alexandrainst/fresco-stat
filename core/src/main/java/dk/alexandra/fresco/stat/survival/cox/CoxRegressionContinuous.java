@@ -4,6 +4,9 @@ import dk.alexandra.fresco.stat.survival.SurvivalInfoContinuous;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoSorterContinuous;
 import java.util.List;
 
+/**
+ * Estimate the coefficients of a Cox model on the given data using gradient descent.
+ */
 public class CoxRegressionContinuous extends CoxRegression<SurvivalInfoContinuous> {
 
   /**

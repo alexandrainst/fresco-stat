@@ -9,6 +9,12 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+/**
+ * This enum represents the available activation functions <i>f: R<sup>n</sup>&rarr;
+ * R<sup>n</sup></i> for use with neural networks. Use the {@link ActivationFunction#get(ArrayList,
+ * ActivationFunction)} or {@link ActivationFunction#getDerivative(ArrayList, ArrayList,
+ * ActivationFunction)} to get computations for the function and the derivative resp.
+ */
 public enum ActivationFunction {
   SIGMOID, RELU;
 

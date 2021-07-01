@@ -9,7 +9,8 @@ import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.utils.MatrixUtils;
 
 /**
- * A must have either full column or row rank.
+ * Compute the Moore-Penrose pseudo inverse of a matrix <i>A</i>. Only the case where <i>A</i> have
+ * either full column or row rank is covered by this function.
  */
 public class MoorePenrosePseudoInverse implements
     Computation<Matrix<DRes<SFixed>>, ProtocolBuilderNumeric> {

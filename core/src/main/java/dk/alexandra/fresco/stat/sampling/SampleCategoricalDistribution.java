@@ -15,9 +15,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Sample an element from a catagorical distribution.
- *
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
+ * Sample an element from a categorical distribution.
  */
 public class SampleCategoricalDistribution implements Computation<SInt, ProtocolBuilderNumeric> {
 
@@ -26,9 +24,9 @@ public class SampleCategoricalDistribution implements Computation<SInt, Protocol
   private double[] knownProbabilities;
 
   /**
-   * @param probabilities The i'th element of this list is the propabily of drawing i from this
+   * @param probabilities The <i>i</i>'th element of this list is the probability of drawing <i>i</i> from this
    *                      distribution.
-   * @param normalized    Does the propabilities sum to 1?
+   * @param normalized    Does the probabilities sum to 1? If not, the computation handles the normalization.
    */
   public SampleCategoricalDistribution(List<DRes<SFixed>> probabilities, boolean normalized) {
     this.probabilities = probabilities;

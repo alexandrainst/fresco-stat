@@ -36,6 +36,17 @@ public class MatrixUtils {
     E apply(int i, int j);
   }
 
+  /**
+   * Create a new matrix from the given one with rows and columns taken from certain intervals.
+   *
+   * @param matrix The base matrix.
+   * @param i0 The lower bound (inclusive) for the rows to include.
+   * @param i1 The upper bound (exclusive) for the rows to include.
+   * @param j0 The lower bound (inclusive) for the columns to include.
+   * @param j1 The upper bound (exclusive) for the columns to include.
+   * @param <E>
+   * @return A new matrix from the given one with rows and columns taken from certain intervals
+   */
   public static <E> Matrix<E> subMatrix(Matrix<E> matrix, int i0, int i1, int j0, int j1) {
     ArrayList<ArrayList<E>> rows = new ArrayList<>();
     for (int i = i0; i < i1; i++) {

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/** Compute the sum of squared estimate of errors (aka the residual sum of squares) */
 public class SSE implements Computation<SFixed, ProtocolBuilderNumeric> {
 
   private final List<DRes<SFixed>> actual;

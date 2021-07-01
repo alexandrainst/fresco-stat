@@ -15,7 +15,7 @@ import dk.alexandra.fresco.stat.descriptive.MultiDimensionalHistogram;
 import dk.alexandra.fresco.stat.descriptive.PearsonCorrelation;
 import dk.alexandra.fresco.stat.descriptive.SampleMean;
 import dk.alexandra.fresco.stat.descriptive.SampleMedian;
-import dk.alexandra.fresco.stat.descriptive.SamplePercentiles;
+import dk.alexandra.fresco.stat.descriptive.SampleQuantiles;
 import dk.alexandra.fresco.stat.descriptive.SampleStandardDeviation;
 import dk.alexandra.fresco.stat.descriptive.SampleVariance;
 import dk.alexandra.fresco.stat.descriptive.TwoDimensionalHistogram;
@@ -23,7 +23,6 @@ import dk.alexandra.fresco.stat.regression.linear.LinearRegression;
 import dk.alexandra.fresco.stat.regression.linear.LinearRegression.LinearRegressionResult;
 import dk.alexandra.fresco.stat.regression.linear.SimpleLinearRegression;
 import dk.alexandra.fresco.stat.regression.linear.SimpleLinearRegression.SimpleLinearRegressionResult;
-import dk.alexandra.fresco.stat.regression.logistic.LogisticRegression;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoContinuous;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoDiscrete;
 import dk.alexandra.fresco.stat.survival.cox.CoxRegressionContinuous;
@@ -40,7 +39,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.IntToDoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -64,7 +62,7 @@ public class DefaultStatistics implements Statistics {
 
   @Override
   public DRes<List<DRes<SFixed>>> samplePercentiles(List<DRes<SFixed>> data, double[] percentiles) {
-    return new SamplePercentiles(data, percentiles).buildComputation(builder);
+    return new SampleQuantiles(data, percentiles).buildComputation(builder);
   }
 
   public DRes<SFixed> sampleVariance(List<DRes<SFixed>> data, DRes<SFixed> mean) {

@@ -8,6 +8,10 @@ import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * This computation directory contains variuous linear algebra functions. See also
+ * {@link dk.alexandra.fresco.lib.fixed.FixedLinearAlgebra}.
+ */
 public interface AdvancedLinearAlgebra {
 
   static AdvancedLinearAlgebra using(ProtocolBuilderNumeric builder) {

@@ -10,6 +10,7 @@ import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.mlp.Layer;
 import java.util.ArrayList;
 
+/** Apply an affine map to a vector */
 public class AffineMap implements
     Computation<ArrayList<DRes<SFixed>>, ProtocolBuilderNumeric> {
 

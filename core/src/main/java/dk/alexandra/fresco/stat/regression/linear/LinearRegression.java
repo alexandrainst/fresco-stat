@@ -19,6 +19,12 @@ import dk.alexandra.fresco.stat.utils.VectorUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Fit a linear model to the given dataset and output estimates for the coefficients and the regression
+ * error variance (s<sup>2</sup>) which is equal to the regression standard error squared,
+ * the coefficient of determination (R<sup>2</sup>) and the standard errors (squared) for each coefficient
+ * estimate. (see {@link LinearRegressionResult}.
+ */
 public class LinearRegression implements
     Computation<LinearRegressionResult, ProtocolBuilderNumeric> {
 

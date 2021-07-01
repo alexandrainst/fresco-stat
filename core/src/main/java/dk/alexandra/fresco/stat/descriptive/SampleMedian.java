@@ -16,6 +16,7 @@ import dk.alexandra.fresco.stat.AdvancedLinearAlgebra;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/** Compute the sample median of a sample */
 public class SampleMedian implements Computation<SFixed, ProtocolBuilderNumeric> {
 
   private final List<DRes<SFixed>> data;

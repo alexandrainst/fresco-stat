@@ -17,6 +17,11 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+/**
+ * Compute a  <a href="https://en.wikipedia.org/wiki/K-anonymity"><i>k</i>-anonymous</a> version of
+ * a dataset. Note that the output leaks the corresponding indices of the individuals in each
+ * bucket. To avoid this, the data could be shuffled obliviously before running the computation.
+ */
 public class LeakyKAnonymity implements
     Computation<MultiDimensionalArray<List<DRes<SInt>>>, ProtocolBuilderNumeric> {
 

@@ -11,6 +11,9 @@ import dk.alexandra.fresco.stat.utils.VectorUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A gradient descent algorithm to fit a logistic model to a dataset.
+ */
 public class LogisticRegressionGD
     implements Computation<ArrayList<DRes<SFixed>>, ProtocolBuilderNumeric> {
 

@@ -10,8 +10,6 @@ import java.util.List;
 
 /**
  * Compute the sample variance for a list of observations.
- *
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
 public class SampleVariance implements Computation<SFixed, ProtocolBuilderNumeric> {
 
@@ -19,7 +17,8 @@ public class SampleVariance implements Computation<SFixed, ProtocolBuilderNumeri
   private final DRes<SFixed> mean;
 
   /**
-   * Create a new computation with a given computed sample mean.
+   * Create a new computation with a given computed sample mean. Use {@link SampleMean} to compute
+   * the mean.
    */
   public SampleVariance(List<DRes<SFixed>> observed, DRes<SFixed> mean) {
     this.observed = observed;

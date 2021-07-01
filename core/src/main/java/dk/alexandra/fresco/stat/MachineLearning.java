@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntToDoubleFunction;
 
+/** This computation library contains various functions for machine learning. */
 public interface MachineLearning {
 
   static MachineLearning using(ProtocolBuilderNumeric builder) {
@@ -46,10 +47,13 @@ public interface MachineLearning {
   DRes<MLP> fit(MLP network, List<ArrayList<DRes<SFixed>>> data, List<ArrayList<DRes<SFixed>>> labels, int epochs, double learningRate);
 
   /**
-   * Assuming that the given MLP has <i>n</i> output neuronws, this
-   * @param network
-   * @param input
-   * @return
+   * Assuming that the given MLP has <i>n</i> output neurons, this function applies the
+   * network to the given input and finds the index of the output <i>i</i> with <i>0 &leq; i &lt; n</i>
+   * containing the largest number.
+   *
+   * @param network The multi-layer perceptron to use for the prediction.
+   * @param input The input.
+   * @return The index of the largest element in the output vector.
    */
   DRes<SInt> predict(MLP network, ArrayList<DRes<SFixed>> input);
 

@@ -9,6 +9,9 @@ import dk.alexandra.fresco.stat.Statistics;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * Compute a <i>t</i>-test statistics on a sample for the null hypothesis the mean of the sample is equal to <i>mu</i>.
+ */
 public class OneSampleTTest implements Computation<SFixed, ProtocolBuilderNumeric> {
 
   private final List<DRes<SFixed>> observed;

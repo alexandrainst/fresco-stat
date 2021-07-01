@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.IntToDoubleFunction;
 
+/** This computation library contains various statistical functions. */
 public interface Statistics extends ComputationDirectory {
 
   static Statistics using(ProtocolBuilderNumeric builder) {
@@ -123,7 +124,7 @@ public interface Statistics extends ComputationDirectory {
   DRes<SFixed> chiSquare(List<DRes<SInt>> observed, double[] expected);
 
   /**
-   * Compute estimates for the parameters <i>b></i> of a linear model such that <i>b0 x0 + ... + bk
+   * Compute estimates for the parameters <i>b</i> of a linear model such that <i>b0 x0 + ... + bk
    * xk = y</i>.
    *
    * @param x The dataset.

@@ -9,6 +9,7 @@ import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Calculate the sum of products (aka the dot product) of two samples */
 public class SP implements Computation<SFixed, ProtocolBuilderNumeric> {
 
   private final List<DRes<SFixed>> x, y;

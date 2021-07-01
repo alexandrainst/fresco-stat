@@ -8,8 +8,6 @@ import dk.alexandra.fresco.lib.fixed.SFixed;
 
 /**
  * Sample a number uniformly in the interval <i>[0,1)</i>.
- *
- * @author Jonas Lindstrøm (jonas.lindstrom@alexandra.dk)
  */
 public class SampleUniformDistribution implements Computation<SFixed, ProtocolBuilderNumeric> {
 

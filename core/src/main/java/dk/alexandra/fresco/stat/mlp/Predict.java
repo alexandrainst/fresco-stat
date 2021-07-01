@@ -8,6 +8,11 @@ import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.utils.MaxList;
 import java.util.ArrayList;
 
+/**
+ * Assuming that the given neural network has <i>n</i> dimensional output, this function applies the
+ * network to the given input and finds the index of the output <i>i</i> with <i>0 &leq; i &lt; n</i>
+ * containing the largest number.
+ */
 public class Predict implements Computation<SInt, ProtocolBuilderNumeric> {
 
   private final MLP neuralNetwork;

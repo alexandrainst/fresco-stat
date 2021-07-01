@@ -14,8 +14,9 @@ import java.math.BigInteger;
 import java.util.List;
 
 /**
- * This computation returns coefficients a and b based on a simple linear regression of the observed
- * x and y values.
+ * Compute differentially private estimates for the coefficients of a linear model fitted on a
+ * dataset. The method is based on the paper <a href="https://arxiv.org/pdf/2007.05157.pdf">Differentially
+ * Private Simple Linear Regression</a> by Alabi et. al.
  */
 public class NoisyStats implements
     Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
@@ -23,7 +24,7 @@ public class NoisyStats implements
   private final List<DRes<SFixed>> x, y;
   private final double epsilon;
 
-  // https://arxiv.org/pdf/2007.05157.pdf
+  //
   public NoisyStats(List<DRes<SFixed>> x, List<DRes<SFixed>> y, double epsilon) {
     this.x = x;
     this.y = y;

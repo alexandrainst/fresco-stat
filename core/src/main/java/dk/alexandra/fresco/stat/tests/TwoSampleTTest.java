@@ -10,15 +10,15 @@ import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.Statistics;
 import java.util.List;
 
+/**
+ * This implements the calculation of a t-test statistics for two samples where it can be assumed
+ * that the variances are equal.
+ */
 public class TwoSampleTTest implements Computation<SFixed, ProtocolBuilderNumeric> {
 
   private final List<DRes<SFixed>> data1;
   private final List<DRes<SFixed>> data2;
 
-  /**
-   * This implements the calculation of a t-test statistics for two samples where it can be assumed
-   * that the variances are equal.
-   */
   public TwoSampleTTest(List<DRes<SFixed>> data1, List<DRes<SFixed>> data2) {
     this.data1 = data1;
     this.data2 = data2;

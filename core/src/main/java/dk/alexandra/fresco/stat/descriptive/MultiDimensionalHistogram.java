@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+/** Compute a multi-dimensiona histogram on a dataset */
 public class MultiDimensionalHistogram
     implements Computation<MultiDimensionalArray<DRes<SInt>>, ProtocolBuilderNumeric> {
 
@@ -23,6 +24,10 @@ public class MultiDimensionalHistogram
   private final Matrix<DRes<SInt>> data;
   private final int dimensions;
 
+  /**
+   * @param buckets A list of soft lower bounds for the buckets of the histogram.
+   * @param data The dataset. Rows are enterpreted as entries.
+   */
   public MultiDimensionalHistogram(List<List<DRes<SInt>>> buckets,
       Matrix<DRes<SInt>> data) {
     if (data.getWidth() != buckets.size()) {

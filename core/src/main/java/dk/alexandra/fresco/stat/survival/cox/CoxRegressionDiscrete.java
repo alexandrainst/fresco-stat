@@ -4,6 +4,9 @@ import dk.alexandra.fresco.stat.survival.SurvivalInfoDiscrete;
 import dk.alexandra.fresco.stat.survival.SurvivalInfoSorterDiscrete;
 import java.util.List;
 
+/**
+ * Estimate the coefficients of a Cox model on the given data using gradient descent.
+ */
 public class CoxRegressionDiscrete extends CoxRegression<SurvivalInfoDiscrete> {
 
   /**

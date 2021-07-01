@@ -10,6 +10,10 @@ import dk.alexandra.fresco.stat.descriptive.helpers.SPD;
 import dk.alexandra.fresco.stat.descriptive.helpers.SSD;
 import java.util.List;
 
+/**
+ * Compute the correlation between two samples. Note that the mean needs to be computed for both samples.
+ * This may be done using the {@link dk.alexandra.fresco.lib.common.math.integer.stat.Mean} class.
+ */
 public class PearsonCorrelation implements Computation<SFixed, ProtocolBuilderNumeric> {
 
   private final List<DRes<SFixed>> x;

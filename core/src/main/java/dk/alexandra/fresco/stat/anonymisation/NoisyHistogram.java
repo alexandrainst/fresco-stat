@@ -5,9 +5,6 @@ import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
-import dk.alexandra.fresco.lib.common.collections.Matrix;
-import dk.alexandra.fresco.lib.common.compare.Comparison;
-import dk.alexandra.fresco.lib.common.math.AdvancedNumeric;
 import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
@@ -17,6 +14,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Compute a <a href="https://en.wikipedia.org/wiki/Differential_privacy">differentially private</a>
+ * histogram for a dataset.
+ */
 public class NoisyHistogram implements Computation<List<DRes<SInt>>, ProtocolBuilderNumeric> {
 
   private final List<DRes<SInt>> buckets;
@@ -24,9 +25,9 @@ public class NoisyHistogram implements Computation<List<DRes<SInt>>, ProtocolBui
   private final double epsilon;
 
   /**
-   * Given a list of upper bounds for buckets and a list of samples, this computation computes a differentially private
-   * histogram for the given buckets. The last bucket contains all samples larger than the last
-   * upper bound.
+   * Given a list of upper bounds for buckets and a list of samples, this computation computes a
+   * differentially private histogram for the given buckets. The last bucket contains all samples
+   * larger than the last upper bound.
    *
    * @param buckets Soft upper bounds for buckets
    * @param data    List of samples
@@ -52,18 +53,21 @@ public class NoisyHistogram implements Computation<List<DRes<SInt>>, ProtocolBui
     }).par((par, histogramAndNoise) -> {
       FixedNumeric fixedNumeric = FixedNumeric.using(par);
       // We round the noise as floor(x + 0.5)
-      List<DRes<SFixed>> noisePlusHalf = histogramAndNoise.getSecond().stream().map(x -> fixedNumeric.add(
-          0.5, x)).collect(Collectors.toList());
+      List<DRes<SFixed>> noisePlusHalf = histogramAndNoise.getSecond().stream()
+          .map(x -> fixedNumeric.add(
+              0.5, x)).collect(Collectors.toList());
       return Pair.lazy(histogramAndNoise.getFirst().out(), noisePlusHalf);
     }).par((par, histogramAndNoise) -> {
       AdvancedFixedNumeric fixedNumeric = AdvancedFixedNumeric.using(par);
-      List<DRes<SInt>> noiseRounded = histogramAndNoise.getSecond().stream().map(fixedNumeric::floor).collect(
-          Collectors.toList());
+      List<DRes<SInt>> noiseRounded = histogramAndNoise.getSecond().stream()
+          .map(fixedNumeric::floor).collect(
+              Collectors.toList());
       return Pair.lazy(histogramAndNoise.getFirst(), noiseRounded);
     }).par((par, histogramAndNoise) -> {
       List<DRes<SInt>> noisyHistogram = new ArrayList<>();
       for (int i = 0; i < histogramAndNoise.getFirst().size(); i++) {
-        noisyHistogram.add(par.numeric().add(histogramAndNoise.getFirst().get(i), histogramAndNoise.getSecond().get(i)));
+        noisyHistogram.add(par.numeric()
+            .add(histogramAndNoise.getFirst().get(i), histogramAndNoise.getSecond().get(i)));
       }
       return DRes.of(noisyHistogram);
     });

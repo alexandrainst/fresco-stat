@@ -11,6 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Compute a 1-dimensional histogram for a data set.
+ */
 public class Histogram implements Computation<List<DRes<SInt>>, ProtocolBuilderNumeric> {
 
   private final List<DRes<SInt>> buckets;

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/** Compute the discrete convolution of two vectors */
 public class Convolution implements Computation<ArrayList<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
   private final ArrayList<DRes<SFixed>> a, b;
