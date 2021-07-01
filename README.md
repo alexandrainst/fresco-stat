@@ -68,9 +68,6 @@ The library has four function libraries with the following functions:
     * Moore-Penrose pseudo inverse
     * QR-algorithm for eigenvalue computation
     * QR-decomposition
-1. [Optimization methods](core/src/main/java/dk/alexandra/fresco/stat/Optimization.java)
-    * Linear programming
-    * Data envelopment method (DEA)
 1. [Machine learning](core/src/main/java/dk/alexandra/fresco/stat/MachineLearning.java)
     * Logistic regression via gradient descent
     * Multilayer perceptron 
