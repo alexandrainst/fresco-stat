@@ -116,19 +116,21 @@ different machines, replace localhost with the IP-address of the other machine.
 
 There are currently three demos. The command line arguments above runs a demo of survival analysis 
 using Cox-regression where each party has the data of a patient group, and where the regression 
-estimates the difference in death rate between the two groups. 
+estimates the difference in death rate between the two groups. This dataset is taken from 
+<i>Statistical methods in medical research</i> by P. Armitage, G. Berry, J.N.S. Matthews. 
 
 There is also an example of linear regression on a vertical sharing of a data set of average masses for women as a function
-of their height in a sample of American women of age 30–39 taken from <a href="https://en.wikipedia.org/wiki/Simple_linear_regression">Wikipedia</a>.
+of their height in a sample of American women of age 30–39 taken from an example from 
+<a href="https://en.wikipedia.org/wiki/Simple_linear_regression">Wikipedia</a>.
 
 The third demo is a demo of extracting a <i>k</i>-anonymous dataset from a distributed dataset. Here, '
-the famous adult data set is used. In this demo, one party knows some details about the individuals 
-in the data set, and the other knows how much they earn (more or less than $50k). The demo now 
-generalized the attributes about individuals and outputs the number of individuals in each income 
-bracket for each choice of generalized attributes.  
+the <a href="https://archive.ics.uci.edu/ml/datasets/adult">adult</a> dataset is used. In this demo, 
+one party knows some details about the individuals in the data set, and the other knows how much they 
+earn (more or less than $50k). The demo now generalizes the attributes about individuals and outputs 
+the number of individuals in each income bracket for each choice of generalized attributes.  
 
 Each demo should take between 30s to a few minutes to run with both instances on the same machine, 
-and a bit longer if  
+and a bit longer if running on two machines over a LAN or the internet.  
  
 <!-- CONTRIBUTING -->
 ## Contributing
