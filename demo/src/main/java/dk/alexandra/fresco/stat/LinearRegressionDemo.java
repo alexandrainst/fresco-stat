@@ -44,11 +44,12 @@ public class LinearRegressionDemo {
   // Perform a linear regression on a dataset of real estate prices based on different factors. Here,
   // party 1 has the independent variables and party has the dependant variable (the price).
   public static void main(String[] arguments) throws IOException {
-    if (arguments.length != 1) {
-      throw new IllegalArgumentException("Usage: java Demo [id]");
+    if (arguments.length != 2) {
+      throw new IllegalArgumentException("Usage: java Demo [myId] [otherIP]");
     }
 
     final int myId = Integer.parseInt(arguments[0]);
+    final String otherIP = arguments[1];
     final int noParties = 2;
     final int otherId = 3 - myId;
     final int modBitLength = 256;
@@ -56,7 +57,7 @@ public class LinearRegressionDemo {
     final int maxBatchSize = 4096;
 
     Party me = new Party(myId, "localhost", 9000 + myId);
-    Party other = new Party(myId, "localhost", 9000 + otherId);
+    Party other = new Party(myId, otherIP, 9000 + otherId);
     NetworkConfiguration networkConfiguration = new NetworkConfigurationImpl(myId,
         Map.of(myId, me, otherId, other));
     Network network = new SocketNetwork(networkConfiguration);
@@ -77,13 +78,13 @@ public class LinearRegressionDemo {
     SecureComputationEngine<SpdzResourcePool, ProtocolBuilderNumeric> sce = new SecureComputationEngineImpl<>(
         suite, evaluator);
 
-    Reader in = new FileReader("real-estate-" + myId + ".csv");
+    Reader in = new FileReader("re" + myId + ".csv");
     Iterable<CSVRecord> records = CSVFormat.DEFAULT.withRecordSeparator(",").parse(in);
     List<List<String>> data = StreamSupport.stream(records.spliterator(), false).map(
         record -> StreamSupport.stream(record.spliterator(), false).collect(Collectors.toList()))
         .collect(Collectors.toList());
 
-    // Party 1 has all independent variables, party 2 has the dependant variable
+    // Party 1 has all independent variables, party 2 has the dependent variable
     List<List<Double>> x = new ArrayList<>();
     List<Double> y = new ArrayList<>();
     int n = data.size();

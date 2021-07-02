@@ -39,8 +39,8 @@ public class SurvivalAnalysisDemo {
    * Compute the difference in death rate between two patient groups, resp. stage III and stage IV diffuse histiocytic lymphoma, using Cox regression. Party 1 has data for stage III patients, and party 2 has data for the stave IV patients.
    */
   public static void main(String[] arguments) {
-    if (arguments.length != 1) {
-      throw new IllegalArgumentException("Usage: java Demo [id]");
+    if (arguments.length != 2) {
+      throw new IllegalArgumentException("Usage: java Demo [myId] [otherIP]");
     }
 
     /*
@@ -68,6 +68,7 @@ public class SurvivalAnalysisDemo {
 
     // Configurate fresco
     final int myId = Integer.parseInt(arguments[0]);
+    final String otherIP = arguments[1];
     final int noParties = 2;
     final int otherId = 3 - myId;
     final int modBitLength = 256;
@@ -75,7 +76,7 @@ public class SurvivalAnalysisDemo {
     final int maxBatchSize = 4096;
 
     Party me = new Party(myId, "localhost", 9000 + myId);
-    Party other = new Party(otherId, "localhost", 9000 + otherId);
+    Party other = new Party(otherId, otherIP, 9000 + otherId);
     NetworkConfiguration networkConfiguration = new NetworkConfigurationImpl(myId,
         Map.of(myId, me, otherId, other));
     Network network = new SocketNetwork(networkConfiguration);

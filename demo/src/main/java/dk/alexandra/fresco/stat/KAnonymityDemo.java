@@ -46,11 +46,12 @@ public class KAnonymityDemo {
    * predefined generalizations. Equivalence classes with less than k individuals are suppressed.
    */
   public static void main(String[] arguments) throws IOException {
-    if (arguments.length != 1) {
-      throw new IllegalArgumentException("Must provide party id");
+    if (arguments.length != 2) {
+      throw new IllegalArgumentException("Usage: java Demo [myId] [otherIP]");
     }
 
     final int myId = Integer.parseInt(arguments[0]);
+    final String otherIP = arguments[1];
     final int noParties = 2;
     final int otherId = 3 - myId;
     final int modBitLength = 256;
@@ -58,7 +59,7 @@ public class KAnonymityDemo {
     final int maxBatchSize = 4096;
 
     Party me = new Party(myId, "localhost", 9000 + myId);
-    Party other = new Party(myId, "localhost", 9000 + otherId);
+    Party other = new Party(myId, otherIP, 9000 + otherId);
     NetworkConfiguration networkConfiguration = new NetworkConfigurationImpl(myId,
         Map.of(myId, me, otherId, other));
     Network network = new SocketNetwork(networkConfiguration);

@@ -84,10 +84,20 @@ Note that it is not uncommon to experience overflows during computation, which w
 outputs. This may be avoided by normalizing the input data and/or using a bigger modulus in FRESCO.
 
 ## Build
-Build the project and the documentation using maven:
+Build the project and the documentation using Maven:
 ```
 mvn clean install
 mvn javadoc:javadoc
+```
+The javadoc can be found in the `core/target/apidocs` folder.
+
+The library may be included in other projects by including it as a Maven dependency.
+```
+<dependency>
+  <artifactId>stat-core</artifactId>
+  <groupId>dk.alexandra.fresco</groupId>
+  <version>0.2</version>
+</dependency>
 ```
 
 ## Demos
@@ -96,7 +106,7 @@ There are a couple of demos in the [demo](demo)-module which is build by running
 ```
 mvn package
 ```
-in the root directory of the demo-module. To run a demo, execute eg.
+in the root directory of the [demo](demo) folder. To run a demo, execute eg.
 ```
 java -jar target/survival-jar-with-dependencies.jar 1
 java -jar target/survival-jar-with-dependencies.jar 2
@@ -134,10 +144,9 @@ it may be done as follows:
 <!-- LICENSE -->
 ## License
 
-Distributed under the MIT License. See `LICENSE` for more information.
+Distributed under the MIT License. See [the licence](LICENSE) for more information.
 
 <!-- CONTACT -->
 ## Contact 
-The library is developed and maintained by the Security Lab in the <a href="https://alexandra.dk/about-the-alexandra-institute/">Alexandra Institute</a>. 
-If you have discoved a bug, have questions about the usage of the library or you are missing a certain 
-function, feel free to contact us at <a href="fresco@alexandra.dk">fresco@alexandra.dk</a>. 
+The library is developed and maintained by the Security Lab at the <a href="https://alexandra.dk/about-the-alexandra-institute/">Alexandra Institute</a>. 
+If you have found a bug, have questions about the usage of the library, or you are missing functionality, feel free to contact us at <a href="fresco@alexandra.dk">fresco@alexandra.dk</a>. 

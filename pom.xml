@@ -10,7 +10,7 @@
   <packaging>pom</packaging>
 
   <properties>
-    <fresco.version>1.3.1-SNAPSHOT</fresco.version>
+    <fresco.version>1.3.1</fresco.version>
     <maven.compiler.source>9</maven.compiler.source>
     <maven.compiler.target>9</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -23,7 +23,8 @@
 
   <name>FRESCO-stat</name>
   <description>
-    Library for secure statistics and linear algebra on data held by multiple parties without sharing the data with the other parties.
+    Library for secure statistics and linear algebra on data divided among multiple parties without
+    sharing the data with the other parties.
   </description>
   <url>https://github.com/alexandrainst/fresco-stat</url>
 
