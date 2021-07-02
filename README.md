@@ -96,7 +96,7 @@ The library may be included in other projects by including it as a Maven depende
 <dependency>
   <artifactId>stat-core</artifactId>
   <groupId>dk.alexandra.fresco</groupId>
-  <version>0.2</version>
+  <version>1.0</version>
 </dependency>
 ```
 
@@ -108,18 +108,18 @@ mvn package
 ```
 in the root directory of the [demo](demo) folder. To run a demo, execute eg.
 ```
-java -jar target/survival-jar-with-dependencies.jar 1
-java -jar target/survival-jar-with-dependencies.jar 2
+java -jar target/survival-jar-with-dependencies.jar 1 localhost
+java -jar target/survival-jar-with-dependencies.jar 2 localhost
 ```
-in two separate terminals and change the name of the jar to the desired demo.
+in two separate terminals and change the name of the jar to the desired demo. If running on two 
+different machines, replace localhost with the IP-address of the other machine.
 
 There are currently three demos. The command line arguments above runs a demo of survival analysis 
 using Cox-regression where each party has the data of a patient group, and where the regression 
 estimates the difference in death rate between the two groups. 
 
-There is also an example of linear regression on a vertical sharing of a data set of house prices where 
-one party knows the price of a house, and the other knows some details about the house such as size
-and distance to the nearest metro station. 
+There is also an example of linear regression on a vertical sharing of a data set of average masses for women as a function
+of their height in a sample of American women of age 30–39 taken from <a href="https://en.wikipedia.org/wiki/Simple_linear_regression">Wikipedia</a>.
 
 The third demo is a demo of extracting a <i>k</i>-anonymous dataset from a distributed dataset. Here, '
 the famous adult data set is used. In this demo, one party knows some details about the individuals 
@@ -127,7 +127,8 @@ in the data set, and the other knows how much they earn (more or less than $50k)
 generalized the attributes about individuals and outputs the number of individuals in each income 
 bracket for each choice of generalized attributes.  
 
-Each demo should take between 30s to a few minutes to run on a modern laptop.
+Each demo should take between 30s to a few minutes to run with both instances on the same machine, 
+and a bit longer if  
  
 <!-- CONTRIBUTING -->
 ## Contributing
