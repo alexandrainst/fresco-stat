@@ -95,7 +95,7 @@
     <dependency>
       <artifactId>stat-core</artifactId>
       <groupId>dk.alexandra.fresco</groupId>
-      <version>0.2-SNAPSHOT</version>
+      <version>0.2</version>
     </dependency>
 
     <dependency>
@@ -112,7 +112,7 @@
   <parent>
     <artifactId>stat</artifactId>
     <groupId>dk.alexandra.fresco</groupId>
-    <version>0.2-SNAPSHOT</version>
+    <version>0.2</version>
   </parent>
 
 </project>
