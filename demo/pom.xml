@@ -3,6 +3,7 @@
   xmlns="http://maven.apache.org/POM/4.0.0"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <artifactId>stat-demo</artifactId>
+
   <build>
     <plugins>
 
@@ -88,7 +89,7 @@
     <dependency>
       <artifactId>spdz</artifactId>
       <groupId>dk.alexandra.fresco</groupId>
-      <version>1.3.1-SNAPSHOT</version>
+      <version>${fresco.version}</version>
     </dependency>
 
     <dependency>
@@ -113,6 +114,5 @@
     <groupId>dk.alexandra.fresco</groupId>
     <version>0.2-SNAPSHOT</version>
   </parent>
-
 
 </project>
