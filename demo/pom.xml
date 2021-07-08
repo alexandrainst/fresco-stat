@@ -6,14 +6,6 @@
 
   <build>
     <plugins>
-
-      <plugin>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
         <executions>
@@ -64,6 +56,27 @@
               <archive>
                 <manifest>
                   <mainClass>
+                    dk.alexandra.fresco.stat.SurvivalAnalysisBenchmarkDemo
+                  </mainClass>
+                </manifest>
+              </archive>
+              <descriptorRefs>
+                <descriptorRef>jar-with-dependencies</descriptorRef>
+              </descriptorRefs>
+              <finalName>survivalbench</finalName>
+            </configuration>
+            <goals>
+              <goal>single</goal>
+            </goals>
+            <id>survivalbench</id>
+            <phase>package</phase>
+          </execution>
+
+          <execution>
+            <configuration>
+              <archive>
+                <manifest>
+                  <mainClass>
                     dk.alexandra.fresco.stat.KAnonymityDemo
                   </mainClass>
                 </manifest>
@@ -87,15 +100,15 @@
 
   <dependencies>
     <dependency>
-      <artifactId>spdz</artifactId>
       <groupId>dk.alexandra.fresco</groupId>
-      <version>${fresco.version}</version>
+      <artifactId>stat</artifactId>
+      <version>0.2</version>
     </dependency>
 
     <dependency>
-      <artifactId>stat-core</artifactId>
+      <artifactId>spdz</artifactId>
       <groupId>dk.alexandra.fresco</groupId>
-      <version>0.2</version>
+      <version>${fresco.version}</version>
     </dependency>
 
     <dependency>
@@ -106,13 +119,5 @@
 
   </dependencies>
   <modelVersion>4.0.0</modelVersion>
-
-  <packaging>jar</packaging>
-
-  <parent>
-    <artifactId>stat</artifactId>
-    <groupId>dk.alexandra.fresco</groupId>
-    <version>0.2</version>
-  </parent>
 
 </project>
