@@ -96,7 +96,7 @@ The javadoc can be found in the `core/target/apidocs` folder.
 The library may be included in other projects by including it as a Maven dependency.
 ```
 <dependency>
-  <artifactId>stat-core</artifactId>
+  <artifactId>stat</artifactId>
   <groupId>dk.alexandra.fresco</groupId>
   <version>0.2</version>
 </dependency>
