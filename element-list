@@ -1,0 +1,16 @@
+dk.alexandra.fresco.stat
+dk.alexandra.fresco.stat.anonymisation
+dk.alexandra.fresco.stat.descriptive
+dk.alexandra.fresco.stat.descriptive.helpers
+dk.alexandra.fresco.stat.descriptive.sort
+dk.alexandra.fresco.stat.linearalgebra
+dk.alexandra.fresco.stat.mlp
+dk.alexandra.fresco.stat.mlp.activationfunction
+dk.alexandra.fresco.stat.mlp.evaluation
+dk.alexandra.fresco.stat.regression.linear
+dk.alexandra.fresco.stat.regression.logistic
+dk.alexandra.fresco.stat.sampling
+dk.alexandra.fresco.stat.survival
+dk.alexandra.fresco.stat.survival.cox
+dk.alexandra.fresco.stat.tests
+dk.alexandra.fresco.stat.utils
