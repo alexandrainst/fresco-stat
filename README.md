@@ -1,3 +1,5 @@
+[![Maven Central](https://img.shields.io/maven-central/v/dk.alexandra.fresco/stat.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22dk.alexandra.fresco%22%20AND%20a:%22stat%22) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/alexandrainst/fresco-stat/blob/master/README.md) 
+
 <h1>FRESCO-stat</h1>
 
 <p>
@@ -29,7 +31,7 @@ of the two. Or one party could know the model parameters and other parties the d
 model eg. in regression or machine learning.
 
 The library has four function libraries with the following functions:
-1. [Statistics](core/src/main/java/dk/alexandra/fresco/stat/Statistics.java)
+1. [Statistics](src/main/java/dk/alexandra/fresco/stat/Statistics.java)
     * Descriptive statistics
         * Sample mean
         * Sample standard deviation
@@ -52,7 +54,7 @@ The library has four function libraries with the following functions:
         * <i>k</i>-anonymization
         * Differentially private histograms
         * Differentially private linear regression
-1. [Sampling from various distributions](core/src/main/java/dk/alexandra/fresco/stat/Sampler.java)
+1. [Sampling from various distributions](src/main/java/dk/alexandra/fresco/stat/Sampler.java)
     * Bernoulli distribution
     * Categorical distribution
     * Exponential distribution
@@ -61,7 +63,7 @@ The library has four function libraries with the following functions:
     * Normal distribution
     * Rademacher distribution
     * Uniform distribution
-1. [Linear Algebra](core/src/main/java/dk/alexandra/fresco/stat/AdvancedLinearAlgebra.java) (see also the <i>fixed</i> library in FRESCO for basic linear algebra functions)
+1. [Linear Algebra](src/main/java/dk/alexandra/fresco/stat/AdvancedLinearAlgebra.java) (see also the <i>fixed</i> library in FRESCO for basic linear algebra functions)
     * Back- and forward substitution
     * Gram-Schmidt process
     * Inverse of triangular matrices
@@ -89,14 +91,14 @@ Build the project and the documentation using Maven:
 mvn clean install
 mvn javadoc:javadoc
 ```
-The javadoc can be found in the `core/target/apidocs` folder.
+The javadoc can be found in the `target/apidocs` folder.
 
 The library may be included in other projects by including it as a Maven dependency.
 ```
 <dependency>
-  <artifactId>stat-core</artifactId>
+  <artifactId>stat</artifactId>
   <groupId>dk.alexandra.fresco</groupId>
-  <version>1.0</version>
+  <version>0.2</version>
 </dependency>
 ```
 

@@ -63,6 +63,7 @@ import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.apache.commons.math3.distribution.LaplaceDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTest {
@@ -325,7 +326,7 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   }
 
   @Test
-  //@Ignore
+  @Ignore
   public void test_logistic_regression() {
     runTest(new TestLogisticRegression<>(), TEST_PARAMETERS);
   }
@@ -453,20 +454,17 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   }
 
   @Test
+  @Ignore
   public void test_single_step_training() {
     runTest(new TestSingleStepTraining<>(), TEST_PARAMETERS);
   }
 
   @Test
+  @Ignore
   public void test_fit() {
     runTest(new TestFit<>(), TEST_PARAMETERS);
   }
 
-//  @Test
-//  public void test_batch_training() {
-//    runTest(new TestBatchTraining<>(), TEST_PARAMETERS);
-//  }
-//
   @Test
   public void test_prediction() {
     runTest(new TestPrediction<>(), TEST_PARAMETERS);
@@ -481,6 +479,5 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   public void test_max() {
     runTest(new TestMax<>(), TEST_PARAMETERS);
   }
-
 
 }
