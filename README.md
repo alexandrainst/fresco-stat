@@ -128,7 +128,7 @@ There is also an example of linear regression on a vertical sharing of a data se
 of their height in a sample of American women of age 30–39 taken from an example from 
 <a href="https://en.wikipedia.org/wiki/Simple_linear_regression">Wikipedia</a>.
 
-The third demo is a demo of extracting a <i>k</i>-anonymous dataset from a distributed dataset. Here, '
+The third demo is a demo of extracting a <i>k</i>-anonymous dataset from a distributed dataset. Here,
 the <a href="https://archive.ics.uci.edu/ml/datasets/adult">adult</a> dataset is used. In this demo, 
 one party knows some details about the individuals in the data set, and the other knows how much they 
 earn (more or less than $50k). The demo now generalizes the attributes about individuals and outputs 
