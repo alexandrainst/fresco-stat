@@ -82,9 +82,6 @@ Statistics.using(builder).chiSquare(observed, expected);
 
 to perform a ꭓ²-test on a dataset.
 
-A complete list of functions and how to use them may be found in the 
-<a href="https://alexandrainst.github.io/fresco-stat/">Javadoc</a>.
-
 Note that it is not uncommon to experience overflows during computation, which will appear as very large 
 outputs. This may be avoided by normalizing the input data and/or using a bigger modulus in FRESCO.
 
@@ -94,7 +91,9 @@ Build the project and the documentation using Maven:
 mvn clean install
 mvn javadoc:javadoc
 ```
-The javadoc can be found in the `target/apidocs` folder.
+
+The Javadoc can be found <a href="https://alexandrainst.github.io/fresco-stat/">online</a> 
+or in the `target/apidocs` folder.
 
 The library may be included in other projects by including it as a Maven dependency.
 ```
