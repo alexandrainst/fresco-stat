@@ -74,13 +74,16 @@ The library has four function libraries with the following functions:
     * Logistic regression via gradient descent
     * Multilayer perceptron 
 
-They are used similarly to computation directories in FRESCO by calling e.g.
+The libraries are used similarly to computation directories in FRESCO by calling e.g.
 
 ```
 Statistics.using(builder).chiSquare(observed, expected);
 ``` 
 
 to perform a ꭓ²-test on a dataset.
+
+A complete list of functions and how to use them may be found in the 
+<a href="https://alexandrainst.github.io/fresco-stat/">Javadoc</a>.
 
 Note that it is not uncommon to experience overflows during computation, which will appear as very large 
 outputs. This may be avoided by normalizing the input data and/or using a bigger modulus in FRESCO.
