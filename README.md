@@ -74,7 +74,7 @@ The library has four function libraries with the following functions:
     * Logistic regression via gradient descent
     * Multilayer perceptron 
 
-They are used similarly to computation directories in FRESCO by calling e.g.
+The libraries are used similarly to computation directories in FRESCO by calling e.g.
 
 ```
 Statistics.using(builder).chiSquare(observed, expected);
@@ -91,7 +91,9 @@ Build the project and the documentation using Maven:
 mvn clean install
 mvn javadoc:javadoc
 ```
-The javadoc can be found in the `target/apidocs` folder.
+
+The Javadoc can be found <a href="https://alexandrainst.github.io/fresco-stat/">online</a> 
+or in the `target/apidocs` folder.
 
 The library may be included in other projects by including it as a Maven dependency.
 ```
@@ -125,7 +127,7 @@ There is also an example of linear regression on a vertical sharing of a data se
 of their height in a sample of American women of age 30–39 taken from an example from 
 <a href="https://en.wikipedia.org/wiki/Simple_linear_regression">Wikipedia</a>.
 
-The third demo is a demo of extracting a <i>k</i>-anonymous dataset from a distributed dataset. Here, '
+The third demo is a demo of extracting a <i>k</i>-anonymous dataset from a distributed dataset. Here,
 the <a href="https://archive.ics.uci.edu/ml/datasets/adult">adult</a> dataset is used. In this demo, 
 one party knows some details about the individuals in the data set, and the other knows how much they 
 earn (more or less than $50k). The demo now generalizes the attributes about individuals and outputs 
