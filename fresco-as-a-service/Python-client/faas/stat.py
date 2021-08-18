@@ -7,16 +7,21 @@ from .MPCInput_pb2 import MPCInput, MPCVector, MPCMatrix
 from .ServiceIO_pb2 import ServiceInput, ServiceOutput
 
 def connect(port):
+    """ Connect to a FaaS service and return a new Faas object. """
     context = zmq.Context()
     socket = context.socket(zmq.REQ)
     socket.connect("tcp://localhost:" + str(port))
     return Faas(socket)
 
 class Faas:
+    """ Interface for accessing FaaS. """
     def __init__(self, socket = None):
         self.socket = socket
 
     def linreg(self, x, y):
+        """ Compute a simple linear regression on two observations. The result is an array of the estimates for the intercept and the coefficients. """
+
+        # Put data in protobuf message
         myInput = LinearRegressionInput()
         
         for yValue in y:
@@ -38,6 +43,7 @@ class Faas:
         serviceInput.linearRegressionInput.CopyFrom(myInput)
         serialized = serviceInput.SerializeToString()
        
+        # Send message to service and put result in numpy array
         self.socket.send(serialized)
         received = self.socket.recv()
         result = ServiceOutput.FromString(received)
@@ -45,9 +51,11 @@ class Faas:
         
         return resultAsArray
     
-    def neuralnetwork(self, x, y, weights, biases, 
+    def neuralnetwork(self, x, y, weights, biases,
                       categories = 2, epochs = 1, learningrate = 1.0):
+                      """ Train the given neural network (multi-layer perceptron) on the data set x (input) and y (expected output). """
         
+        # Put data in protobuf message
         myInput = NeuralNetworkInput()
         
         for yRow in y:
@@ -115,6 +123,7 @@ class Faas:
         serviceInput.neuralNetworkInput.CopyFrom(myInput)
         serialized = serviceInput.SerializeToString()
        
+        # Send message and receive result
         self.socket.send(serialized)
         received = self.socket.recv()
         result = ServiceOutput.FromString(received)
