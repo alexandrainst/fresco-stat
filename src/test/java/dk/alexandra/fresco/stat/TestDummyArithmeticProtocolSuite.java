@@ -17,6 +17,11 @@ import dk.alexandra.fresco.stat.DescriptiveStatTests.TestPercentiles;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestStandardDeviation;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestTwoDimHistogram;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestVariance;
+import dk.alexandra.fresco.stat.FilteredStatTests.TestFilteredHistogram;
+import dk.alexandra.fresco.stat.FilteredStatTests.TestFilteredKAnonymity;
+import dk.alexandra.fresco.stat.FilteredStatTests.TestFilteredMean;
+import dk.alexandra.fresco.stat.FilteredStatTests.TestFilteredVariance;
+import dk.alexandra.fresco.stat.FilteredStatTests.TestFilteredTTest;
 import dk.alexandra.fresco.stat.LATests.TestBackSubstitution;
 import dk.alexandra.fresco.stat.LATests.TestConvolution;
 import dk.alexandra.fresco.stat.LATests.TestEigenvalues;
@@ -479,5 +484,31 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   public void test_max() {
     runTest(new TestMax<>(), TEST_PARAMETERS);
   }
+
+  @Test
+  public void test_filtered_mean() {
+    runTest(new TestFilteredMean<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_filtered_variance() {
+    runTest(new TestFilteredVariance<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_filtered_ttest() {
+    runTest(new TestFilteredTTest<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_filtered_histogram() {
+    runTest(new TestFilteredHistogram<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_filtered_k_anonymisation() {
+    runTest(new TestFilteredKAnonymity<>(), TEST_PARAMETERS);
+  }
+
 
 }

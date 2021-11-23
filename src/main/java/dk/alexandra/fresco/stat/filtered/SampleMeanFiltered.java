@@ -7,7 +7,7 @@ import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.common.math.AdvancedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
-import dk.alexandra.fresco.stat.filtered.helpers.DivideBySInt;
+import dk.alexandra.fresco.stat.utils.DivideBySInt;
 import dk.alexandra.fresco.stat.filtered.helpers.SumFiltered;
 import java.util.List;
 

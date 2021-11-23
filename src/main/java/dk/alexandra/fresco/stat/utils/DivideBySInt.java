@@ -1,4 +1,4 @@
-package dk.alexandra.fresco.stat.filtered.helpers;
+package dk.alexandra.fresco.stat.utils;
 
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;

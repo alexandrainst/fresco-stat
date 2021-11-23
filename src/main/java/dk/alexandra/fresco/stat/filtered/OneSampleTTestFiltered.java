@@ -9,15 +9,13 @@ import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.FilteredStatistics;
-import dk.alexandra.fresco.stat.Statistics;
-import dk.alexandra.fresco.stat.filtered.helpers.DivideBySInt;
-import java.math.BigDecimal;
+import dk.alexandra.fresco.stat.utils.DivideBySInt;
 import java.util.List;
 
 /**
  * Compute a <i>t</i>-test statistics on a sample for the null hypothesis the mean of the sample is equal to <i>mu</i>.
  */
-public class OneSampleTTestFiltered implements Computation<SFixed, ProtocolBuilderNumeric> {
+public class OneSampleTTestFiltered implements Computation<FilteredResult, ProtocolBuilderNumeric> {
 
   private final List<DRes<SFixed>> observed;
   private final DRes<SFixed> mu;
@@ -30,7 +28,7 @@ public class OneSampleTTestFiltered implements Computation<SFixed, ProtocolBuild
   }
 
   @Override
-  public DRes<SFixed> buildComputation(ProtocolBuilderNumeric builder) {
+  public DRes<FilteredResult> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.seq(seq -> {
       FilteredStatistics stat = FilteredStatistics.using(seq);
       FixedNumeric numeric = FixedNumeric.using(seq);
@@ -38,7 +36,7 @@ public class OneSampleTTestFiltered implements Computation<SFixed, ProtocolBuild
       DRes<SFixed> sSquared = stat.sampleVariance(observed, mean, filter);
       DRes<SInt> n = AdvancedNumeric.using(seq).sum(filter);
       DRes<SFixed> divisor = AdvancedFixedNumeric.using(seq).sqrt(new DivideBySInt(sSquared, n).buildComputation(seq));
-      return numeric.div(numeric.sub(mean, mu), divisor);
+      return new FilteredResult(numeric.div(numeric.sub(mean, mu), divisor), n);
     });
   }
 
