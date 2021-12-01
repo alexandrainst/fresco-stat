@@ -14,7 +14,6 @@ import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMedian;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMultiDimHistogram;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestNoisyHistogram;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestPercentiles;
-import dk.alexandra.fresco.stat.DescriptiveStatTests.TestSqrt;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestStandardDeviation;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestTwoDimHistogram;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestVariance;
