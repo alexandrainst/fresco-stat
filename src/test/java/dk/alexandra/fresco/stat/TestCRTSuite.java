@@ -1,27 +1,28 @@
 package dk.alexandra.fresco.stat;
 
 import dk.alexandra.fresco.framework.DRes;
-import dk.alexandra.fresco.framework.builder.numeric.field.MersennePrimeFieldDefinition;
 import dk.alexandra.fresco.framework.sce.evaluator.EvaluationStrategy;
+import dk.alexandra.fresco.lib.common.compare.Comparison;
+import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestHistogramContinuous;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestHistogramDiscrete;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestKAnonymity;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestKAnonymityOpen;
-import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMean;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMedian;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMultiDimHistogram;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestNoisyHistogram;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestPercentiles;
+import dk.alexandra.fresco.stat.DescriptiveStatTests.TestSqrt;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestStandardDeviation;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestTwoDimHistogram;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestVariance;
 import dk.alexandra.fresco.stat.FilteredStatTests.TestFilteredHistogram;
 import dk.alexandra.fresco.stat.FilteredStatTests.TestFilteredKAnonymity;
 import dk.alexandra.fresco.stat.FilteredStatTests.TestFilteredMean;
-import dk.alexandra.fresco.stat.FilteredStatTests.TestFilteredVariance;
 import dk.alexandra.fresco.stat.FilteredStatTests.TestFilteredTTest;
+import dk.alexandra.fresco.stat.FilteredStatTests.TestFilteredVariance;
 import dk.alexandra.fresco.stat.LATests.TestBackSubstitution;
 import dk.alexandra.fresco.stat.LATests.TestConvolution;
 import dk.alexandra.fresco.stat.LATests.TestEigenvalues;
@@ -60,7 +61,10 @@ import dk.alexandra.fresco.stat.mlp.NNTests.TestForwardPropagation;
 import dk.alexandra.fresco.stat.mlp.NNTests.TestPrediction;
 import dk.alexandra.fresco.stat.mlp.NNTests.TestSingleStepTraining;
 import dk.alexandra.fresco.stat.utils.VectorUtils;
-import dk.alexandra.fresco.suite.dummy.arithmetic.AbstractDummyArithmeticTest;
+import dk.alexandra.fresco.suite.crt.AbstractDummyCRTTest;
+import dk.alexandra.fresco.suite.crt.comparison.CRTComparison;
+import dk.alexandra.fresco.suite.crt.fixed.CRTAdvancedFixedNumeric;
+import dk.alexandra.fresco.suite.crt.fixed.CRTFixedNumeric;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
@@ -68,84 +72,87 @@ import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.apache.commons.math3.distribution.LaplaceDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 import org.apache.commons.math3.distribution.UniformRealDistribution;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTest {
+public class TestCRTSuite extends AbstractDummyCRTTest {
 
-  private static final TestParameters TEST_PARAMETERS = new TestParameters().maxBitLength(180)
-      .field(MersennePrimeFieldDefinition.find(256))
-      .fixedPointPrecesion(32).evaluationStrategy(EvaluationStrategy.SEQUENTIAL).numParties(2)
-      .performanceLogging(false);
+  @Before
+  public void setup() {
+    FixedNumeric.load(CRTFixedNumeric::new);
+    AdvancedFixedNumeric.load(CRTAdvancedFixedNumeric::new);
+    Comparison.load(CRTComparison::new);
+  }
 
   @Test
   public void test_mean() {
-    runTest(new TestMean<>(), TEST_PARAMETERS);
+    runTest(new DescriptiveStatTests.TestMean<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_median() {
-    runTest(new TestMedian<>(), TEST_PARAMETERS);
+    runTest(new TestMedian<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_percentiles() {
-    runTest(new TestPercentiles<>(), TEST_PARAMETERS);
+    runTest(new TestPercentiles<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_variance() {
-    runTest(new TestVariance<>(), TEST_PARAMETERS);
+    runTest(new TestVariance<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_standard_deviation() {
-    runTest(new TestStandardDeviation<>(), TEST_PARAMETERS);
+    runTest(new TestStandardDeviation<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_T_Test() {
-    runTest(new TestTTest<>(), TEST_PARAMETERS);
+    runTest(new TestTTest<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_two_sample_T_Test() {
-    runTest(new TestTwoSampleTTest<>(), TEST_PARAMETERS);
+    runTest(new TestTwoSampleTTest<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_two_sample_T_Test_different_sizes() {
-    runTest(new TestTwoSampleTTestDifferentSizes<>(), TEST_PARAMETERS);
+    runTest(new TestTwoSampleTTestDifferentSizes<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_chi_square_test() {
-    runTest(new TestChiSquareTest<>(), TEST_PARAMETERS);
+    runTest(new TestChiSquareTest<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_chi_square_test_known() {
-    runTest(new TestChiSquareTestKnown<>(), TEST_PARAMETERS);
+    runTest(new TestChiSquareTestKnown<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_simple_linear_regression() {
-    runTest(new TestSimpleLinearRegression<>(), TEST_PARAMETERS);
+    runTest(new TestSimpleLinearRegression<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_noisy_simple_linear_regression() {
-    runTest(new TestNoisySimpleLinearRegression<>(), TEST_PARAMETERS);
+    runTest(new TestNoisySimpleLinearRegression<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_linear_regression() {
-    runTest(new TestLinearRegression<>(), TEST_PARAMETERS);
+    runTest(new TestLinearRegression<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_correlation() {
-    runTest(new DescriptiveStatTests.TestCorrelation<>(), TEST_PARAMETERS);
+    runTest(new DescriptiveStatTests.TestCorrelation<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
@@ -155,7 +162,7 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
     runTest(
         new TestDiscreteDistribution<>(200,
             seq -> Sampler.using(seq).sampleCategoricalDistribution(p), p, 0.1),
-        TEST_PARAMETERS);
+        EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
@@ -168,7 +175,7 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
               .listBuilder(p.length, i -> FixedNumeric.using(seq).input(p[i], 1));
           return Sampler.using(seq).sampleCategoricalDistribution(secretP);
         }, p, 0.1),
-        TEST_PARAMETERS);
+        EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
@@ -184,7 +191,7 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
               .listBuilder(p.length, i -> FixedNumeric.using(seq).input(p[i], 1));
           return Sampler.using(seq).sampleCategoricalDistribution(secretP, false);
         }, normalizedP, 0.1),
-        TEST_PARAMETERS);
+        EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
@@ -194,7 +201,7 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
     runTest(
         new TestDiscreteDistribution<>(200,
             seq -> Sampler.using(seq).sampleBernoulliDistribution(0.6), p, 0.05),
-        TEST_PARAMETERS);
+        EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
@@ -206,21 +213,21 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
             seq -> Sampler.using(seq)
                 .sampleBernoulliDistribution(FixedNumeric.using(seq).known(0.6)),
             p, 0.05),
-        TEST_PARAMETERS);
+        EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_laplace_distribution_sampling() {
     runTest(new TestContinuousDistribution<>(1000,
         seq -> Sampler.using(seq).sampleLaplaceDistribution(1.5),
-        new LaplaceDistribution(0, 1.5), 0.05), TEST_PARAMETERS);
+        new LaplaceDistribution(0, 1.5), 0.05), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
-  @Test
+//  @Test
   public void test_laplace_distribution_sampling_secret_param() {
     runTest(new TestContinuousDistribution<>(1000,
         seq -> Sampler.using(seq).sampleLaplaceDistribution(FixedNumeric.using(seq).known(1.5)),
-        new LaplaceDistribution(0, 1.5), 0.05), TEST_PARAMETERS);
+        new LaplaceDistribution(0, 1.5), 0.05), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
@@ -241,274 +248,278 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   public void test_normal_distribution_sampling() {
     runTest(
         new TestContinuousDistribution<>(1000, seq -> Sampler.using(seq).sampleNormalDistribution(),
-            new NormalDistribution(0, 1), 0.05), TEST_PARAMETERS);
+            new NormalDistribution(0, 1), 0.05), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_exponential_distribution_sampling() {
     runTest(new TestContinuousDistribution<>(1000,
         seq -> Sampler.using(seq).sampleExponentialDistribution(0.5),
-        new ExponentialDistribution(0.5), 0.05), TEST_PARAMETERS);
+        new ExponentialDistribution(0.5), 0.05), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_exponential_distribution_sampling_secret_param() {
     runTest(new TestContinuousDistribution<>(1000,
         seq -> Sampler.using(seq).sampleExponentialDistribution(FixedNumeric.using(seq).known(0.5)),
-        new ExponentialDistribution(0.5), 0.05), TEST_PARAMETERS);
+        new ExponentialDistribution(0.5), 0.05), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_exponential_distribution_mean() {
     runTest(new TestContinuousDistributionMean<>(1000,
         seq -> Sampler.using(seq).sampleExponentialDistribution(0.5),
-        0.5, 0.05), TEST_PARAMETERS);
+        0.5, 0.05), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_leaky_frequency_table() {
-    runTest(new DescriptiveStatTests.TestLeakyFrequencyTable<>(), TEST_PARAMETERS);
+    runTest(new DescriptiveStatTests.TestLeakyFrequencyTable<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_frequency_table() {
-    runTest(new DescriptiveStatTests.TestFrequencyTable<>(), TEST_PARAMETERS);
+    runTest(new DescriptiveStatTests.TestFrequencyTable<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_f_test() {
-    runTest(new TestFTest<>(), TEST_PARAMETERS);
+    runTest(new TestFTest<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_leaky_ranking() {
-    runTest(new DescriptiveStatTests.TestLeakyRanks<>(), TEST_PARAMETERS);
+    runTest(new DescriptiveStatTests.TestLeakyRanks<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_ranks() {
-    runTest(new DescriptiveStatTests.TestRanks<>(), TEST_PARAMETERS);
+    runTest(new DescriptiveStatTests.TestRanks<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_kruskall_wallis() {
-    runTest(new TestKruskallWallis<>(), TEST_PARAMETERS);
+    runTest(new TestKruskallWallis<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_kruskall_wallis_fixed_point() {
-    runTest(new TestKruskallWallisFixedPoint<>(), TEST_PARAMETERS);
+    runTest(new TestKruskallWallisFixedPoint<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_cox_gradient() {
-    runTest(new TestCoxGradient<>(), TEST_PARAMETERS);
+    runTest(new TestCoxGradient<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_cox_regression_discrete() {
-    runTest(new TestCoxRegressionDiscrete<>(), TEST_PARAMETERS);
+    runTest(new TestCoxRegressionDiscrete<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_cox_regression_continuous() {
-    runTest(new TestCoxRegressionContinuous<>(), TEST_PARAMETERS);
+    runTest(new TestCoxRegressionContinuous<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_find_ties() {
-    runTest(new DescriptiveStatTests.TestTiedGroups<>(), TEST_PARAMETERS);
+    runTest(new DescriptiveStatTests.TestTiedGroups<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_logistic_regression_prediction() {
-    runTest(new TestLogRegPrediction<>(), TEST_PARAMETERS);
+    runTest(new TestLogRegPrediction<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_logistic_regression_sgd_single_epoch() {
-    runTest(new TestLogRegSGDSingleEpoch<>(), TEST_PARAMETERS);
+    runTest(new TestLogRegSGDSingleEpoch<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   @Ignore
   public void test_logistic_regression() {
-    runTest(new TestLogisticRegression<>(), TEST_PARAMETERS);
+    runTest(new TestLogisticRegression<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_gram_schmidt() {
-    runTest(new TestGramSchmidt<>(), TEST_PARAMETERS);
+    runTest(new TestGramSchmidt<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_qr_decomposition_rectangular() {
     Random random = new Random(1234);
     for (int i = 0; i < 10; i++) {
-      runTest(new TestQRDcomposition<>(random.nextLong(), true), TEST_PARAMETERS);
+      runTest(new TestQRDcomposition<>(random.nextLong(), true), EvaluationStrategy.SEQUENTIAL, 2);
     }
     for (int i = 0; i < 10; i++) {
-      runTest(new TestQRDcomposition<>(random.nextLong(), false), TEST_PARAMETERS);
+      runTest(new TestQRDcomposition<>(random.nextLong(), false), EvaluationStrategy.SEQUENTIAL, 2);
     }
   }
 
   @Test
   public void test_inverse_of_triangular_matrix() {
-    runTest(new TestTriangularInverse<>(), TEST_PARAMETERS);
+    runTest(new TestTriangularInverse<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_find_eigenvalues() {
-    runTest(new TestEigenvalues<>(), TEST_PARAMETERS);
+    runTest(new TestEigenvalues<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_forward_substitution() {
-    runTest(new TestForwardSubstitution<>(), TEST_PARAMETERS);
+    runTest(new TestForwardSubstitution<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_backward_substitution() {
-    runTest(new TestBackSubstitution<>(), TEST_PARAMETERS);
+    runTest(new TestBackSubstitution<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_linear_inverse_problem() {
-    runTest(new TestLinearInverseProblem<>(), TEST_PARAMETERS);
+    runTest(new TestLinearInverseProblem<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_linear_inverse_problem_underdetermined() {
-    runTest(new TestLinearInverseProblemUnderdetermined<>(), TEST_PARAMETERS);
+    runTest(new TestLinearInverseProblemUnderdetermined<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_linear_inverse_problem_no_solution() {
-    runTest(new TestLinearInverseProblemNoSolution<>(), TEST_PARAMETERS);
+    runTest(new TestLinearInverseProblemNoSolution<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_linear_inverse_problem_overdetermined() {
-    runTest(new TestLinearInverseProblemOverdetermined<>(), TEST_PARAMETERS);
+    runTest(new TestLinearInverseProblemOverdetermined<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_moore_penrose_pseudo_inverse() {
     Random random = new Random(1234);
     for (int i = 0; i < 10; i++) {
-      runTest(new TestMoorePenrosePseudoInverse<>(random.nextLong(), true), TEST_PARAMETERS);
+      runTest(new TestMoorePenrosePseudoInverse<>(random.nextLong(), true), EvaluationStrategy.SEQUENTIAL, 2);
     }
     for (int i = 0; i < 10; i++) {
-      runTest(new TestMoorePenrosePseudoInverse<>(random.nextLong(), false), TEST_PARAMETERS);
+      runTest(new TestMoorePenrosePseudoInverse<>(random.nextLong(), false), EvaluationStrategy.SEQUENTIAL, 2);
     }
   }
 
   @Test
   public void test_convolution() {
-    runTest(new TestConvolution<>(), TEST_PARAMETERS);
+    runTest(new TestConvolution<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_product() {
-    runTest(new TestProduct<>(), TEST_PARAMETERS);
+    runTest(new TestProduct<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_histogram_discrete() {
-    runTest(new TestHistogramDiscrete<>(), TEST_PARAMETERS);
+    runTest(new TestHistogramDiscrete<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_noisy_histogram() {
-    runTest(new TestNoisyHistogram<>(), TEST_PARAMETERS);
+    runTest(new TestNoisyHistogram<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_histogram_continuous() {
-    runTest(new TestHistogramContinuous<>(), TEST_PARAMETERS);
+    runTest(new TestHistogramContinuous<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_histogram_continuous_two_dimensions() {
-    runTest(new TestTwoDimHistogram<>(), TEST_PARAMETERS);
+    runTest(new TestTwoDimHistogram<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_multidimensional_histogram() {
-    runTest(new TestMultiDimHistogram<>(), TEST_PARAMETERS);
+    runTest(new TestMultiDimHistogram<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_k_anonymity() {
-    runTest(new TestKAnonymity<>(), TEST_PARAMETERS);
+    runTest(new TestKAnonymity<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_k_anonymity_open() {
-    runTest(new TestKAnonymityOpen<>(), TEST_PARAMETERS);
+    runTest(new TestKAnonymityOpen<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_forward_propagation() {
-    runTest(new TestForwardPropagation<>(), TEST_PARAMETERS);
+    runTest(new TestForwardPropagation<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_backward_propagation() {
-    runTest(new TestBackwardPropagation<>(), TEST_PARAMETERS);
+    runTest(new TestBackwardPropagation<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   @Ignore
   public void test_single_step_training() {
-    runTest(new TestSingleStepTraining<>(), TEST_PARAMETERS);
+    runTest(new TestSingleStepTraining<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   @Ignore
   public void test_fit() {
-    runTest(new TestFit<>(), TEST_PARAMETERS);
+    runTest(new TestFit<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_prediction() {
-    runTest(new TestPrediction<>(), TEST_PARAMETERS);
+    runTest(new TestPrediction<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_arg_max() {
-    runTest(new TestArgMax<>(), TEST_PARAMETERS);
+    runTest(new TestArgMax<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_max() {
-    runTest(new TestMax<>(), TEST_PARAMETERS);
+    runTest(new TestMax<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_filtered_mean() {
-    runTest(new TestFilteredMean<>(), TEST_PARAMETERS);
+    runTest(new TestFilteredMean<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_filtered_variance() {
-    runTest(new TestFilteredVariance<>(), TEST_PARAMETERS);
+    runTest(new TestFilteredVariance<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_filtered_ttest() {
-    runTest(new TestFilteredTTest<>(), TEST_PARAMETERS);
+    runTest(new TestFilteredTTest<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_filtered_histogram() {
-    runTest(new TestFilteredHistogram<>(), TEST_PARAMETERS);
+    runTest(new TestFilteredHistogram<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
   @Test
   public void test_filtered_k_anonymisation() {
-    runTest(new TestFilteredKAnonymity<>(), TEST_PARAMETERS);
+    runTest(new TestFilteredKAnonymity<>(), EvaluationStrategy.SEQUENTIAL, 2);
   }
 
+  @Test
+  public void test_sqrt() {
+    runTest(new TestSqrt<>(), EvaluationStrategy.SEQUENTIAL, 2);
+  }
 
 }
