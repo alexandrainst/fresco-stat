@@ -14,15 +14,19 @@ import dk.alexandra.fresco.framework.sce.resources.ResourcePool;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
+import dk.alexandra.fresco.lib.fixed.FixedLinearAlgebra;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.anonymisation.NoisyHistogram;
 import dk.alexandra.fresco.stat.descriptive.LeakyBreakTies;
 import dk.alexandra.fresco.stat.descriptive.MultiDimensionalHistogram;
 import dk.alexandra.fresco.stat.descriptive.Ranks;
+import dk.alexandra.fresco.stat.descriptive.SampleCovariance;
 import dk.alexandra.fresco.stat.descriptive.sort.FindTiedGroups;
+import dk.alexandra.fresco.stat.outlier.MahalanobisDistance;
 import dk.alexandra.fresco.stat.utils.MatrixUtils;
 import dk.alexandra.fresco.stat.utils.MultiDimensionalArray;
+import dk.alexandra.fresco.stat.utils.VectorUtils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -32,6 +36,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import org.apache.commons.math3.linear.Array2DRowRealMatrix;
+import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math3.stat.correlation.Covariance;
 import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
 import org.apache.commons.math3.stat.descriptive.moment.Mean;
 import org.apache.commons.math3.stat.descriptive.moment.StandardDeviation;
@@ -205,7 +212,6 @@ public class DescriptiveStatTests {
     }
   }
 
-
   public static class TestVariance<ResourcePoolT extends ResourcePool>
       extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
 
@@ -269,6 +275,94 @@ public class DescriptiveStatTests {
       };
     }
   }
+
+  public static class TestCovariance<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        final List<Double> x = Arrays.asList(64., 66., 68., 69., 73.);
+        final double meanX = 68.;
+        final List<Double> y = Arrays.asList(580., 570., 590., 660., 600.);
+        final double meanY = 600.0;
+        final List<Double> z = Arrays.asList(29., 33., 37., 46., 55.);
+        final double meanZ = 40.0;
+
+        @Override
+        public void test() {
+
+          Application<Matrix<BigDecimal>, ProtocolBuilderNumeric> testApplication = builder -> builder.seq(seq -> {
+            FixedNumeric numeric = FixedNumeric.using(seq);
+            List<DRes<SFixed>> xSecret =
+                x.stream().map(x -> numeric.input(x, 1)).collect(Collectors.toList());
+            List<DRes<SFixed>> ySecret =
+                y.stream().map(x -> numeric.input(x, 1)).collect(Collectors.toList());
+            List<DRes<SFixed>> zSecret =
+                z.stream().map(x -> numeric.input(x, 1)).collect(Collectors.toList());
+            List<DRes<SFixed>> meanSecret = List.of(meanX, meanY, meanZ).stream().map(x -> numeric.input(x, 1)).collect(Collectors.toList());
+
+            return FixedLinearAlgebra.using(seq).openMatrix(new SampleCovariance(List.of(xSecret, ySecret, zSecret), meanSecret).buildComputation(seq));
+          }).seq((seq, c) -> DRes.of(MatrixUtils.map(c, DRes::out)));
+
+          Matrix<BigDecimal> output = runApplication(testApplication);
+
+          double[][] data = new double[3][5];
+          data[0] = x.stream().mapToDouble(x -> x).toArray();
+          data[1] = y.stream().mapToDouble(x -> x).toArray();
+          data[2] = z.stream().mapToDouble(x -> x).toArray();
+          RealMatrix M = new Array2DRowRealMatrix(data).transpose();
+          RealMatrix C = new Covariance(M).getCovarianceMatrix();
+
+          for (int i = 0; i < 3; i++) {
+            Assert.assertArrayEquals(C.getRow(i),
+                output.getRow(i).stream().mapToDouble(BigDecimal::doubleValue).toArray(), 0.0001);
+          }
+        }
+      };
+    }
+  }
+
+  public static class TestMahalanobisDistance<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        final List<Double> x = Arrays.asList(64., 66., 68., 69., 73.);
+        final double meanX = 68.;
+        final List<Double> y = Arrays.asList(580., 570., 590., 660., 600.);
+        final double meanY = 600.0;
+        final List<Double> z = Arrays.asList(29., 33., 37., 46., 55.);
+        final double meanZ = 40.0;
+
+        @Override
+        public void test() {
+
+          Application<List<BigDecimal>, ProtocolBuilderNumeric> testApplication = builder -> builder.seq(seq -> {
+            FixedNumeric numeric = FixedNumeric.using(seq);
+            List<DRes<SFixed>> xSecret =
+                x.stream().map(x -> numeric.input(x, 1)).collect(Collectors.toList());
+            List<DRes<SFixed>> ySecret =
+                y.stream().map(x -> numeric.input(x, 1)).collect(Collectors.toList());
+            List<DRes<SFixed>> zSecret =
+                z.stream().map(x -> numeric.input(x, 1)).collect(Collectors.toList());
+            List<DRes<SFixed>> meanSecret = List.of(meanX, meanY, meanZ).stream().map(x -> numeric.input(x, 1)).collect(Collectors.toList());
+
+            return FixedLinearAlgebra.using(seq).openArrayList(new MahalanobisDistance(List.of(xSecret, ySecret, zSecret), meanSecret).buildComputation(seq));
+          }).seq((seq, c) -> DRes.of(c.stream().map(DRes::out).collect(Collectors.toList())));
+
+          List<BigDecimal> output = runApplication(testApplication);
+
+          System.out.println(output);
+
+        }
+      };
+    }
+  }
+
 
   public static class TestLeakyFrequencyTable<ResourcePoolT extends ResourcePool>
       extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
@@ -346,7 +440,6 @@ public class DescriptiveStatTests {
       };
     }
   }
-
 
   public static class TestLeakyRanks<ResourcePoolT extends ResourcePool>
       extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {

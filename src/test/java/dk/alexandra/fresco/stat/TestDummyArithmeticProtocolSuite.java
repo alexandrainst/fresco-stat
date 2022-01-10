@@ -5,10 +5,12 @@ import dk.alexandra.fresco.framework.builder.numeric.field.MersennePrimeFieldDef
 import dk.alexandra.fresco.framework.sce.evaluator.EvaluationStrategy;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.DescriptiveStatTests.TestCovariance;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestHistogramContinuous;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestHistogramDiscrete;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestKAnonymity;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestKAnonymityOpen;
+import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMahalanobisDistance;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMean;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMedian;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMultiDimHistogram;
@@ -96,6 +98,16 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   @Test
   public void test_variance() {
     runTest(new TestVariance<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_covariance() {
+    runTest(new TestCovariance<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_mahalanobis_distance() {
+    runTest(new TestMahalanobisDistance<>(), TEST_PARAMETERS.field(MersennePrimeFieldDefinition.find(512)).maxBitLength(400));
   }
 
   @Test
