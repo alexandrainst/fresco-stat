@@ -2,6 +2,7 @@ package dk.alexandra.fresco.stat.regression.linear;
 
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
+import dk.alexandra.fresco.framework.builder.ProtocolBuilder;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
@@ -10,7 +11,6 @@ import dk.alexandra.fresco.stat.descriptive.helpers.SP;
 import dk.alexandra.fresco.stat.descriptive.helpers.USS;
 import dk.alexandra.fresco.stat.regression.linear.SimpleLinearRegression.SimpleLinearRegressionResult;
 import java.util.List;
-import java.util.function.UnaryOperator;
 
 /**
  * This computation returns coefficients a and b based on a simple linear regression of the observed
@@ -140,6 +140,7 @@ public class SimpleLinearRegression implements
     public DRes<SFixed> getRSquared() {
       return correlation;
     }
+
   }
 
 }

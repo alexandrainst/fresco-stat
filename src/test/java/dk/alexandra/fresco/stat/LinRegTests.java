@@ -201,9 +201,10 @@ public class LinRegTests {
                 toOutput.add(result.getErrorVariance());
                 toOutput.addAll(result.getStdErrorsSquared());
                 toOutput.add(result.getRSquared());
+                toOutput.add(result.getAdjustedRSquared());
                 return FixedLinearAlgebra.using(seq).openArrayList(DRes.of(toOutput));
-              }).seq((seq, beta) -> DRes
-                  .of(beta.stream().map(DRes::out).collect(Collectors.toList())));
+              }).seq((seq, output) -> DRes
+                  .of(output.stream().map(DRes::out).collect(Collectors.toList())));
 
           List<BigDecimal> output = runApplication(testApplication);
 
@@ -231,6 +232,9 @@ public class LinRegTests {
               output.subList(4, 7).stream().mapToDouble(BigDecimal::doubleValue).toArray(), 0.01);
 
           Assert.assertEquals(output.get(7).doubleValue(), regression.calculateRSquared(), 0.001);
+
+          Assert.assertEquals(output.get(8).doubleValue(), regression.calculateAdjustedRSquared(), 0.001);
+
         }
       };
     }
