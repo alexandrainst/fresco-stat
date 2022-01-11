@@ -16,12 +16,12 @@ import java.util.List;
 /**
  * Invert lower triangular matrix.
  */
-public class InvertTriangularMatrix implements
+public class InvertLowerTriangularMatrix implements
     Computation<Matrix<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
   private final Matrix<DRes<SFixed>> l;
 
-  public InvertTriangularMatrix(Matrix<DRes<SFixed>> l) {
+  public InvertLowerTriangularMatrix(Matrix<DRes<SFixed>> l) {
     assert (l.getHeight() == l.getWidth());
     assert (l.getHeight() >= 1);
     this.l = l;

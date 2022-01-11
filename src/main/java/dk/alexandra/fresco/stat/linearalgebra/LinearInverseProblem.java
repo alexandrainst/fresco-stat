@@ -22,19 +22,30 @@ public class LinearInverseProblem implements
   private final Matrix<DRes<SFixed>> a;
   private final ArrayList<DRes<SFixed>> b;
   private final boolean overDetermined;
+  private final Pair<Matrix<DRes<SFixed>>, Matrix<DRes<SFixed>>> qr;
 
   public LinearInverseProblem(Matrix<DRes<SFixed>> a, ArrayList<DRes<SFixed>> b) {
+    this(a,b, null);
+  }
+
+  public LinearInverseProblem(Matrix<DRes<SFixed>> a, ArrayList<DRes<SFixed>> b, Pair<Matrix<DRes<SFixed>>, Matrix<DRes<SFixed>>> qr) {
     overDetermined = a.getWidth() < a.getHeight();
     this.a = a;
     this.b = b;
+    this.qr = qr;
   }
 
   @Override
   public DRes<ArrayList<DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric builder) {
     Matrix<DRes<SFixed>> at = overDetermined ? a : MatrixUtils.transpose(a);
 
-    return builder.seq(seq -> new QRDecomposition(at).buildComputation(seq))
-        .seq((seq, qr) -> {
+    return builder.seq(seq -> {
+      if (qr == null) {
+        return new QRDecomposition(at).buildComputation(seq);
+      } else {
+        return DRes.of(qr);
+      }
+    }).seq((seq, qr) -> {
           Matrix<DRes<SFixed>> r1 =
               overDetermined ? qr.getSecond() : MatrixUtils.transpose(qr.getSecond());
           return Pair.lazy(qr.getFirst(), r1);

@@ -27,7 +27,7 @@ public class MoorePenrosePseudoInverse implements
   public DRes<Matrix<DRes<SFixed>>> buildComputation(
       ProtocolBuilderNumeric builder) {
     return builder.seq(seq -> new QRDecomposition(a).buildComputation(seq)).seq(
-        (seq, qr) -> new InvertTriangularMatrix(MatrixUtils.transpose(qr.getSecond()))
+        (seq, qr) -> new InvertUpperTriangularMatrix(MatrixUtils.transpose(qr.getSecond()))
             .buildComputation(seq)).seq((seq, rtinv) -> {
       FixedLinearAlgebra fixedLinearAlgebra = FixedLinearAlgebra.using(seq);
       return fixedLinearAlgebra.mult(DRes.of(MatrixUtils.transpose(rtinv)),

@@ -8,7 +8,7 @@ import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.linearalgebra.BackSubstitution;
 import dk.alexandra.fresco.stat.linearalgebra.ForwardSubstitution;
 import dk.alexandra.fresco.stat.linearalgebra.GramSchmidt;
-import dk.alexandra.fresco.stat.linearalgebra.InvertTriangularMatrix;
+import dk.alexandra.fresco.stat.linearalgebra.InvertLowerTriangularMatrix;
 import dk.alexandra.fresco.stat.linearalgebra.LinearInverseProblem;
 import dk.alexandra.fresco.stat.linearalgebra.MoorePenrosePseudoInverse;
 import dk.alexandra.fresco.stat.linearalgebra.NormalizeVector;
@@ -45,7 +45,7 @@ public class DefaultLinearAlgebra implements AdvancedLinearAlgebra {
 
   @Override
   public DRes<Matrix<DRes<SFixed>>> invertLowerTriangularMatrix(Matrix<DRes<SFixed>> l) {
-    return new InvertTriangularMatrix(l).buildComputation(builder);
+    return new InvertLowerTriangularMatrix(l).buildComputation(builder);
   }
 
   @Override
