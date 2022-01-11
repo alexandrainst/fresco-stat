@@ -167,15 +167,17 @@ public class LinRegTests {
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
       return new TestThread<>() {
 
-        final List<BigDecimal> x1 = Stream.of(.18, .24, .12, .30, .30, .22).map(BigDecimal::valueOf)
+        final List<BigDecimal> x1 = Stream.of(1.47,	1.50,	1.52,	1.55,	1.57,	1.60,	1.63,	1.65,	1.68,	1.70,	1.73,	1.75,	1.78,	1.8, 1.83).map(BigDecimal::valueOf)
             .collect(Collectors.toList());
-        final List<BigDecimal> x2 = Stream.of(.52, .40, .40, .48, .32, .16).map(BigDecimal::valueOf)
-            .collect(Collectors.toList());
+        final List<BigDecimal> x2 = x1.stream().map(x -> x.multiply(x)).collect(Collectors.toList());
         final List<ArrayList<BigDecimal>> X = IntStream.range(0, x1.size())
             .mapToObj(i -> List.of(BigDecimal.ONE, x1.get(i), x2.get(i))).map(
                 ArrayList::new).collect(Collectors.toList());
 
-        final List<Double> y = Arrays.asList(.04, .02, -.24, -.84, -.56, -.52);
+        final List<Double> y = Stream
+            .of(52.21, 53.12,	54.48,	55.84,	57.20,	58.57,	59.93,	61.29,	63.11,	64.47,	66.28,	68.10,	69.92,	72.19,	74.46)
+            .map(x -> x/100.0).collect(
+            Collectors.toList());
 
         @Override
         public void test() {
@@ -199,9 +201,11 @@ public class LinRegTests {
               }).seq((seq, result) -> {
                 ArrayList<DRes<SFixed>> toOutput = new ArrayList<>(result.getBeta());
                 toOutput.add(result.getErrorVariance());
-                toOutput.addAll(result.getStdErrorsSquared());
+                toOutput.addAll(result.getStdErrors());
                 toOutput.add(result.getRSquared());
                 toOutput.add(result.getAdjustedRSquared());
+                toOutput.add(result.getFTestStatistics());
+                toOutput.addAll(result.getTTestStatistics());
                 return FixedLinearAlgebra.using(seq).openArrayList(DRes.of(toOutput));
               }).seq((seq, output) -> DRes
                   .of(output.stream().map(DRes::out).collect(Collectors.toList())));
@@ -218,22 +222,19 @@ public class LinRegTests {
           }
           regression.newSampleData(yArray, xArray);
 
-          double[] betaExpected = regression.estimateRegressionParameters();
-          assertArrayEquals(betaExpected,
-              output.subList(0, 3).stream().mapToDouble(BigDecimal::doubleValue).toArray(), 0.01);
+          assertArrayEquals(regression.estimateRegressionParameters(),
+              output.subList(0, 3).stream().mapToDouble(BigDecimal::doubleValue).toArray(), 0.001);
 
           Assert
               .assertEquals(output.get(3).doubleValue(), regression.estimateErrorVariance(), 0.001);
 
-          double[] errorsExpected = Arrays
-              .stream(regression.estimateRegressionParametersStandardErrors()).map(z -> z * z)
-              .toArray();
-          assertArrayEquals(errorsExpected,
-              output.subList(4, 7).stream().mapToDouble(BigDecimal::doubleValue).toArray(), 0.01);
+          assertArrayEquals(regression.estimateRegressionParametersStandardErrors(),
+              output.subList(4, 7).stream().mapToDouble(BigDecimal::doubleValue).toArray(), 0.001);
 
           Assert.assertEquals(output.get(7).doubleValue(), regression.calculateRSquared(), 0.001);
 
           Assert.assertEquals(output.get(8).doubleValue(), regression.calculateAdjustedRSquared(), 0.001);
+
 
         }
       };
