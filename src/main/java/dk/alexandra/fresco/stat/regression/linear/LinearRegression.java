@@ -12,7 +12,6 @@ import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.descriptive.SampleMean;
 import dk.alexandra.fresco.stat.descriptive.helpers.SSD;
 import dk.alexandra.fresco.stat.linearalgebra.InvertUpperTriangularMatrix;
-import dk.alexandra.fresco.stat.linearalgebra.LinearInverseProblem;
 import dk.alexandra.fresco.stat.linearalgebra.QRDecomposition;
 import dk.alexandra.fresco.stat.regression.linear.LinearRegression.LinearRegressionResult;
 import dk.alexandra.fresco.stat.utils.MatrixUtils;
@@ -21,10 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Fit a linear model to the given dataset and output estimates for the coefficients and the
- * regression error variance (s<sup>2</sup>) which is equal to the regression standard error
- * squared, the coefficient of determination (R<sup>2</sup>) and the standard errors (squared) for
- * each coefficient estimate. (see {@link LinearRegressionResult}.
+ * Fit a linear model to the given dataset and output estimates for the coefficients and some model
+ * diagnostics (see {@link LinearRegressionResult}).
  */
 public class LinearRegression implements
     Computation<LinearRegressionResult, ProtocolBuilderNumeric> {
@@ -62,12 +59,11 @@ public class LinearRegression implements
           return new InvertUpperTriangularMatrix(state.qr.getSecond())
               .buildComputation(seq);
         }).seq((seq, rInverse) -> {
-            FixedLinearAlgebra fixedLinearAlgebra = FixedLinearAlgebra.using(seq);
-            state.qInverse = fixedLinearAlgebra
-                .mult(DRes.of(rInverse), DRes.of(MatrixUtils.transpose(rInverse)));
-            FixedLinearAlgebra la = FixedLinearAlgebra.using(seq);
-          state.estimates = la.vectorMult(la.mult(state.qInverse, DRes.of(MatrixUtils.transpose(x))), DRes.of(y));
-
+          FixedLinearAlgebra fixedLinearAlgebra = FixedLinearAlgebra.using(seq);
+          state.qInverse = fixedLinearAlgebra
+              .mult(DRes.of(rInverse), DRes.of(MatrixUtils.transpose(rInverse)));
+          state.estimates = fixedLinearAlgebra
+              .vectorMult(fixedLinearAlgebra.mult(state.qInverse, DRes.of(MatrixUtils.transpose(x))), DRes.of(y));
           return state;
         }).par((par, s) -> {
           state.yHat = FixedLinearAlgebra.using(par).vectorMult(DRes.of(x), state.estimates);
@@ -89,12 +85,13 @@ public class LinearRegression implements
           state.rSquared = errorVarianceAndSampleCorrelation.getSecond();
           state.adjustedRSquared = par.seq(seq ->
               FixedNumeric.using(seq).sub(1, FixedNumeric.using(seq)
-                  .mult((double) (n - 1) / (n - p), FixedNumeric.using(seq).sub(1, state.rSquared)))
-          );
+                  .mult((double) (n - 1) / (n - p), FixedNumeric.using(seq).sub(1, state.rSquared))));
+          state.F = par.seq(sub ->
+              FixedNumeric.using(sub).div(state.ssm, state.sse)
+          ).seq((sub, q) -> FixedNumeric.using(sub).mult((double) (n - p) / (p - 1), q));
 
           // Compute std errors (squared) for all estimates and t-test statistics
           par.seq(sub -> {
-
             state.errors = sub.seq(seq -> new InvertUpperTriangularMatrix(state.qr.getSecond())
                 .buildComputation(seq)).seq((seq, rInverse) -> {
               FixedLinearAlgebra fixedLinearAlgebra = FixedLinearAlgebra.using(seq);
@@ -103,19 +100,15 @@ public class LinearRegression implements
             }).par((s, qInverse) -> DRes.of(VectorUtils.listBuilder(qInverse.getHeight(),
                 i -> s.seq(sub2 ->
                     AdvancedFixedNumeric.using(sub2).sqrt(
-                        FixedNumeric.using(sub2).mult(state.errorVariance, qInverse.getRow(i).get(i)))))));
+                        FixedNumeric.using(sub2)
+                            .mult(state.errorVariance, qInverse.getRow(i).get(i)))))));
 
             state.t = sub.par(sub2 -> DRes.of(VectorUtils.listBuilder(p, i ->
                 FixedNumeric.using(sub2)
                     .div(state.estimates.out().get(i), state.errors.out().get(i)))));
 
             return null;
-
           });
-
-          state.F = par.seq(sub ->
-              FixedNumeric.using(sub).div(state.ssm, state.sse)
-          ).seq((sub, q) -> FixedNumeric.using(sub).mult((double) (n - p) / (p - 1), q));
 
           return state;
 

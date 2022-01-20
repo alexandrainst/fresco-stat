@@ -7,7 +7,7 @@ import dk.alexandra.fresco.lib.common.collections.Collections;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.anonymisation.LeakyKAnonymity;
-import dk.alexandra.fresco.stat.filtered.FilteredResult;
+import dk.alexandra.fresco.stat.filtered.OneSampleTTestFiltered.FilteredTTestResult;
 import dk.alexandra.fresco.stat.filtered.HistogramFiltered;
 import dk.alexandra.fresco.stat.filtered.OneSampleTTestFiltered;
 import dk.alexandra.fresco.stat.filtered.SampleMeanFiltered;
@@ -46,7 +46,7 @@ public class DefaultFilteredStatistics implements FilteredStatistics {
   }
 
   @Override
-  public DRes<FilteredResult> ttest(List<DRes<SFixed>> data, DRes<SFixed> mu, List<DRes<SInt>> filter) {
+  public DRes<FilteredTTestResult> ttest(List<DRes<SFixed>> data, DRes<SFixed> mu, List<DRes<SInt>> filter) {
     return new OneSampleTTestFiltered(data, mu, filter).buildComputation(builder);
   }
 
