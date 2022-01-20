@@ -13,7 +13,9 @@ import java.util.List;
 import java.util.Optional;
 
 /**
- * Compute the sample variance for a list of observations.
+ * Compute the sample variance of a set of samples. The input is <i>filtered</i>, meaning that besides
+ * the data set, the input also consists of a secret 0-1-vector (a <code>filter</code>) which
+ * indicates what entries of the data set should be included in the analysis
  */
 public class SampleVarianceFiltered implements Computation<SFixed, ProtocolBuilderNumeric> {
 

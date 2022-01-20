@@ -15,7 +15,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Compute a 1-dimensional histogram for a data set.
+ * Compute a 1-dimensional histogram for a data set. The input is <i>filtered</i>, meaning that besides
+ * the data set, the input also consists of a secret 0-1-vector (a <code>filter</code>) which
+ * indicates what entries of the data set should be included in the analysis
  */
 public class HistogramFiltered implements Computation<List<DRes<SInt>>, ProtocolBuilderNumeric> {
 

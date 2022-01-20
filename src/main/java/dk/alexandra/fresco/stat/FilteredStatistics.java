@@ -5,7 +5,7 @@ import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.SFixed;
-import dk.alexandra.fresco.stat.filtered.FilteredResult;
+import dk.alexandra.fresco.stat.filtered.OneSampleTTestFiltered.FilteredTTestResult;
 import dk.alexandra.fresco.stat.utils.MultiDimensionalArray;
 import java.math.BigInteger;
 import java.util.List;
@@ -57,7 +57,7 @@ public interface FilteredStatistics {
    * @return A pair contaning the test statistics for the test and the number of elements in the
    * filtered data set.
    */
-  DRes<FilteredResult> ttest(List<DRes<SFixed>> data, DRes<SFixed> mu, List<DRes<SInt>> filter);
+  DRes<FilteredTTestResult> ttest(List<DRes<SFixed>> data, DRes<SFixed> mu, List<DRes<SInt>> filter);
 
   /**
    * Compute a histogram on a filtered data set. Note that upper limits are soft, lower are hard.
