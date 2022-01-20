@@ -7,6 +7,7 @@ import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedLinearAlgebra;
 import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.Statistics;
 import dk.alexandra.fresco.stat.descriptive.SampleCovariance;
 import dk.alexandra.fresco.stat.linearalgebra.MoorePenrosePseudoInverse;
 import dk.alexandra.fresco.stat.utils.VectorUtils;
@@ -14,10 +15,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MahalanobisDistance implements Computation<ArrayList<DRes<SFixed>>, ProtocolBuilderNumeric> {
+/**
+ * Compute the <a href="https://en.wikipedia.org/wiki/Mahalanobis_distance">Mahalanobis Distance</a>
+ * of all samples in a data set. This may be used to detect outliers in the data set which may be
+ * filtered out obliviously (see {@link dk.alexandra.fresco.stat.FilteredStatistics} before using
+ * the data set for analysis.
+ */
+public class MahalanobisDistance implements
+    Computation<ArrayList<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
   private final List<List<DRes<SFixed>>> X;
-  private final List<DRes<SFixed>> mean;
+  private List<DRes<SFixed>> mean;
+
+  public MahalanobisDistance(List<List<DRes<SFixed>>> X) {
+    this(X, null);
+  }
 
   public MahalanobisDistance(List<List<DRes<SFixed>>> X, List<DRes<SFixed>> mean) {
     this.X = X;
@@ -26,10 +38,15 @@ public class MahalanobisDistance implements Computation<ArrayList<DRes<SFixed>>,
 
   @Override
   public DRes<ArrayList<DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric builder) {
-    return builder.seq(seq ->
-      seq.seq(new SampleCovariance(X, mean))
+    return builder.par(par -> {
+      if (mean == null) {
+        Statistics statistics = Statistics.using(par);
+        this.mean = X.stream().map(statistics::sampleMean).collect(Collectors.toList());
+      }
+      return DRes.of(this.mean);
+    }).seq((seq, mean) -> new SampleCovariance(X, mean).buildComputation(seq)
     ).seq((seq, S) ->
-      seq.seq(new MoorePenrosePseudoInverse(S))
+        seq.seq(new MoorePenrosePseudoInverse(S))
     ).par((par, Sinv) -> {
       ArrayList<DRes<SFixed>> result = new ArrayList<>();
       for (int i = 0; i < X.size(); i++) {
