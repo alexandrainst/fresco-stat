@@ -19,6 +19,7 @@ import dk.alexandra.fresco.stat.descriptive.SampleQuantiles;
 import dk.alexandra.fresco.stat.descriptive.SampleStandardDeviation;
 import dk.alexandra.fresco.stat.descriptive.SampleVariance;
 import dk.alexandra.fresco.stat.descriptive.TwoDimensionalHistogram;
+import dk.alexandra.fresco.stat.outlier.MahalanobisDistance;
 import dk.alexandra.fresco.stat.regression.linear.LinearRegression;
 import dk.alexandra.fresco.stat.regression.linear.LinearRegression.LinearRegressionResult;
 import dk.alexandra.fresco.stat.regression.linear.SimpleLinearRegression;
@@ -354,5 +355,10 @@ public class DefaultStatistics implements Statistics {
         .par((par, kAnonymousData) -> DRes.of(kAnonymousData.map(x -> VectorUtils.open(x, par))))
         .par((par, kAnonymousData) -> DRes.of(kAnonymousData.map(h -> h.stream().map(DRes::out)
             .filter(x -> !x.equals(BigInteger.ZERO)).collect(Collectors.toList()))));
+  }
+
+  @Override
+  public DRes<List<DRes<SFixed>>> mahalanobisDistance(List<List<DRes<SFixed>>> X) {
+    return builder.seq(new MahalanobisDistance(X));
   }
 }

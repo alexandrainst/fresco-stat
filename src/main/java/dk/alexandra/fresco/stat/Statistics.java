@@ -15,9 +15,10 @@ import dk.alexandra.fresco.stat.utils.MultiDimensionalArray;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.IntToDoubleFunction;
 
-/** This computation library contains various statistical functions. */
+/**
+ * This computation library contains various statistical functions.
+ */
 public interface Statistics extends ComputationDirectory {
 
   static Statistics using(ProtocolBuilderNumeric builder) {
@@ -327,8 +328,8 @@ public interface Statistics extends ComputationDirectory {
    * generalization of the quasi-identifiers as in a histogram. K is the smallest allowed number of
    * individuals in each bucket.
    * <p>
-   * The output is a histogram on the given buckets with the value corresponding to a bucket is a list of the
-   * sensitive attributes from the original dataset which ended up in this bucket.
+   * The output is a histogram on the given buckets with the value corresponding to a bucket is a
+   * list of the sensitive attributes from the original dataset which ended up in this bucket.
    *
    * @param data                The quasi identifiers for each individual.
    * @param sensitiveAttributes The corresponding sensitive attributes. Must be non-zero.
@@ -338,5 +339,17 @@ public interface Statistics extends ComputationDirectory {
    */
   DRes<MultiDimensionalArray<List<BigInteger>>> kAnonymizeAndOpen(Matrix<DRes<SInt>> data,
       List<DRes<SInt>> sensitiveAttributes, List<List<DRes<SInt>>> buckets, int k);
+
+
+  /**
+   * Compute the <a href="https://en.wikipedia.org/wiki/Mahalanobis_distance">Mahalanobis
+   * Distance</a> of all samples in a data set. This may be used to detect outliers in the data set
+   * which may be filtered out obliviously (see {@link dk.alexandra.fresco.stat.FilteredStatistics}
+   * before using the data set for analysis.
+   *
+   * @param X The data set
+   */
+  DRes<List<DRes<SFixed>>> mahalanobisDistance(List<List<DRes<SFixed>>> X);
+
 
 }
