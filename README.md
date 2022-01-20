@@ -48,6 +48,8 @@ The library has four function libraries with the following functions:
         * ꭓ²-test
         * F-test
         * Kruskall-Wallis test
+    * Outlier detection
+        * Mahalanobis distance
     * Survival analysis
         * Cox regression
     * Anonymization methods
@@ -70,9 +72,11 @@ The library has four function libraries with the following functions:
     * Moore-Penrose pseudo inverse
     * QR-algorithm for eigenvalue computation
     * QR-decomposition
-1. [Machine learning](core/src/main/java/dk/alexandra/fresco/stat/MachineLearning.java)
+1. [Machine learning](src/main/java/dk/alexandra/fresco/stat/MachineLearning.java)
     * Logistic regression via gradient descent
     * Multilayer perceptron 
+1. [Filtered statistics](src/main/java/dk/alexandra/fresco/stat/FilteredStatistics.java)
+    * Same as <b>Statistics</b> but with the option of obliviously filtering what samples from a data set will be used in an analysis. 
 
 The libraries are used similarly to computation directories in FRESCO by calling e.g.
 
