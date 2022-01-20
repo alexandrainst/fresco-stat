@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * the data set for analysis.
  */
 public class MahalanobisDistance implements
-    Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
+    Computation<ArrayList<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
   private final List<List<DRes<SFixed>>> X;
   private List<DRes<SFixed>> mean;
@@ -37,7 +37,7 @@ public class MahalanobisDistance implements
   }
 
   @Override
-  public DRes<List<DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric builder) {
+  public DRes<ArrayList<DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.par(par -> {
       if (mean == null) {
         Statistics statistics = Statistics.using(par);

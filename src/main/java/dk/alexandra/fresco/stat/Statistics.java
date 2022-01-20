@@ -349,7 +349,7 @@ public interface Statistics extends ComputationDirectory {
    *
    * @param X The data set
    */
-  DRes<List<DRes<SFixed>>> mahalanobisDistance(List<List<DRes<SFixed>>> X);
+  DRes<ArrayList<DRes<SFixed>>> mahalanobisDistance(List<List<DRes<SFixed>>> X);
 
 
 }

@@ -358,7 +358,7 @@ public class DefaultStatistics implements Statistics {
   }
 
   @Override
-  public DRes<List<DRes<SFixed>>> mahalanobisDistance(List<List<DRes<SFixed>>> X) {
+  public DRes<ArrayList<DRes<SFixed>>> mahalanobisDistance(List<List<DRes<SFixed>>> X) {
     return builder.seq(new MahalanobisDistance(X));
   }
 }
