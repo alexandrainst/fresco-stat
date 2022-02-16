@@ -1,4 +1,4 @@
-[![Maven Central](https://img.shields.io/maven-central/v/dk.alexandra.fresco/stat.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22dk.alexandra.fresco%22%20AND%20a:%22stat%22) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/alexandrainst/fresco-stat/blob/master/README.md) 
+[![Build Status](https://github.com/alexandrainst/fresco-stat/actions/workflows/maven.yml/badge.svg)](https://github.com/alexandrainst/fresco-stat/actions/workflows/maven.yml) [![Maven Central](https://img.shields.io/maven-central/v/dk.alexandra.fresco/stat.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22dk.alexandra.fresco%22%20AND%20a:%22stat%22) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/alexandrainst/fresco-stat/blob/master/README.md) 
 
 <h1>FRESCO-stat</h1>
 
