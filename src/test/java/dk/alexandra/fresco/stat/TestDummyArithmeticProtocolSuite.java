@@ -37,6 +37,7 @@ import dk.alexandra.fresco.stat.LATests.TestMoorePenrosePseudoInverse;
 import dk.alexandra.fresco.stat.LATests.TestQRDcomposition;
 import dk.alexandra.fresco.stat.LATests.TestTriangularInverse;
 import dk.alexandra.fresco.stat.LinRegTests.TestLinearRegression;
+import dk.alexandra.fresco.stat.LinRegTests.TestLinearRegressionLarge;
 import dk.alexandra.fresco.stat.LinRegTests.TestNoisySimpleLinearRegression;
 import dk.alexandra.fresco.stat.LinRegTests.TestSimpleLinearRegression;
 import dk.alexandra.fresco.stat.LogRegTests.TestLogRegPrediction;
@@ -153,6 +154,11 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   @Test
   public void test_linear_regression() {
     runTest(new TestLinearRegression<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_large_linear_regression() {
+    runTest(new TestLinearRegressionLarge<>(), TEST_PARAMETERS);
   }
 
   @Test
