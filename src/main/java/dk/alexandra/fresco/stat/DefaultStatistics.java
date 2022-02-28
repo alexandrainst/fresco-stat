@@ -6,9 +6,12 @@ import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.common.collections.Collections;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
+import dk.alexandra.fresco.lib.common.util.SIntPair;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.anonymisation.LeakyKAnonymity;
+import dk.alexandra.fresco.stat.descriptive.ContingencyTable;
+import dk.alexandra.fresco.stat.descriptive.ContingencyTableCategorical;
 import dk.alexandra.fresco.stat.descriptive.Histogram;
 import dk.alexandra.fresco.stat.descriptive.LeakyFrequencyTable;
 import dk.alexandra.fresco.stat.descriptive.MultiDimensionalHistogram;
@@ -360,5 +363,17 @@ public class DefaultStatistics implements Statistics {
   @Override
   public DRes<ArrayList<DRes<SFixed>>> mahalanobisDistance(List<List<DRes<SFixed>>> X) {
     return builder.seq(new MahalanobisDistance(X));
+  }
+
+  @Override
+  public DRes<Matrix<DRes<SInt>>> contingencyTable(List<SIntPair> data, int firstRange,
+      int secondRange) {
+    return builder.seq(new ContingencyTableCategorical(data, firstRange, secondRange));
+  }
+
+  @Override
+  public DRes<Matrix<DRes<SInt>>> contingencyTable(
+      List<Pair<List<DRes<SInt>>, List<DRes<SInt>>>> data) {
+    return builder.seq(new ContingencyTable(data));
   }
 }

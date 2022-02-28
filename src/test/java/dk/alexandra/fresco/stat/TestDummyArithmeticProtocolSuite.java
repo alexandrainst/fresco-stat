@@ -5,6 +5,7 @@ import dk.alexandra.fresco.framework.builder.numeric.field.MersennePrimeFieldDef
 import dk.alexandra.fresco.framework.sce.evaluator.EvaluationStrategy;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.DescriptiveStatTests.TestContingencyTable;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestCovariance;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestHistogramContinuous;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestHistogramDiscrete;
@@ -55,7 +56,9 @@ import dk.alexandra.fresco.stat.TestsTests.TestTTest;
 import dk.alexandra.fresco.stat.TestsTests.TestTwoSampleTTest;
 import dk.alexandra.fresco.stat.TestsTests.TestTwoSampleTTestDifferentSizes;
 import dk.alexandra.fresco.stat.UtilTests.TestArgMax;
+import dk.alexandra.fresco.stat.UtilTests.TestIndicator;
 import dk.alexandra.fresco.stat.UtilTests.TestMax;
+import dk.alexandra.fresco.stat.UtilTests.TestParallelIndicator;
 import dk.alexandra.fresco.stat.UtilTests.TestProduct;
 import dk.alexandra.fresco.stat.mlp.NNTests.TestBackwardPropagation;
 import dk.alexandra.fresco.stat.mlp.NNTests.TestFit;
@@ -528,5 +531,18 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
     runTest(new TestFilteredKAnonymity<>(), TEST_PARAMETERS);
   }
 
+  @Test
+  public void test_contingency_table() {
+    runTest(new TestContingencyTable<>(), TEST_PARAMETERS);
+  }
 
+  @Test
+  public void test_indicator() {
+    runTest(new TestIndicator<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_parallel_indicator() {
+    runTest(new TestParallelIndicator<>(), TEST_PARAMETERS);
+  }
 }

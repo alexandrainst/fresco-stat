@@ -17,13 +17,16 @@ import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.utils.Indicator;
 import dk.alexandra.fresco.stat.utils.MaxList;
 import dk.alexandra.fresco.stat.utils.MaxPair;
 import dk.alexandra.fresco.stat.utils.MultiDimensionalArray;
+import dk.alexandra.fresco.stat.utils.ParallelIndicator;
 import dk.alexandra.fresco.stat.utils.RealUtils;
 import dk.alexandra.fresco.stat.utils.VectorUtils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -141,8 +144,9 @@ public class UtilTests {
     public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
       return new TestThread<>() {
 
-        final List<BigInteger> a = Stream.of(1, 3, 5, 2, 7, 9, 2, 4, 11, 0, 8).map(BigInteger::valueOf).collect(
-            Collectors.toList());
+        final List<BigInteger> a = Stream.of(1, 3, 5, 2, 7, 9, 2, 4, 11, 0, 8)
+            .map(BigInteger::valueOf).collect(
+                Collectors.toList());
 
         @Override
         public void test() {
@@ -152,8 +156,10 @@ public class UtilTests {
                 List<DRes<SInt>> input = a.stream().map(seq.numeric()::known)
                     .collect(Collectors.toList());
                 return new MaxList(input).buildComputation(seq);
-              }).seq((seq, argmax) -> Pair.lazy(seq.numeric().open(argmax.getFirst()), seq.numeric().open(argmax.getSecond())))
-                  .seq((seq, argmax) -> Pair.lazy(argmax.getFirst().out(), argmax.getSecond().out()));
+              }).seq((seq, argmax) -> Pair.lazy(seq.numeric().open(argmax.getFirst()),
+                  seq.numeric().open(argmax.getSecond())))
+                  .seq((seq, argmax) -> Pair
+                      .lazy(argmax.getFirst().out(), argmax.getSecond().out()));
 
           Pair<BigInteger, BigInteger> out = runApplication(testApplication);
           Assert.assertEquals(11, out.getFirst().intValue());
@@ -180,12 +186,95 @@ public class UtilTests {
                 DRes<SInt> x = seq.numeric().input(a.getFirst(), 1);
                 DRes<SInt> y = seq.numeric().input(a.getSecond(), 2);
                 return new MaxPair(x, y).buildComputation(seq);
-              }).seq((seq, argmax) -> Pair.lazy(seq.numeric().open(argmax.getFirst()), seq.numeric().open(argmax.getSecond())))
-                  .seq((seq, argmax) -> Pair.lazy(argmax.getFirst().out(), argmax.getSecond().out()));
+              }).seq((seq, argmax) -> Pair.lazy(seq.numeric().open(argmax.getFirst()),
+                  seq.numeric().open(argmax.getSecond())))
+                  .seq((seq, argmax) -> Pair
+                      .lazy(argmax.getFirst().out(), argmax.getSecond().out()));
 
           Pair<BigInteger, BigInteger> out = runApplication(testApplication);
           Assert.assertEquals(7, out.getFirst().intValue());
           Assert.assertEquals(1, out.getSecond().intValue());
+        }
+      };
+    }
+  }
+
+
+  public static class TestIndicator<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        int n = 7;
+
+        @Override
+        public void test() {
+
+          Application<List<List<BigInteger>>, ProtocolBuilderNumeric> testApplication = builder ->
+              builder.par(par -> {
+                List<List<DRes<SInt>>> out = new ArrayList<>();
+                for (int i = 0; i < n; i++) {
+                  List<DRes<SInt>> row = new ArrayList<>();
+                  int finalI = i;
+                  for (int j = 0; j < n; j++) {
+                    int finalJ = j;
+                    row.add(par.seq(seq -> new Indicator(n, finalI, seq.numeric().known(finalJ)).buildComputation(seq)));
+                  }
+                  out.add(row);
+                }
+                return DRes.of(out);
+              }).par((par, out) -> DRes.of(out.stream().map(
+                  row -> row.stream().map(x -> par.numeric().open(x)).collect(Collectors.toList()))
+                  .collect(Collectors.toList()))).seq((seq, out) -> DRes.of(out.stream()
+                  .map(row -> row.stream().map(DRes::out).collect(Collectors.toList()))
+                  .collect(Collectors.toList())));
+
+          List<List<BigInteger>> out = runApplication(testApplication);
+          for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+              Assert.assertEquals(i == j ? BigInteger.ONE : BigInteger.ZERO, out.get(i).get(j));
+            }
+          }
+        }
+      };
+    }
+  }
+
+
+  public static class TestParallelIndicator<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        int n = 7;
+
+        @Override
+        public void test() {
+
+          Application<List<List<BigInteger>>, ProtocolBuilderNumeric> testApplication = builder ->
+              builder.par(par -> {
+                List<DRes<List<DRes<SInt>>>> out = new ArrayList<>();
+                for (int i = 0; i < n; i++) {
+                  int finalI = i;
+                  out.add(par.seq(seq -> new ParallelIndicator(n, seq.numeric().known(finalI)).buildComputation(seq)));
+                }
+                return DRes.of(out);
+              }).par((par, out) -> DRes.of(out.stream().map(
+                  row -> row.out().stream().map(x -> par.numeric().open(x)).collect(Collectors.toList()))
+                  .collect(Collectors.toList()))).seq((seq, out) -> DRes.of(out.stream()
+                  .map(row -> row.stream().map(DRes::out).collect(Collectors.toList()))
+                  .collect(Collectors.toList())));
+
+          List<List<BigInteger>> out = runApplication(testApplication);
+          for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+              Assert.assertEquals(i == j ? BigInteger.ONE : BigInteger.ZERO, out.get(i).get(j));
+            }
+          }
         }
       };
     }

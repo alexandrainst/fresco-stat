@@ -14,10 +14,12 @@ import dk.alexandra.fresco.framework.sce.resources.ResourcePool;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
+import dk.alexandra.fresco.lib.common.util.SIntPair;
 import dk.alexandra.fresco.lib.fixed.FixedLinearAlgebra;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.anonymisation.NoisyHistogram;
+import dk.alexandra.fresco.stat.descriptive.ContingencyTableCategorical;
 import dk.alexandra.fresco.stat.descriptive.LeakyBreakTies;
 import dk.alexandra.fresco.stat.descriptive.MultiDimensionalHistogram;
 import dk.alexandra.fresco.stat.descriptive.Ranks;
@@ -26,7 +28,6 @@ import dk.alexandra.fresco.stat.descriptive.sort.FindTiedGroups;
 import dk.alexandra.fresco.stat.outlier.MahalanobisDistance;
 import dk.alexandra.fresco.stat.utils.MatrixUtils;
 import dk.alexandra.fresco.stat.utils.MultiDimensionalArray;
-import dk.alexandra.fresco.stat.utils.VectorUtils;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -924,6 +925,51 @@ public class DescriptiveStatTests {
       };
     }
   }
+
+  public static class TestContingencyTable<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        final Random random = new Random(1234);
+        final int w = 2;
+        final int h = 3;
+        final int n = 20;
+        final List<Integer> x = IntStream.generate(() -> random.nextInt(w)).limit(n).boxed().collect(
+            Collectors.toList());
+        final List<Integer> y = IntStream.generate(() -> random.nextInt(h)).limit(n).boxed().collect(
+            Collectors.toList());
+
+        @Override
+        public void test() {
+
+          Application<Matrix<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder
+              .seq(seq -> {
+                List<SIntPair> buckets =
+                    IntStream.range(0, n).mapToObj(i -> new SIntPair(seq.numeric().input(x.get(i), 1),
+                            seq.numeric().input(y.get(i), 2))).collect(Collectors.toList());
+
+                return new ContingencyTableCategorical(buckets, w, h).buildComputation(seq);
+
+              }).par((par, table) -> DRes.of(MatrixUtils.map(table, e -> par.numeric().open(e)))).seq((seq, table) -> DRes.of(MatrixUtils.map(table, DRes::out)));
+
+          Matrix<BigInteger> output = runApplication(testApplication);
+          for (int i = 0; i < w; i++) {
+            for (int j = 0; j < h; j++) {
+              int finalI = i;
+              int finalJ = j;
+              Assert.assertEquals(IntStream.range(0, n).filter(k -> x.get(k) == finalI && y.get(
+                  k) == finalJ).count(), output.getRow(i).get(j).longValue());
+            }
+          }
+
+        }
+      };
+    }
+  }
+
 
   //  public static class TestKAnonymityLarge<ResourcePoolT extends ResourcePool>
 //      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {

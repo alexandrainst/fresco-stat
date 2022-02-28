@@ -6,6 +6,7 @@ import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
+import dk.alexandra.fresco.lib.common.util.SIntPair;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.regression.linear.LinearRegression.LinearRegressionResult;
 import dk.alexandra.fresco.stat.regression.linear.SimpleLinearRegression.SimpleLinearRegressionResult;
@@ -351,5 +352,34 @@ public interface Statistics extends ComputationDirectory {
    */
   DRes<ArrayList<DRes<SFixed>>> mahalanobisDistance(List<List<DRes<SFixed>>> X);
 
+  /**
+   * Given a list of observations, each consisting of two categorical values <i>(x,y)</i> with <i>0
+   * &le; firstRange</i> and <i>0 &le; y < secondRange</i>, this computation outputs a contingency
+   * table of size <i>firstRange x secondRange</i>, where the <i>(i,j)</i>'th entry is the number of
+   * observations such that <i>x = i</i> and <i>y = j</i>.
+   *
+   * <p>Note that it is much more efficient to encode the data using indicator vectors and use
+   * {@link #contingencyTable(List)} instead if possible.</p>
+   *
+   * @param data        The observations encoded as pairs of secret integers
+   * @param firstRange  The range of the first attribute
+   * @param secondRange The range of the second attribute
+   * @return A contingency table where the <i>(i,j)</i>'th entry is the number of observations
+   * <i>(x,y)</i> such that <i>x = i</i> and <i>y = j</i>.
+   */
+  DRes<Matrix<DRes<SInt>>> contingencyTable(List<SIntPair> data, int firstRange, int secondRange);
+
+
+  /**
+   * Compute a contingency table for a list of observations with two categorical variables encoded
+   * as follows: Each row is an observation which consists of two attributes, each of which is
+   * encoded as a 0-1 vector with exactly one non-zero entry to indicate the value of the
+   * attribute.
+   *
+   * @param data A list of observations encoded as 0-1 indicator vectors
+   * @return A contingency table where the <i>(i,j)</i>'th entry is the number of observations
+   * <i>(x,y)</i> such that <i>x = i</i> and <i>y = j</i>.
+   */
+  DRes<Matrix<DRes<SInt>>> contingencyTable(List<Pair<List<DRes<SInt>>, List<DRes<SInt>>>> data);
 
 }

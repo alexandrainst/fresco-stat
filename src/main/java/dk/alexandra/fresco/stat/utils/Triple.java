@@ -1,6 +1,7 @@
 package dk.alexandra.fresco.stat.utils;
 
 import dk.alexandra.fresco.framework.DRes;
+import java.util.Objects;
 
 /** Instances of this class holds three values of arbitrary type. */
 public class Triple<A, B, C> {
@@ -35,4 +36,31 @@ public class Triple<A, B, C> {
     return c;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    Triple<?, ?, ?> triple = (Triple<?, ?, ?>) o;
+
+    if (!Objects.equals(a, triple.a)) {
+      return false;
+    }
+    if (!Objects.equals(b, triple.b)) {
+      return false;
+    }
+    return Objects.equals(c, triple.c);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = a != null ? a.hashCode() : 0;
+    result = 31 * result + (b != null ? b.hashCode() : 0);
+    result = 31 * result + (c != null ? c.hashCode() : 0);
+    return result;
+  }
 }

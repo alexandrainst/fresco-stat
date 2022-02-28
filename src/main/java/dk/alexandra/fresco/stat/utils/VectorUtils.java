@@ -12,6 +12,7 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -254,6 +255,19 @@ public class VectorUtils {
       }
       return null;
     });
+    return result;
+  }
+
+
+  public static <A, B, C> ArrayList<C> entrywiseBinaryOp(List<A> a, List<B> b,
+      BiFunction<A, B, C> op) {
+    ArrayList<C> result = new ArrayList<>();
+    if (a.size() != b.size()) {
+      throw new IllegalArgumentException("Vector size mismatch");
+    }
+    for (int i = 0; i < a.size(); i++) {
+      result.add(op.apply(a.get(i), b.get(i)));
+    }
     return result;
   }
 
