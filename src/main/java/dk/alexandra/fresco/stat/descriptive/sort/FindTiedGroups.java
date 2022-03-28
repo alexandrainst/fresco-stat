@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Find sets of mututally equal in a list of secret shared integers: If the <i>i</i>'th and <i>j</i>'th
+ * Find sets of mutually equal in a list of secret shared integers: If the <i>i</i>'th and <i>j</i>'th
  * elements are the same in the result, it indicates that the <i>i</i>'th and <i>j</i>'th elements are
  * equal in the input data.
  */

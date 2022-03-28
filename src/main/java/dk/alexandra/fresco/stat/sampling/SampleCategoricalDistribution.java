@@ -5,7 +5,6 @@ import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.common.math.AdvancedNumeric;
-import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.math.BigDecimal;
@@ -24,9 +23,10 @@ public class SampleCategoricalDistribution implements Computation<SInt, Protocol
   private double[] knownProbabilities;
 
   /**
-   * @param probabilities The <i>i</i>'th element of this list is the probability of drawing <i>i</i> from this
-   *                      distribution.
-   * @param normalized    Does the probabilities sum to 1? If not, the computation handles the normalization.
+   * @param probabilities The <i>i</i>'th element of this list is the probability of drawing
+   *                      <i>i</i> from this distribution.
+   * @param normalized    Does the probabilities sum to 1? If not, the computation handles the
+   *                      normalization.
    */
   public SampleCategoricalDistribution(List<DRes<SFixed>> probabilities, boolean normalized) {
     this.probabilities = probabilities;
@@ -57,35 +57,47 @@ public class SampleCategoricalDistribution implements Computation<SInt, Protocol
 
       if (Objects.nonNull(knownProbabilities)) {
 
-        double c = knownProbabilities[0];
-        List<DRes<SInt>> terms = new ArrayList<>();
-        for (int i = 0; i < knownProbabilities.length; i++) {
-          if (i > 0) {
-            c += knownProbabilities[i];
+        DRes<SFixed> finalR = r;
+        return builder.par(par -> {
+
+          double c = knownProbabilities[0];
+          List<DRes<SInt>> terms = new ArrayList<>();
+          for (int i = 0; i < knownProbabilities.length; i++) {
+            if (i > 0) {
+              c += knownProbabilities[i];
+            }
+            terms.add(
+                FixedNumeric.using(par)
+                    .leq(numeric.known(BigDecimal.valueOf(c)), finalR));
           }
-          terms.add(
-              numeric
-                  .leq(numeric.known(BigDecimal.valueOf(c)), r));
-        }
-        return AdvancedNumeric.using(builder).sum(terms);
+          return DRes.of(terms);
+        }).seq((seq, terms) -> AdvancedNumeric.using(seq).sum(terms));
 
       } else {
 
+        // Compute c_i's
+        List<DRes<SFixed>> accProbabilities = new ArrayList<>();
+        DRes<SFixed> s = probabilities.get(0);
+        accProbabilities.add(s);
+        for (int i = 1; i < probabilities.size(); i++) {
+          s = numeric.add(s, probabilities.get(i));
+          accProbabilities.add(s);
+        }
+
+        // Normalize if needed
         if (!normalized) {
-          DRes<SFixed> sum = AdvancedFixedNumeric.using(builder).sum(probabilities);
-          r = numeric.mult(sum, r);
+          r = numeric.mult(accProbabilities.get(accProbabilities.size() - 1), r);
         }
 
-        DRes<SFixed> c = probabilities.get(0);
-        List<DRes<SInt>> terms = new ArrayList<>();
-        for (int i = 0; i < probabilities.size(); i++) {
-          if (i > 0) {
-            c = numeric.add(c, probabilities.get(i));
+        DRes<SFixed> finalR = r;
+        return builder.par(par -> {
+          List<DRes<SInt>> terms = new ArrayList<>();
+          for (int i = 0; i < probabilities.size() - 1; i++) {
+            terms.add(FixedNumeric.using(par).leq(finalR, accProbabilities.get(i)));
           }
-          terms.add(numeric.leq(c, r));
-        }
-        return AdvancedNumeric.using(builder).sum(terms);
-
+          return DRes.of(terms);
+        }).seq((seq, terms) -> seq.numeric()
+            .sub(probabilities.size() - 1, AdvancedNumeric.using(seq).sum(terms)));
       }
     });
   }
