@@ -354,7 +354,7 @@ public interface Statistics extends ComputationDirectory {
 
   /**
    * Given a list of observations, each consisting of two categorical values <i>(x,y)</i> with <i>0
-   * &le; firstRange</i> and <i>0 &le; y < secondRange</i>, this computation outputs a contingency
+   * &le; firstRange</i> and <i>0 &le; y &lt; secondRange</i>, this computation outputs a contingency
    * table of size <i>firstRange x secondRange</i>, where the <i>(i,j)</i>'th entry is the number of
    * observations such that <i>x = i</i> and <i>y = j</i>.
    *

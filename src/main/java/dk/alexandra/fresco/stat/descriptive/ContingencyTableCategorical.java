@@ -24,7 +24,7 @@ public class ContingencyTableCategorical implements
 
   /**
    * Given a list of observations, each consisting of two categorical values <i>(x,y)</i> with <i>0
-   * &le; width</i> and <i>0 &le; y < height</i>, this computation outputs a contingency table,
+   * &le; width</i> and <i>0 &le; y &lt; height</i>, this computation outputs a contingency table,
    * where the <i>(i,j)</i>'th entry is the number of observations such that <i>x = i</i> and <i>y =
    * j</i>.
    */
