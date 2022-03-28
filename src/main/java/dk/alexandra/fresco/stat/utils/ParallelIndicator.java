@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Given a <i>range</i> and a value where <i>0 &le; value < range</i>this computation returns a
+ * Given a <i>range</i> and a value where <i>0 &le; value &lt; range</i>this computation returns a
  * list of <i>0</i>'s and <i>1</i>'s such that the <i>value</i>'th entry is the only nonzero
  * value.
  */

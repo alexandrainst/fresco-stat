@@ -21,7 +21,7 @@ public class Indicator implements Computation<SInt, ProtocolBuilderNumeric> {
   private final DRes<SInt> value;
 
   /**
-   * Given a value <i>x</i> with <i>0 &le; x < range</i> this computation returns <i>1</i> if <i>x =
+   * Given a value <i>x</i> with <i>0 &le; x &lt; range</i> this computation returns <i>1</i> if <i>x =
    * filterValue</i> and <i>0</i> otherwise. If the value is not in the range, there are no
    * guarantees as to what the output is.
    */
@@ -72,7 +72,7 @@ public class Indicator implements Computation<SInt, ProtocolBuilderNumeric> {
 
   /**
    * Compute the coefficients of a polynomial <i>p</i> such that <i>p(filterValue) = 1</i> and
-   * <i>p(x) = 0</i> for <i>0 &le; x < range</i> and <i>x &ne; filterValue</i>.
+   * <i>p(x) = 0</i> for <i>0 &le; x /lt; range</i> and <i>x &ne; filterValue</i>.
    */
   static List<BigInteger> computeFilter(int range, int filterValue, BigInteger modulus) {
 
