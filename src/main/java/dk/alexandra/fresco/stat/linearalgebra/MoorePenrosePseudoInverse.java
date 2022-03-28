@@ -4,6 +4,7 @@ import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
+import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedLinearAlgebra;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.utils.MatrixUtils;
@@ -26,6 +27,10 @@ public class MoorePenrosePseudoInverse implements
   @Override
   public DRes<Matrix<DRes<SFixed>>> buildComputation(
       ProtocolBuilderNumeric builder) {
+//    if (a.getWidth() == 1 && a.getHeight() == 1) {
+//      return DRes.of(MatrixUtils.buildMatrix(1,1, (i,j) -> builder.seq(seq -> AdvancedFixedNumeric.using(seq).reciprocal(a.getRow(0).get(0)))));
+//    }
+
     return builder.seq(seq -> new QRDecomposition(a).buildComputation(seq)).seq(
         (seq, qr) -> new InvertUpperTriangularMatrix(qr.getSecond())
             .buildComputation(seq)).seq((seq, rInverse) -> {

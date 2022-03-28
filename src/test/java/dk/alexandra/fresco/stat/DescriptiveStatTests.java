@@ -590,6 +590,36 @@ public class DescriptiveStatTests {
     }
   }
 
+  public static class TestHistogramDiscrete2<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+
+        @Override
+        public void test() {
+
+          Application<List<BigInteger>, ProtocolBuilderNumeric> testApplication = builder -> builder
+              .seq(seq -> {
+                List<DRes<SInt>> xSecret = IntStream.range(0, 5).mapToObj(i -> seq.numeric().known(i)).collect(
+                    Collectors.toList());
+                List<DRes<SInt>> bSecret = IntStream.range(0, 5).mapToObj(i -> seq.numeric().known(i)).collect(
+                    Collectors.toList());
+                List<DRes<SInt>> fSecret = IntStream.range(0, 5).mapToObj(i -> seq.numeric().known(1)).collect(
+                    Collectors.toList());
+                return FilteredStatistics.using(seq).histogram(bSecret, xSecret, fSecret);
+              }).seq((seq, h) -> DRes.of(h.stream().map(seq.numeric()::open).collect(Collectors.toList()))
+              ).seq((seq, result) -> DRes.of(result.stream().map(DRes::out).collect(Collectors.toList())));
+
+          List<BigInteger> output = runApplication(testApplication);
+          System.out.println(output);
+        }
+      };
+    }
+  }
+
   public static class TestNoisyHistogram<ResourcePoolT extends ResourcePool>
       extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
 

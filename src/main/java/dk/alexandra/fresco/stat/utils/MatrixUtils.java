@@ -1,6 +1,10 @@
 package dk.alexandra.fresco.stat.utils;
 
+import dk.alexandra.fresco.framework.DRes;
+import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
+import dk.alexandra.fresco.lib.fixed.FixedLinearAlgebra;
+import dk.alexandra.fresco.lib.fixed.SFixed;
 import java.util.ArrayList;
 import java.util.function.Function;
 import java.util.stream.Collectors;

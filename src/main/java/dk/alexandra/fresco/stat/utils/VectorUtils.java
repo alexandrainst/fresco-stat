@@ -1,6 +1,7 @@
 package dk.alexandra.fresco.stat.utils;
 
 import dk.alexandra.fresco.framework.DRes;
+import dk.alexandra.fresco.framework.builder.BuildStep;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.common.math.AdvancedNumeric;
@@ -15,7 +16,6 @@ import java.util.List;
 import java.util.function.BiFunction;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 public class VectorUtils {
 
@@ -293,6 +293,12 @@ public class VectorUtils {
       return null;
     });
     return result;
+  }
+
+  public static BuildStep<List<DRes<BigDecimal>>, ProtocolBuilderNumeric, List<BigDecimal>> openToAll(List<DRes<SFixed>> list,
+      ProtocolBuilderNumeric builder) {
+    return builder.seq(seq -> DRes.of(list.stream().map(x -> FixedNumeric.using(seq).open(x)).collect(Collectors.toList()))
+      ).seq((seq, result) -> DRes.of(result.stream().map(DRes::out).collect(Collectors.toList())));
   }
 
   @FunctionalInterface
