@@ -1,7 +1,6 @@
 package dk.alexandra.fresco.stat.regression.linear;
 
 import dk.alexandra.fresco.framework.DRes;
-import dk.alexandra.fresco.framework.builder.BuildStep;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.util.Pair;
@@ -19,7 +18,9 @@ import dk.alexandra.fresco.stat.regression.linear.LinearRegression.LinearRegress
 import dk.alexandra.fresco.stat.utils.MatrixUtils;
 import dk.alexandra.fresco.stat.utils.VectorUtils;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Fit a linear model to the given dataset and output estimates for the coefficients and some model
@@ -97,13 +98,16 @@ public class LinearRegression implements
 
           state.sse = FixedNumeric.using(b).sub(state.sst, state.ssm);
 
+          return state;
+        }).par((b, st) -> {
+
           if (computeModelDiagnostics) {
             // For some purposes, e.g. Breusch-Pagan test, we do not need the values computed below
 
             return b.par(par -> {
 
                 // TODO: can we reuse SSE?
-                state.skewnessAndKurtosis = new SampleSkewnessAndKurtosis(state.residuals).buildComputation(par);
+                state.skewnessAndKurtosis = par.seq(new SampleSkewnessAndKurtosis(state.residuals));
 
                 // Compute regression error variance (s^2)
                 state.errorVariance = FixedNumeric.using(par).div(state.sse, n - p);
@@ -112,49 +116,25 @@ public class LinearRegression implements
                 state.rSquared = FixedNumeric.using(par).div(state.ssm, state.sst);
 
                 // Compute the Durbin-Watson test statistics for independence of residuals
-                state.durbinWatson = par.par(sub -> {
-                  List<DRes<SFixed>> numeratorTerms = new ArrayList<>();
-                  for (int i = 1; i < state.residuals.size(); i++) {
-                    int finalI = i;
-                    numeratorTerms.add(sub.seq(seq -> {
-                      DRes<SFixed> difference = FixedNumeric.using(seq).sub(state.residuals.get(finalI),
-                          state.residuals.get(finalI - 1));
-                      return FixedNumeric.using(seq).mult(difference, difference);
-                    }));
-                  }
-                  return DRes.of(numeratorTerms);
-                }).seq((seq, numeratorTerms) -> {
-                  DRes<SFixed> numerator = AdvancedFixedNumeric.using(seq).sum(numeratorTerms);
-                  return FixedNumeric.using(seq).div(numerator, state.sse);
-                });
+                state.durbinWatson = par.seq(new DurbinWatsonTest(state.residuals, state.sse));
+
+              // Compute F-test statistics
+              state.F = par.seq(sub ->
+                  FixedNumeric.using(sub).div(state.ssm, state.sse)
+              ).seq((sub, q) -> FixedNumeric.using(sub).mult((double) (n - p) / (p - 1), q));
 
               return state;
             }).par((par, s) -> {
 
                 // Compute Jarque-Bera test statistics
-                state.jb = par.par(sub -> {
-                  DRes<SFixed> sSquared = FixedNumeric.using(sub).mult(state.skewnessAndKurtosis.out().getFirst(),
-                      state.skewnessAndKurtosis.out().getFirst());
-                  DRes<SFixed> kSquared = sub.seq(seq -> {
-                    DRes<SFixed> kMinusThree = FixedNumeric.using(seq).sub(state.skewnessAndKurtosis.out().getSecond(), 3);
-                    return FixedNumeric.using(seq).mult(kMinusThree, kMinusThree);
-                  });
-                  return Pair.lazy(sSquared, kSquared);
-                }).seq((seq, sAndK) -> {
-                  FixedNumeric f = FixedNumeric.using(seq);
-                  return f.mult(n / 6.0, f.add(sAndK.getFirst(), f.mult(0.25, sAndK.getSecond())));
-                });
+                state.jb = par.seq(new JarqueBeraTest(n, state.skewnessAndKurtosis.out().getFirst(),
+                    state.skewnessAndKurtosis.out().getSecond()));
 
                 // Compute the adjusted R^2
                 state.adjustedRSquared = par.seq(seq ->
                     FixedNumeric.using(seq).sub(1, FixedNumeric.using(seq)
                         .mult((double) (n - 1) / (n - p),
                             FixedNumeric.using(seq).sub(1, state.rSquared))));
-
-                // Compute F-test statistics
-                state.F = par.seq(sub ->
-                    FixedNumeric.using(sub).div(state.ssm, state.sse)
-                ).seq((sub, q) -> FixedNumeric.using(sub).mult((double) (n - p) / (p - 1), q));
 
                 // Compute std errors (squared) for all estimates
                 state.errors = par.seq(new InvertUpperTriangularMatrix(state.qr.getSecond())
@@ -195,6 +175,7 @@ public class LinearRegression implements
     public DRes<SFixed> breuschPagan;
     public DRes<Pair<SFixed, SFixed>> skewnessAndKurtosis;
     public DRes<SFixed> jb;
+    public DRes<SFixed> omnibus;
     private DRes<SFixed> adjustedRSquared;
     private DRes<ArrayList<DRes<SFixed>>> yHat;
     private Pair<Matrix<DRes<SFixed>>, Matrix<DRes<SFixed>>> qr;
