@@ -8,7 +8,6 @@ import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.FixedLinearAlgebra;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.AdvancedLinearAlgebra;
-import dk.alexandra.fresco.stat.utils.DebugList;
 import dk.alexandra.fresco.stat.utils.VectorUtils;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,8 +36,6 @@ public class FindMinima implements Computation<List<DRes<SFixed>>, ProtocolBuild
   public DRes<List<DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.seq(seq -> new State(init, 0)).whileLoop(
         state -> state.iteration < iterations, (root, state) -> root.par(par -> {
-          new DebugList("Iteration " + state.iteration, state.beta);
-
           DRes<ArrayList<DRes<SFixed>>> g = gradient.apply(state.beta).buildComputation(par);
           DRes<Matrix<DRes<SFixed>>> h = hessian.apply(state.beta).buildComputation(par);
           return Pair.lazy(g, h);

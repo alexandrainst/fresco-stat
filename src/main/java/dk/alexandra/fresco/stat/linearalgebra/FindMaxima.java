@@ -8,12 +8,10 @@ import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.FixedLinearAlgebra;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.AdvancedLinearAlgebra;
-import dk.alexandra.fresco.stat.utils.DebugList;
 import dk.alexandra.fresco.stat.utils.VectorUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.logging.Logger;
 
 public class FindMaxima implements Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
 
