@@ -9,7 +9,6 @@ import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.common.compare.Comparison;
 import dk.alexandra.fresco.lib.common.math.AdvancedNumeric;
-import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -42,26 +41,40 @@ public class HistogramFiltered implements Computation<List<DRes<SInt>>, Protocol
   @Override
   public DRes<List<DRes<SInt>>> buildComputation(ProtocolBuilderNumeric builder) {
     return builder.par(par -> {
+
+      // Compare all data points with the buckets
       Matrix<DRes<SInt>> c = new Matrix<>(buckets.size(), data.size(),
           (i,j) -> Comparison.using(par).compareLEQ(data.get(j), buckets.get(i)));
       return DRes.of(c);
+
     }).par((par, c) -> {
+
+      // Filter so we only count data points as indicated by the filter
       Numeric numeric = par.numeric();
       Matrix<DRes<SInt>> filtered = new Matrix<>(buckets.size(), data.size(),
           (i,j) -> numeric.mult(c.getRow(i).get(j), filter.get(j)));
       DRes<SInt> n = AdvancedNumeric.using(par).sum(filter);
       return Pair.lazy(filtered, n);
+
     }).par((par, c) -> {
+
+      // Compute cumulative sums
       List<DRes<SInt>> counts =
-          c.getFirst().getRows().stream().map(r -> AdvancedNumeric.using(par).sum(r))
+          c.getFirst().getRows().stream().map(AdvancedNumeric.using(par)::sum)
               .collect(Collectors.toList());
-      counts.add(c.getSecond());
+      counts.add(c.getSecond()); // Add the total as the final element
       return DRes.of(counts);
+
     }).seq((seq, counts) -> {
-      for (int i = counts.size() - 1; i > 0; i--) {
-        counts.set(i, seq.numeric().sub(counts.get(i), counts.get(i - 1)));
+
+      // The histogram is the difference between the cumulative sums
+      List<DRes<SInt>> histogram = new ArrayList<>();
+      histogram.add(counts.get(0));
+      for (int i = 1; i < counts.size(); i++) {
+        histogram.add(seq.numeric().sub(counts.get(i), counts.get(i - 1)));
       }
-      return DRes.of(counts);
+      return DRes.of(histogram);
+
     });
   }
 
