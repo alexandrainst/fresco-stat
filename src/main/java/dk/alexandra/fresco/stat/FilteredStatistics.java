@@ -60,7 +60,8 @@ public interface FilteredStatistics {
   DRes<FilteredTTestResult> ttest(List<DRes<SFixed>> data, DRes<SFixed> mu, List<DRes<SInt>> filter);
 
   /**
-   * Compute a histogram on a filtered data set. Note that upper limits are soft, lower are hard.
+   * Compute a histogram on a filtered data set. Note that upper limits as indicated by the buckets
+   * are hard inequalities but the lower are soft.
    *
    * @param buckets The buckets for the histogram
    * @param data    A data set

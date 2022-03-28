@@ -27,10 +27,9 @@ import dk.alexandra.fresco.stat.regression.linear.LinearRegression;
 import dk.alexandra.fresco.stat.regression.linear.LinearRegression.LinearRegressionResult;
 import dk.alexandra.fresco.stat.regression.linear.SimpleLinearRegression;
 import dk.alexandra.fresco.stat.regression.linear.SimpleLinearRegression.SimpleLinearRegressionResult;
-import dk.alexandra.fresco.stat.survival.SurvivalInfoContinuous;
-import dk.alexandra.fresco.stat.survival.SurvivalInfoDiscrete;
-import dk.alexandra.fresco.stat.survival.cox.CoxRegressionContinuous;
-import dk.alexandra.fresco.stat.survival.cox.CoxRegressionDiscrete;
+import dk.alexandra.fresco.stat.survival.SurvivalEntry;
+import dk.alexandra.fresco.stat.survival.cox.CoxRegression;
+import dk.alexandra.fresco.stat.survival.cox.CoxRegression.CoxRegressionResult;
 import dk.alexandra.fresco.stat.tests.ChiSquareTest;
 import dk.alexandra.fresco.stat.tests.FTest;
 import dk.alexandra.fresco.stat.tests.KruskallWallisTest;
@@ -209,6 +208,7 @@ public class DefaultStatistics implements Statistics {
   }
 
 
+/*
   @Override
   public DRes<List<DRes<SFixed>>> coxRegressionDiscrete(List<SurvivalInfoDiscrete> data,
       int iterations,
@@ -216,12 +216,13 @@ public class DefaultStatistics implements Statistics {
     return builder
         .seq(seq -> new CoxRegressionDiscrete(data, iterations, alpha, beta).buildComputation(seq));
   }
+*/
 
   @Override
-  public DRes<List<DRes<SFixed>>> coxRegressionContinuous(List<SurvivalInfoContinuous> data,
+  public DRes<CoxRegressionResult> coxRegressionContinuous(List<SurvivalEntry> data,
       int iterations, double alpha, double[] beta) {
     return builder.seq(
-        seq -> new CoxRegressionContinuous(data, iterations, alpha, beta).buildComputation(seq));
+        seq -> new CoxRegression(data, iterations, alpha, beta).buildComputation(seq));
   }
 
   @Override

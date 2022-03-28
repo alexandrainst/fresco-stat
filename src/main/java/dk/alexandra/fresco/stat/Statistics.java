@@ -10,8 +10,8 @@ import dk.alexandra.fresco.lib.common.util.SIntPair;
 import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.regression.linear.LinearRegression.LinearRegressionResult;
 import dk.alexandra.fresco.stat.regression.linear.SimpleLinearRegression.SimpleLinearRegressionResult;
-import dk.alexandra.fresco.stat.survival.SurvivalInfoContinuous;
-import dk.alexandra.fresco.stat.survival.SurvivalInfoDiscrete;
+import dk.alexandra.fresco.stat.survival.SurvivalEntry;
+import dk.alexandra.fresco.stat.survival.cox.CoxRegression.CoxRegressionResult;
 import dk.alexandra.fresco.stat.utils.MultiDimensionalArray;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -203,19 +203,19 @@ public interface Statistics extends ComputationDirectory {
    */
   DRes<List<Pair<BigInteger, Integer>>> frequencyTable(List<DRes<SInt>> data);
 
-  /**
-   * Estimate the parameters of a Cox model on the given data. Here it's assumed that each covariate
-   * only takes values in a (small) finite set, e.g. when they indicate group membership. If many
-   * different values are possible, use {@link #coxRegressionContinuous} instead.
-   *
-   * @param data       The data set.
-   * @param iterations The number of iterations.
-   * @param alpha      The learning rate.
-   * @param beta       The initial coefficient guess.
-   * @return
-   */
-  DRes<List<DRes<SFixed>>> coxRegressionDiscrete(List<SurvivalInfoDiscrete> data,
-      int iterations, double alpha, double[] beta);
+//  /**
+//   * Estimate the parameters of a Cox model on the given data. Here it's assumed that each covariate
+//   * only takes values in a (small) finite set, e.g. when they indicate group membership. If many
+//   * different values are possible, use {@link #coxRegressionContinuous} instead.
+//   *
+//   * @param data       The data set.
+//   * @param iterations The number of iterations.
+//   * @param alpha      The learning rate.
+//   * @param beta       The initial coefficient guess.
+//   * @return
+//   */
+//  CoxRegressionResult coxRegressionDiscrete(List<SurvivalInfoDiscrete> data,
+//      int iterations, double alpha, double[] beta);
 
   /**
    * Estimate the parameters of a Cox model on the given data.
@@ -226,7 +226,7 @@ public interface Statistics extends ComputationDirectory {
    * @param beta       The initial coefficient guess.
    * @return
    */
-  DRes<List<DRes<SFixed>>> coxRegressionContinuous(List<SurvivalInfoContinuous> data,
+  DRes<CoxRegressionResult> coxRegressionContinuous(List<SurvivalEntry> data,
       int iterations, double alpha, double[] beta);
 
   /**
