@@ -68,7 +68,7 @@ public class SampleCategoricalDistribution implements Computation<SInt, Protocol
             }
             terms.add(
                 FixedNumeric.using(par)
-                    .leq(numeric.known(BigDecimal.valueOf(c)), finalR));
+                    .leq(FixedNumeric.using(par).known(BigDecimal.valueOf(c)), finalR));
           }
           return DRes.of(terms);
         }).seq((seq, terms) -> AdvancedNumeric.using(seq).sum(terms));
