@@ -9,6 +9,7 @@ import dk.alexandra.fresco.stat.DescriptiveStatTests.TestContingencyTable;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestCovariance;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestHistogramContinuous;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestHistogramDiscrete;
+import dk.alexandra.fresco.stat.DescriptiveStatTests.TestHistogramDiscrete2;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestKAnonymity;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestKAnonymityOpen;
 import dk.alexandra.fresco.stat.DescriptiveStatTests.TestMahalanobisDistance;
@@ -23,8 +24,8 @@ import dk.alexandra.fresco.stat.DescriptiveStatTests.TestVariance;
 import dk.alexandra.fresco.stat.FilteredStatTests.TestFilteredHistogram;
 import dk.alexandra.fresco.stat.FilteredStatTests.TestFilteredKAnonymity;
 import dk.alexandra.fresco.stat.FilteredStatTests.TestFilteredMean;
-import dk.alexandra.fresco.stat.FilteredStatTests.TestFilteredVariance;
 import dk.alexandra.fresco.stat.FilteredStatTests.TestFilteredTTest;
+import dk.alexandra.fresco.stat.FilteredStatTests.TestFilteredVariance;
 import dk.alexandra.fresco.stat.LATests.TestBackSubstitution;
 import dk.alexandra.fresco.stat.LATests.TestConvolution;
 import dk.alexandra.fresco.stat.LATests.TestEigenvalues;
@@ -44,9 +45,11 @@ import dk.alexandra.fresco.stat.LinRegTests.TestSimpleLinearRegression;
 import dk.alexandra.fresco.stat.LogRegTests.TestLogRegPrediction;
 import dk.alexandra.fresco.stat.LogRegTests.TestLogRegSGDSingleEpoch;
 import dk.alexandra.fresco.stat.LogRegTests.TestLogisticRegression;
+import dk.alexandra.fresco.stat.Optimisation.TestMaximum;
+import dk.alexandra.fresco.stat.Optimisation.TestMinimum;
 import dk.alexandra.fresco.stat.SurvivalAnalysisTests.TestCoxGradient;
-import dk.alexandra.fresco.stat.SurvivalAnalysisTests.TestCoxRegressionContinuous;
-import dk.alexandra.fresco.stat.SurvivalAnalysisTests.TestCoxRegressionDiscrete;
+import dk.alexandra.fresco.stat.SurvivalAnalysisTests.TestCoxHessian;
+import dk.alexandra.fresco.stat.SurvivalAnalysisTests.TestCoxRegression;
 import dk.alexandra.fresco.stat.TestsTests.TestChiSquareTest;
 import dk.alexandra.fresco.stat.TestsTests.TestChiSquareTestKnown;
 import dk.alexandra.fresco.stat.TestsTests.TestFTest;
@@ -79,8 +82,8 @@ import org.junit.Test;
 
 public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTest {
 
-  private static final TestParameters TEST_PARAMETERS = new TestParameters().maxBitLength(180)
-      .field(MersennePrimeFieldDefinition.find(256))
+  private static final TestParameters TEST_PARAMETERS = new TestParameters().maxBitLength(400)
+      .field(MersennePrimeFieldDefinition.find(512))
       .fixedPointPrecesion(32).evaluationStrategy(EvaluationStrategy.SEQUENTIAL).numParties(2)
       .performanceLogging(false);
 
@@ -204,7 +207,7 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
           ArrayList<DRes<SFixed>> secretP = VectorUtils
               .listBuilder(p.length, i -> FixedNumeric.using(seq).input(p[i], 1));
           return Sampler.using(seq).sampleCategoricalDistribution(secretP, false);
-        }, normalizedP, 0.1),
+        }, p, 0.1),
         TEST_PARAMETERS);
   }
 
@@ -322,18 +325,20 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   }
 
   @Test
-  public void test_cox_gradient() {
+  public void test_cox_gradient_continuous() {
     runTest(new TestCoxGradient<>(), TEST_PARAMETERS);
   }
 
   @Test
-  public void test_cox_regression_discrete() {
-    runTest(new TestCoxRegressionDiscrete<>(), TEST_PARAMETERS);
+  public void test_cox_hessian_continuous() {
+    runTest(new TestCoxHessian<>(), TEST_PARAMETERS);
   }
 
+  // Very slow
+ // @Ignore
   @Test
   public void test_cox_regression_continuous() {
-    runTest(new TestCoxRegressionContinuous<>(), TEST_PARAMETERS);
+    runTest(new TestCoxRegression<>(), TEST_PARAMETERS);
   }
 
   @Test
@@ -437,6 +442,11 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   @Test
   public void test_histogram_discrete() {
     runTest(new TestHistogramDiscrete<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_histogram_discrete_debug() {
+    runTest(new TestHistogramDiscrete2<>(), TEST_PARAMETERS);
   }
 
   @Test
@@ -544,5 +554,15 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   @Test
   public void test_parallel_indicator() {
     runTest(new TestParallelIndicator<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_minima() {
+    runTest(new TestMinimum<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_maxima() {
+    runTest(new TestMaximum<>(), TEST_PARAMETERS);
   }
 }

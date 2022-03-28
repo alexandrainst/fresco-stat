@@ -3,81 +3,112 @@ package dk.alexandra.fresco.stat.survival.cox;
 import dk.alexandra.fresco.framework.DRes;
 import dk.alexandra.fresco.framework.builder.Computation;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
+import dk.alexandra.fresco.framework.util.Pair;
+import dk.alexandra.fresco.lib.common.collections.Matrix;
+import dk.alexandra.fresco.lib.fixed.AdvancedFixedNumeric;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
-import dk.alexandra.fresco.stat.survival.SurvivalInfoSorter;
-import dk.alexandra.fresco.stat.utils.VectorUtils;
+import dk.alexandra.fresco.stat.AdvancedLinearAlgebra;
+import dk.alexandra.fresco.stat.survival.SurvivalEntry;
+import dk.alexandra.fresco.stat.survival.SurvivalEntrySorter;
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 /**
- * Estimate the coefficients of a Cox proportional hazards model on the given data using gradient descent.
+ * Estimate the coefficients of a Cox proportional hazards model on the given data using gradient
+ * descent.
  */
-class CoxRegression<T> implements Computation<List<DRes<SFixed>>, ProtocolBuilderNumeric> {
+public class CoxRegression implements
+    Computation<CoxRegression.CoxRegressionResult, ProtocolBuilderNumeric> {
 
-  private final List<T> data;
   private final int iterations;
   private final double alpha;
   private final double[] beta;
-  private final BiFunction<List<T>, List<DRes<SFixed>>, Function<ProtocolBuilderNumeric, DRes<List<DRes<SFixed>>>>> gradient;
-  private final Function<List<T>, SurvivalInfoSorter<T>> sorterProvider;
+  private final SurvivalEntrySorter sorter;
+  private List<BigInteger> tiedGroups;
+  private List<SurvivalEntry> sortedData;
 
   /**
    * Estimate the coefficients of a Cox model on the given data using gradient descent.
    *
-   * @param data           The data.
-   * @param iterations     The number of iterations.
-   * @param alpha          The learning rate.
-   * @param beta           The initial guess.
-   * @param gradient       Provide a computation which computes the gradient on the data
-   * @param sorterProvider Provide a computation which sorts the data descending on time
+   * @param data       The data.
+   * @param iterations The number of iterations.
+   * @param alpha      The learning rate.
    */
-  CoxRegression(List<T> data, int iterations, double alpha,
-      double[] beta,
-      BiFunction<List<T>, List<DRes<SFixed>>, Function<ProtocolBuilderNumeric, DRes<List<DRes<SFixed>>>>> gradient,
-      Function<List<T>, SurvivalInfoSorter<T>> sorterProvider) {
-    this.data = data;
+  public CoxRegression(List<SurvivalEntry> data, int iterations, double alpha,
+      double[] beta) {
     this.iterations = iterations;
     this.alpha = alpha;
     this.beta = beta;
-    this.gradient = gradient;
-    this.sorterProvider = sorterProvider;
+    this.sorter = new SurvivalEntrySorter(data);
   }
 
   @Override
-  public DRes<List<DRes<SFixed>>> buildComputation(ProtocolBuilderNumeric builder) {
+  public DRes<CoxRegressionResult> buildComputation(ProtocolBuilderNumeric builder) {
 
-    return builder.seq(seq -> {
-      SurvivalInfoSorter<T> sorter = sorterProvider.apply(data);
-      return sorter.buildComputation(seq);
-    }).par((par, sorted) -> {
+    return builder.seq(sorter).par((par, sorted) -> {
+
+      this.tiedGroups = sorted.getSecond();
+      this.sortedData = sorted.getFirst();
+
       FixedNumeric numeric = FixedNumeric.using(par);
       List<DRes<SFixed>> initialBeta = Arrays.stream(beta).mapToObj(numeric::known)
           .collect(
               Collectors.toList());
-      return DRes.of(new State(sorted, 0, initialBeta));
-    }).whileLoop((state) -> state.iteration < iterations,
-        (seq, state) -> seq.seq(sub -> this.gradient.apply(state.data, state.beta).apply(sub))
-            .seq((sub, gradient) -> {
-              List<DRes<SFixed>> delta = VectorUtils.scale(gradient, alpha, sub);
-              List<DRes<SFixed>> newBeta = VectorUtils.add(delta, state.beta, sub);
-              return DRes.of(new State(state.data, state.iteration + 1, newBeta));
-            })).seq((set, state) -> DRes.of(state.beta));
+      return DRes.of(initialBeta);
+
+    }).seq((seq, init) ->
+
+        seq.seq(new CoxOptimiser(sortedData, tiedGroups, init, iterations, alpha))
+
+    ).seq((seq, beta) -> {
+
+      DRes<Matrix<DRes<SFixed>>> h = seq.seq(new CoxHessian(sortedData, tiedGroups, beta));
+      return Pair.lazy(beta, h);
+
+    }).seq((seq, betaAndH) -> {
+
+      DRes<Matrix<DRes<SFixed>>> hInverse = AdvancedLinearAlgebra.using(seq)
+          .moorePenrosePseudoInverse(betaAndH.getSecond().out());
+      return Pair.lazy(betaAndH.getFirst(), hInverse);
+
+    }).seq((seq, betaAndHInverse) -> {
+
+      List<DRes<SFixed>> errors = IntStream.range(0, beta.length)
+          .mapToObj(i -> betaAndHInverse.getSecond().out().getRow(i).get(i)).map(xii ->
+              seq.seq(b -> AdvancedFixedNumeric.using(b).sqrt(FixedNumeric.using(b).sub(0, xii)))
+          ).collect(Collectors.toList());
+
+      return new CoxRegressionResult(betaAndHInverse.getFirst(), errors);
+
+    });
+
   }
 
-  private class State {
+  public static class CoxRegressionResult implements DRes<CoxRegressionResult> {
 
-    private final List<T> data;
-    private final int iteration;
-    private final List<DRes<SFixed>> beta;
+    private final List<DRes<SFixed>> model;
+    private final List<DRes<SFixed>> standardErrors;
 
-    private State(List<T> data, int iteration, List<DRes<SFixed>> beta) {
-      this.data = data;
-      this.iteration = iteration;
-      this.beta = beta;
+    CoxRegressionResult(List<DRes<SFixed>> model, List<DRes<SFixed>> standardErrors) {
+      this.model = model;
+      this.standardErrors = standardErrors;
+    }
+
+    public List<DRes<SFixed>> getModel() {
+      return model;
+    }
+
+    public List<DRes<SFixed>> getStandardErrors() {
+      return standardErrors;
+    }
+
+    @Override
+    public CoxRegressionResult out() {
+      return this;
     }
   }
 }
