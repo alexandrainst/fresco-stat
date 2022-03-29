@@ -29,6 +29,9 @@ or vertically, where each party has different attributes for the same entries, o
 of the two. Or one party could know the model parameters and other parties the data used to fit the,
 model eg. in regression or machine learning.
 
+The library supports both simple descriptive statistics and more complicated analysis and regression,
+including linear and logistic regression and survival analysis using Cox regression.
+
 The library has four function libraries with the following functions:
 1. [Statistics](src/main/java/dk/alexandra/fresco/stat/Statistics.java)
     * Descriptive statistics
