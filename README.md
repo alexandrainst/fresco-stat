@@ -32,7 +32,7 @@ model eg. in regression or machine learning.
 The library supports both simple descriptive statistics and more complicated analysis and regression,
 including linear and logistic regression and survival analysis using Cox regression.
 
-The library has four function libraries with the following functions:
+The library has five function libraries:
 1. [Statistics](src/main/java/dk/alexandra/fresco/stat/Statistics.java)
     * Descriptive statistics
         * Sample mean
