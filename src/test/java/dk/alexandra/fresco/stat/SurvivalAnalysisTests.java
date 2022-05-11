@@ -157,6 +157,7 @@ public class SurvivalAnalysisTests {
               }).seq((seq, result) -> {
                 List<DRes<SFixed>> combined = new ArrayList<>(result.getModel());
                 combined.addAll(result.getStandardErrors());
+                combined.add(result.getPartialLikelihoodRatioTest());
 
                 List<DRes<BigDecimal>> open =
                     combined.stream().map(FixedNumeric.using(seq)::open)
@@ -169,6 +170,7 @@ public class SurvivalAnalysisTests {
           List<BigDecimal> output = runApplication(testApplication);
           assertEquals(1.0434, output.get(0).doubleValue(), 0.001);
           assertEquals(0.3847, output.get(1).doubleValue(), 0.001);
+          assertEquals(9.207949790330247, output.get(2).doubleValue(), 0.001);
         }
       };
     }

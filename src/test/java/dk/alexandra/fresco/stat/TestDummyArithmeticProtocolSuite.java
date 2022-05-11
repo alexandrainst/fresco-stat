@@ -58,6 +58,7 @@ import dk.alexandra.fresco.stat.TestsTests.TestKruskallWallisFixedPoint;
 import dk.alexandra.fresco.stat.TestsTests.TestTTest;
 import dk.alexandra.fresco.stat.TestsTests.TestTwoSampleTTest;
 import dk.alexandra.fresco.stat.TestsTests.TestTwoSampleTTestDifferentSizes;
+import dk.alexandra.fresco.stat.TestsTests.TestWilcoxonTest;
 import dk.alexandra.fresco.stat.UtilTests.TestArgMax;
 import dk.alexandra.fresco.stat.UtilTests.TestIndicator;
 import dk.alexandra.fresco.stat.UtilTests.TestMax;
@@ -564,5 +565,10 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   @Test
   public void test_maxima() {
     runTest(new TestMaximum<>(), TEST_PARAMETERS);
+  }
+
+  @Test
+  public void test_wilcoxon_test() {
+    runTest(new TestWilcoxonTest<>(), TEST_PARAMETERS);
   }
 }

@@ -354,9 +354,9 @@ public interface Statistics extends ComputationDirectory {
 
   /**
    * Given a list of observations, each consisting of two categorical values <i>(x,y)</i> with <i>0
-   * &le; firstRange</i> and <i>0 &le; y &lt; secondRange</i>, this computation outputs a contingency
-   * table of size <i>firstRange x secondRange</i>, where the <i>(i,j)</i>'th entry is the number of
-   * observations such that <i>x = i</i> and <i>y = j</i>.
+   * &le; firstRange</i> and <i>0 &le; y &lt; secondRange</i>, this computation outputs a
+   * contingency table of size <i>firstRange x secondRange</i>, where the <i>(i,j)</i>'th entry is
+   * the number of observations such that <i>x = i</i> and <i>y = j</i>.
    *
    * <p>Note that it is much more efficient to encode the data using indicator vectors and use
    * {@link #contingencyTable(List)} instead if possible.</p>
@@ -381,5 +381,28 @@ public interface Statistics extends ComputationDirectory {
    * <i>(x,y)</i> such that <i>x = i</i> and <i>y = j</i>.
    */
   DRes<Matrix<DRes<SInt>>> contingencyTable(List<Pair<List<DRes<SInt>>, List<DRes<SInt>>>> data);
+
+  /**
+   * Given two samples of the same size, this method computes the Wilcoxon signed rank test. The
+   * null hypothesis is that the two samples have equal mean.
+   * <p>
+   * It is assumed that the differences are independent, and that they are symmetric about a common
+   * median.
+   *
+   * @param x The first sample
+   * @param y The second sample
+   * @return The Wilcoxon signed rank test statistics.
+   */
+  DRes<SFixed> twoSampleWilcoxonTest(List<DRes<SFixed>> x, List<DRes<SFixed>> y);
+
+  /**
+   * Compute the Wilcoxon signer rank test statistics for the given sample. The null hypothesis is
+   * that the sample mas mean zero. It is assumed that the sample is symmetric about a common
+   * median.
+   *
+   * @param x The sample
+   * @return The Wilcoxon signed rank test statistics.
+   */
+  DRes<SFixed> oneSampleWilcoxonTest(List<DRes<SFixed>> x);
 
 }

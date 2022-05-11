@@ -35,6 +35,8 @@ import dk.alexandra.fresco.stat.tests.FTest;
 import dk.alexandra.fresco.stat.tests.KruskallWallisTest;
 import dk.alexandra.fresco.stat.tests.OneSampleTTest;
 import dk.alexandra.fresco.stat.tests.TwoSampleTTest;
+import dk.alexandra.fresco.stat.tests.WilcoxonTestOneSample;
+import dk.alexandra.fresco.stat.tests.WilcoxonTestTwoSamples;
 import dk.alexandra.fresco.stat.utils.MatrixUtils;
 import dk.alexandra.fresco.stat.utils.MultiDimensionalArray;
 import dk.alexandra.fresco.stat.utils.VectorUtils;
@@ -376,5 +378,20 @@ public class DefaultStatistics implements Statistics {
   public DRes<Matrix<DRes<SInt>>> contingencyTable(
       List<Pair<List<DRes<SInt>>, List<DRes<SInt>>>> data) {
     return builder.seq(new ContingencyTable(data));
+  }
+
+  @Override
+  public DRes<SFixed> twoSampleWilcoxonTest(List<DRes<SFixed>> x, List<DRes<SFixed>> y) {
+    if (x.size() != y.size()) {
+      throw new IllegalArgumentException("Samples must have same size");
+    }
+    List<Pair<DRes<SFixed>, DRes<SFixed>>> data = IntStream.range(0, x.size()).mapToObj(i -> new Pair<>(x.get(i), y.get(i))).collect(
+        Collectors.toList());
+    return builder.seq(new WilcoxonTestTwoSamples(data));
+  }
+
+  @Override
+  public DRes<SFixed> oneSampleWilcoxonTest(List<DRes<SFixed>> x) {
+    return builder.seq(new WilcoxonTestOneSample(x));
   }
 }

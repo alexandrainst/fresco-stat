@@ -58,14 +58,18 @@ public class CoxGradient implements Computation<ArrayList<DRes<SFixed>>, Protoco
       int n = data.size();
 
       return builder.par(par -> {
-        State state = new State();
+            State state = new State();
+
+            state.innerProducts = data.stream()
+                .map(xj -> AdvancedFixedNumeric.using(par).innerProduct(xj.getCovariates(), beta))
+                .collect(
+                    Collectors.toList());
+            return state;
+          }).par((par, state) -> {
 
         // compute theta_j = exp(x_j . beta) for all data entries j
-        state.thetas = data.stream().map(datum -> par.seq(seq -> {
-          AdvancedFixedNumeric advancedFixedNumeric = AdvancedFixedNumeric.using(seq);
-          return advancedFixedNumeric
-              .exp(advancedFixedNumeric.innerProduct(beta, datum.getCovariates()));
-        })).collect(Collectors.toList());
+        state.thetas = state.innerProducts.stream().map(AdvancedFixedNumeric.using(par)::exp).collect(
+            Collectors.toList());
         return state;
 
       }).par((par, state) -> {
@@ -149,6 +153,7 @@ public class CoxGradient implements Computation<ArrayList<DRes<SFixed>>, Protoco
     // Reused in CoxHessianInternal
     static class State implements DRes<State> {
 
+      List<DRes<SFixed>> innerProducts;
       List<DRes<SFixed>> sum2recip;
       ArrayList<DRes<SFixed>> result;
       List<DRes<SFixed>> thetas;

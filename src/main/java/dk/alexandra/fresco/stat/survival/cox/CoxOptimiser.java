@@ -22,7 +22,7 @@ public class CoxOptimiser implements Computation<List<DRes<SFixed>>, ProtocolBui
   private final int iterations;
   private final double stepSize;
   private final Function<List<DRes<SFixed>>, CoxGradient.CoxGradientInternal> gradient;
-  private final BiFunction<List<DRes<SFixed>>, CoxGradient.CoxGradientInternal.State, CoxHessianInternal> hessian;
+  private final BiFunction<List<DRes<SFixed>>, CoxGradient.CoxGradientInternal.State, CoxHessian.CoxHessianInternal> hessian;
 
   public CoxOptimiser(List<SurvivalEntry> data, List<BigInteger> tiedGroups,
       List<DRes<SFixed>> init,
@@ -33,7 +33,7 @@ public class CoxOptimiser implements Computation<List<DRes<SFixed>>, ProtocolBui
     this.gradient = b -> new CoxGradient.CoxGradientInternal(data, tiedGroups, b);
 
     // The computation of the Hessian reuses some of the intermediate values from the computation of the gradient (the "state" parameter)
-    this.hessian = (b, state) -> new CoxHessianInternal(data, tiedGroups, b, state);
+    this.hessian = (b, state) -> new CoxHessian.CoxHessianInternal(data, tiedGroups, b, state);
   }
 
   @Override
@@ -47,7 +47,7 @@ public class CoxOptimiser implements Computation<List<DRes<SFixed>>, ProtocolBui
         }).seq((seq, g) -> {
 
           // The computation of the Hessian reuses some of the intermediate values from the computation of the gradient
-          DRes<Matrix<DRes<SFixed>>> h = hessian.apply(state.beta, g.out()).buildComputation(seq);
+          DRes<CoxHessian.CoxHessianInternal.State> h = hessian.apply(state.beta, g.out()).buildComputation(seq);
           return Pair.lazy(g.out().result, h);
 
         }).seq((seq, gradientAndHessian) -> {
@@ -55,7 +55,7 @@ public class CoxOptimiser implements Computation<List<DRes<SFixed>>, ProtocolBui
           // Compute the (pseudo)inverse of the Hessian
           DRes<Matrix<DRes<SFixed>>> hessianInverse =
               AdvancedLinearAlgebra.using(seq)
-                  .moorePenrosePseudoInverse(gradientAndHessian.getSecond().out());
+                  .moorePenrosePseudoInverse(gradientAndHessian.getSecond().out().hessian.out());
           return Pair.lazy(gradientAndHessian.getFirst(), hessianInverse);
 
         }).seq((seq, gradientAndHessianInverse) -> FixedLinearAlgebra.using(seq)

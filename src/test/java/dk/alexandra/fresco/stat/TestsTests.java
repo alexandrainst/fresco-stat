@@ -9,6 +9,7 @@ import dk.alexandra.fresco.framework.TestThreadRunner.TestThread;
 import dk.alexandra.fresco.framework.TestThreadRunner.TestThreadFactory;
 import dk.alexandra.fresco.framework.builder.numeric.ProtocolBuilderNumeric;
 import dk.alexandra.fresco.framework.sce.resources.ResourcePool;
+import dk.alexandra.fresco.framework.util.Pair;
 import dk.alexandra.fresco.framework.value.SInt;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
@@ -16,9 +17,12 @@ import dk.alexandra.fresco.stat.tests.KruskallWallisTest;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.apache.commons.math3.stat.inference.ChiSquareTest;
 import org.apache.commons.math3.stat.inference.OneWayAnova;
 import org.apache.commons.math3.stat.inference.TTest;
+import org.apache.commons.math3.stat.inference.WilcoxonSignedRankTest;
+import org.junit.Assert;
 
 public class TestsTests {
 
@@ -311,6 +315,45 @@ public class TestsTests {
           // applications in biology and geology".
           BigDecimal output = runApplication(testApplication);
           assertEquals(29.4203, output.doubleValue(), 0.01);
+        }
+      };
+    }
+  }
+
+  public static class TestWilcoxonTest<ResourcePoolT extends ResourcePool>
+      extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        // Example from https://en.wikipedia.org/wiki/Wilcoxon_signed-rank_test#Example
+        final List<BigDecimal> data1 = List
+            .of(125, 115, 130, 140, 140, 115, 140, 125, 140, 135)
+            .stream().map(BigDecimal::valueOf).collect(Collectors.toList());
+        final List<BigDecimal> data2 = List
+            .of(110, 122, 125, 120, 140, 124, 123, 137, 135, 145)
+            .stream().map(BigDecimal::valueOf).collect(Collectors.toList());
+
+        @Override
+        public void test() throws Exception {
+
+          Application<BigDecimal, ProtocolBuilderNumeric> testApplication = builder -> {
+            List<DRes<SFixed>> input1 = data1.stream()
+                .map(x -> FixedNumeric.using(builder).input(x, 1))
+                .collect(Collectors.toList());
+            List<DRes<SFixed>> input2 = data2.stream()
+                .map(x -> FixedNumeric.using(builder).input(x, 2))
+                .collect(Collectors.toList());
+
+            DRes<SFixed> W = Statistics.using(builder).twoSampleWilcoxonTest(input1, input2);
+            return FixedNumeric.using(builder).open(W);
+          };
+
+          BigDecimal output = runApplication(testApplication);
+
+          Assert.assertEquals(9.0, output.doubleValue(), 0.0001);
+
         }
       };
     }

@@ -11,6 +11,8 @@ import dk.alexandra.fresco.lib.fixed.SFixed;
 import dk.alexandra.fresco.stat.AdvancedLinearAlgebra;
 import dk.alexandra.fresco.stat.survival.SurvivalEntry;
 import dk.alexandra.fresco.stat.survival.SurvivalEntrySorter;
+import dk.alexandra.fresco.stat.survival.cox.CoxHessian.CoxHessianInternal.State;
+import dk.alexandra.fresco.stat.utils.Triple;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
@@ -66,23 +68,30 @@ public class CoxRegression implements
 
     ).seq((seq, beta) -> {
 
-      DRes<Matrix<DRes<SFixed>>> h = seq.seq(new CoxHessian(sortedData, tiedGroups, beta));
-      return Pair.lazy(beta, h);
+      DRes<State> hessianState = seq
+          .seq(new CoxHessian.CoxHessianInternal(sortedData, tiedGroups, beta));
+      return Pair.lazy(beta, hessianState);
 
-    }).seq((seq, betaAndH) -> {
+    }).par((par, betaAndHessianState) -> {
 
-      DRes<Matrix<DRes<SFixed>>> hInverse = AdvancedLinearAlgebra.using(seq)
-          .moorePenrosePseudoInverse(betaAndH.getSecond().out());
-      return Pair.lazy(betaAndH.getFirst(), hInverse);
+      DRes<Matrix<DRes<SFixed>>> hInverse = AdvancedLinearAlgebra.using(par)
+          .moorePenrosePseudoInverse(betaAndHessianState.getSecond().out().hessian.out());
 
-    }).seq((seq, betaAndHInverse) -> {
+      DRes<SFixed> G = new CoxPartialLikelihoodRatioTest(sortedData, tiedGroups,
+          betaAndHessianState.getFirst(), betaAndHessianState.getSecond().out())
+          .buildComputation(par);
+
+      return DRes.of(new Triple<>(betaAndHessianState.getFirst(), hInverse, G));
+
+    }).seq((seq, betaAndHInverseAndG) -> {
 
       List<DRes<SFixed>> errors = IntStream.range(0, beta.length)
-          .mapToObj(i -> betaAndHInverse.getSecond().out().getRow(i).get(i)).map(xii ->
+          .mapToObj(i -> betaAndHInverseAndG.getSecond().out().getRow(i).get(i)).map(xii ->
               seq.seq(b -> AdvancedFixedNumeric.using(b).sqrt(FixedNumeric.using(b).sub(0, xii)))
           ).collect(Collectors.toList());
 
-      return new CoxRegressionResult(betaAndHInverse.getFirst(), errors);
+      return new CoxRegressionResult(betaAndHInverseAndG.getFirst(), betaAndHInverseAndG.getThird(),
+          errors);
 
     });
 
@@ -90,11 +99,14 @@ public class CoxRegression implements
 
   public static class CoxRegressionResult implements DRes<CoxRegressionResult> {
 
+    private final DRes<SFixed> G;
     private final List<DRes<SFixed>> model;
     private final List<DRes<SFixed>> standardErrors;
 
-    CoxRegressionResult(List<DRes<SFixed>> model, List<DRes<SFixed>> standardErrors) {
+    CoxRegressionResult(List<DRes<SFixed>> model, DRes<SFixed> G,
+        List<DRes<SFixed>> standardErrors) {
       this.model = model;
+      this.G = G;
       this.standardErrors = standardErrors;
     }
 
@@ -104,6 +116,10 @@ public class CoxRegression implements
 
     public List<DRes<SFixed>> getStandardErrors() {
       return standardErrors;
+    }
+
+    public DRes<SFixed> getPartialLikelihoodRatioTest() {
+      return G;
     }
 
     @Override
