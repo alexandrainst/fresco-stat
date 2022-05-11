@@ -50,6 +50,10 @@ The library has five function libraries:
         * ꭓ²-test
         * F-test
         * Kruskall-Wallis test
+        * Wilcoxon signed rank test
+        * Breusch-Pagan test
+        * Durbin-Watson test
+        * Jarque-Bera test
     * Outlier detection
         * Mahalanobis distance
     * Survival analysis
@@ -75,7 +79,7 @@ The library has five function libraries:
     * QR-algorithm for eigenvalue computation
     * QR-decomposition
 1. [Machine learning](src/main/java/dk/alexandra/fresco/stat/MachineLearning.java)
-    * Logistic regression via gradient descent
+    * Logistic regression with gradient descent
     * Multilayer perceptron 
 1. [Filtered statistics](src/main/java/dk/alexandra/fresco/stat/FilteredStatistics.java)
     * Same as <b>Statistics</b> but with the option of obliviously filtering what samples from a data set will be used in an analysis. 
