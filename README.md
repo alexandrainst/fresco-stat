@@ -29,7 +29,10 @@ or vertically, where each party has different attributes for the same entries, o
 of the two. Or one party could know the model parameters and other parties the data used to fit the,
 model eg. in regression or machine learning.
 
-The library has four function libraries with the following functions:
+The library supports both simple descriptive statistics and more complicated analysis and regression,
+including linear and logistic regression and survival analysis using Cox regression.
+
+The library has five function libraries:
 1. [Statistics](src/main/java/dk/alexandra/fresco/stat/Statistics.java)
     * Descriptive statistics
         * Sample mean
@@ -103,7 +106,7 @@ The library may be included in other projects by including it as a Maven depende
 <dependency>
   <artifactId>stat</artifactId>
   <groupId>dk.alexandra.fresco</groupId>
-  <version>0.3</version>
+  <version>0.4</version>
 </dependency>
 ```
 
