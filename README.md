@@ -110,7 +110,7 @@ The library may be included in other projects by including it as a Maven depende
 <dependency>
   <artifactId>stat</artifactId>
   <groupId>dk.alexandra.fresco</groupId>
-  <version>0.4</version>
+  <version>0.5</version>
 </dependency>
 ```
 
