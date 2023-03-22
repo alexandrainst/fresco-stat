@@ -13,7 +13,11 @@ import dk.alexandra.fresco.lib.common.collections.Matrix;
 import dk.alexandra.fresco.lib.fixed.FixedLinearAlgebra;
 import dk.alexandra.fresco.lib.fixed.FixedNumeric;
 import dk.alexandra.fresco.lib.fixed.SFixed;
+import dk.alexandra.fresco.stat.complex.Open;
+import dk.alexandra.fresco.stat.complex.OpenComplex;
+import dk.alexandra.fresco.stat.complex.SecretComplex;
 import dk.alexandra.fresco.stat.linearalgebra.Convolution;
+import dk.alexandra.fresco.stat.linearalgebra.FFT;
 import dk.alexandra.fresco.stat.utils.MatrixUtils;
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -717,6 +721,34 @@ public class LATests {
 
           List<BigDecimal> output = runApplication(testApplication);
           Assert.assertArrayEquals(new double[] {0, 1, 2, -1, -2}, output.stream().mapToDouble(BigDecimal::doubleValue).toArray(), 0.001);
+        }
+      };
+    }
+  }
+
+  public static class TestFFT<ResourcePoolT extends ResourcePool>
+          extends TestThreadFactory<ResourcePoolT, ProtocolBuilderNumeric> {
+
+    @Override
+    public TestThread<ResourcePoolT, ProtocolBuilderNumeric> next() {
+      return new TestThread<>() {
+
+        @Override
+        public void test() {
+
+          ArrayList<BigDecimal> x = List.of(1.0 ,2.0,3.0,4.0).stream().map(BigDecimal::valueOf).collect(Collectors.toCollection(ArrayList::new));
+
+          Application<List<OpenComplex>, ProtocolBuilderNumeric> testApplication = builder ->
+                  builder.par(par -> DRes.of(x.stream().map(xi -> FixedNumeric.using(par).input(xi, 1)).map(xi -> DRes.of(new SecretComplex(xi, xi))).collect(Collectors.toCollection(ArrayList::new)))
+                          ).seq((seq, a) -> new FFT(a).buildComputation(seq)).seq((seq, fft) ->
+                            DRes.of(fft.stream()
+                                    .map(z -> new Open(z.out()).buildComputation(seq)).collect(Collectors.toList()))
+                          ).seq((seq, open) ->
+                            DRes.of(open.stream().map(DRes::out).collect(Collectors.toList()))
+                          );
+
+          List<OpenComplex> out = runApplication(testApplication);
+          System.out.println(out);
         }
       };
     }
