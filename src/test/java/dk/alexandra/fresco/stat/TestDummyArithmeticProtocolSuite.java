@@ -571,4 +571,10 @@ public class TestDummyArithmeticProtocolSuite extends AbstractDummyArithmeticTes
   public void test_wilcoxon_test() {
     runTest(new TestWilcoxonTest<>(), TEST_PARAMETERS);
   }
+
+  @Test
+  public void test_fft() {
+    runTest(new LATests.TestFFT<>(), TEST_PARAMETERS);
+  }
+
 }
